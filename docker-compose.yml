@@ -32,6 +32,11 @@ services:
       safety:
         condition: service_completed_successfully
     working_dir: /freqtrade
+    environment:
+      # Lets strategies import the shared `labkit` package - also inside the
+      # parallel worker processes hyperopt starts (they don't inherit
+      # Freqtrade's temporary strategy-folder import path).
+      PYTHONPATH: /freqtrade/user_data/strategies
     volumes:
       - ./user_data:/freqtrade/user_data
       - ./scripts:/freqtrade/scripts:ro

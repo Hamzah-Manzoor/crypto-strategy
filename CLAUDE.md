@@ -16,7 +16,7 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 | `scripts/safety_check.py` | The safety gate (tests in `tests/test_safety_check.py`) |
 | `docker-compose.yml` | Pinned image `freqtradeorg/freqtrade:2026.9@sha256:…`, `safety` + `freqtrade` (tools) services |
 | `user_data/configs/` | `base.json` (always loaded first) plus small overrides: `backtest.json`, `exchange-*.json`, `dryrun/<bot>.json` |
-| `user_data/strategies/` | One file per strategy **version** (`ema_trend_v1.py` → `class EmaTrendV1`) plus shared `lab_base.py` / `lab_indicators.py` |
+| `user_data/strategies/` | One file per strategy **version** (`ema_trend_v1.py` → `class EmaTrendV1`) plus shared code in the `labkit/` sub-package (`base.py`: `LabBaseStrategy`; `indicators.py`: Supertrend, Keltner, Donchian…). Freqtrade doesn't scan sub-folders, so `labkit` is never listed as a strategy |
 | `templates/strategy_template.py` | Copy this to start a new strategy |
 | `results/` | Committed summaries: leaderboards, experiment log, hyperopt params, walk-forward reports |
 | `docs/` | Methodology, results, decisions, roadmap, safety, glossary |
@@ -28,6 +28,12 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 - **Pairs are static:** BTC, ETH, SOL, BNB, XRP against USDT (StaticPairList). Main timeframe is 1h; 15m and 4h through a `--timeframe` override.
 - **Strategy versioning:** never edit a version that has logged results. Make `xxx_v2.py` with `class XxxV2(XxxV1)` and add a "Changes vs v1" line in the docstring. Tuned params get baked into the new version's `buy_params`/`sell_params`. Hyperopt runs with `--disable-param-export`, so Freqtrade never silently auto-loads a `.json` next to a strategy.
 - **Strategy comments explain the trading idea**, not the Python.
+- **Shared strategy code:**
+  - Import it with `from labkit.base import LabBaseStrategy` and `from labkit.indicators import ...`.
+  - This also works inside hyperopt's parallel worker processes, because `docker-compose.yml` sets `PYTHONPATH=/freqtrade/user_data/strategies`. Don't remove that line.
+- **TA-Lib 0.8 is strict about types.** Pass floats where TA-Lib expects floats (`nbdev=1.0`, not `1`).
+- **Lookahead analysis runs one strategy per call.** With `--strategy-list`, Freqtrade 2026.9 analyses the first strategy's trades for every strategy. `lab.py check-bias` already handles this.
+- **Market loading is spot-only** (`ccxt_config.options.fetchMarkets.types = ["spot"]` in `base.json`), so runs never depend on Binance's futures API.
 - Every backtest or hyperopt run through `lab.py` is logged to `results/experiments.jsonl`.
 
 ## How to add a strategy
@@ -43,6 +49,10 @@ python3 scripts/lab.py setup        # first time: folders, .env, git hook, image
 python3 scripts/lab.py safety       # safety check on its own
 python3 scripts/lab.py test         # unit tests (must pass before every commit)
 python3 scripts/lab.py show-config  # merged config as Freqtrade sees it
+python3 scripts/lab.py download     # candles (re-run to top up), then data check
+python3 scripts/lab.py data-check   # coverage / gaps report
+python3 scripts/lab.py regimes      # bull / bear / sideways windows per split
+python3 scripts/lab.py check-bias   # lookahead + recursive analysis, must PASS for every strategy
 python3 scripts/lab.py ft -- <any freqtrade command and flags>
 ```
 More commands (download, backtest, report, hyperopt, walkforward, bots) are added phase by phase. `README.md` has the full table.

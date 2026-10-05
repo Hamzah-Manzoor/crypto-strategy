@@ -81,3 +81,29 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 **2026-10-06: Binance used; Bybit is the working fallback; OKX not reachable here.**
 - From this connection in Pakistan, `api.binance.com`, `data.binance.vision` and `api.bybit.com` answered. A real test download through `exchange-bybit.json` worked (and was deleted afterwards).
 - `www.okx.com` failed DNS lookup. The OKX override config stays for other networks.
+
+**2026-10-06: Shared strategy code lives in the `labkit/` sub-package, with `PYTHONPATH` set in compose.**
+- **Why a sub-package:** Freqtrade treats every strategy class in a *top-level* file of `user_data/strategies/` as a strategy, so a top-level base class would show up as a broken strategy. It doesn't scan sub-folders.
+- **Why `PYTHONPATH`:** hyperopt's parallel worker processes failed with `ModuleNotFoundError: labkit`. Freqtrade only puts the strategy folder on the import path while it loads strategies. Setting `PYTHONPATH=/freqtrade/user_data/strategies` on the container fixed it; tested with a 2-worker hyperopt.
+- **Alternative rejected:** copying helpers into every strategy file. Bugs would then be fixed in one copy and not the others.
+
+**2026-10-06: Load spot markets only from Binance.**
+- **What happened:** one hyperopt start timed out on `fapi.binance.com`, Binance's *futures* API, which CCXT queries by default even for spot.
+- **What we do:** `base.json` sets `ccxt_config.options.fetchMarkets.types = ["spot"]`. That's one request instead of three, and no dependency on an API we never trade on.
+
+**2026-10-06: Lookahead analysis runs one strategy at a time.**
+- **The quirk:** with `--strategy-list`, Freqtrade 2026.9 loaded all strategies in every analysis and reported the *first* strategy's trades (Buy & Hold's never-closed trades) for all of them. As a result, every strategy came back "too few trades, test failed".
+- **What we do:**
+  - `lab.py check-bias` runs `--strategy` per strategy.
+  - Buy & Hold is skipped there (no indicators, and its trades only close at the end).
+  - Any result other than an explicit `False` counts as a failure, never as a silent pass.
+- **Verified that the check really detects bias:** a throw-away strategy that peeks one candle ahead (`shift(-1)`) was flagged ("has_bias: Yes", indicator `next_close`).
+
+**2026-10-06: Data start moved from 2023-07-01 to 2023-05-01.**
+- The slowest strategies need 600 warm-up candles. On 4h candles that's 100 days, but 2023-07-01 → 2023-10-01 is only 92 days. Freqtrade would have silently started 4h tests about 8 days late.
+- With data from 2023-05-01, every timeframe starts scoring on exactly 2023-10-01. Checked in the 4h log: "Loading data from 2023-06-23 … Backtesting with data from 2023-10-01".
+- `lab.py download` now runs a `--prepend` pass, so older data can be added to existing files.
+
+**2026-10-06: Open issue for Phase 5: Freqtrade's drawdown ignores open trades.**
+- In the smoke backtest, Buy & Hold showed **0% drawdown** over Q1 2024, although prices dipped. Freqtrade's max drawdown is built from *closed* trades only, and Buy & Hold closes nothing until the end.
+- Comparing strategies with Buy & Hold "on a risk-adjusted basis" needs drawdown from the wallet value over time (mark-to-market). The report script in Phase 5 must use Freqtrade's wallet-based metrics, or compute drawdown itself.

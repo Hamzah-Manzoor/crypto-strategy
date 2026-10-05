@@ -35,10 +35,10 @@ What `setup` does:
 python3 scripts/lab.py download
 ```
 
-- **What:** BTC, ETH, SOL, BNB, XRP against USDT, spot, on **5m, 15m, 1h and 4h** candles from **2023-07-01** to now. It also downloads **BTC/USDT daily from 2022-01-01**, which is only used to label market regimes (a 200-day average needs 200 days of history first).
+- **What:** BTC, ETH, SOL, BNB, XRP against USDT, spot, on **5m, 15m, 1h and 4h** candles from **2023-05-01** to now. The first 5 months before the in-sample start (2023-10-01) are warm-up only: 600 warm-up candles on 4h need 100 days. It also downloads **BTC/USDT daily from 2022-01-01**, which is only used to label market regimes (a 200-day average needs 200 days of history first).
 - **Where:** `user_data/data/binance/*.feather` (about 50 MB, git-ignored).
 - **How long:** about 1 minute. Freqtrade pulls Binance's bulk public files from `data.binance.vision`, no API key needed.
-- **Topping up:** run the same command again. It only fetches candles newer than what you already have.
+- **Topping up:** run the same command again. Pass 1 (`--prepend`) extends files back to the start date if needed; pass 2 fetches only candles newer than what you already have.
 - When the download finishes, it automatically runs the **data check**.
 
 ### Data check
@@ -50,7 +50,7 @@ python3 scripts/lab.py data-check
 For each pair × timeframe it reports the first and last candle, missing candles, the longest gap, duplicates and "impossible" candles (for example a high below the close). The result is saved to `results/checks/data_check.md`.
 
 **It fails if:**
-- data starts after 2023-07-01
+- data starts after 2023-05-01
 - coverage is under 98%
 - any gap is longer than 24 hours
 - there are duplicate timestamps or impossible candles
@@ -82,7 +82,7 @@ Picks a **bull**, a **bear** and a **sideways** 90-day window **inside each spli
 | `download from binance failed` or HTTP **451 / 403** errors (region block) | Use the fallback: `python3 scripts/lab.py download --exchange bybit`. The `exchange-bybit.json` override switches the data source. Later commands pick the exchange you have data for automatically, or set `LAB_EXCHANGE=bybit`. |
 | Bybit also fails | `--exchange okx` is the second fallback. **Note:** on 2026-10-06 `www.okx.com` didn't even resolve (DNS failure) from this network in Pakistan, while Binance and Bybit worked. A VPN or another DNS server might help, but check local rules first. |
 | `data check failed: coverage …` or `gap of …h` | Usually a temporary exchange outage, or a partial download that was interrupted. Re-run `download`. If a real exchange outage left a gap, it shows the same way every time. Note it in `docs/DECISIONS.md` instead of hiding it. |
-| `starts …, needed from 2023-07-01` | The pair wasn't listed yet on that exchange, or the download was cut short. Re-run `download`. |
+| `starts …, needed from 2023-05-01` | The pair wasn't listed yet on that exchange, or the download was cut short. Re-run `download`. |
 | `stale: last candle …` (WARN) | Just run `download` again to top up. |
 | Want to start over | Delete `user_data/data/<exchange>/` and run `download`. |
 
@@ -90,14 +90,14 @@ Picks a **bull**, a **bear** and a **sideways** 90-day window **inside each spli
 
 | Timeframe | Candles per pair | Range | Missing | Longest gap |
 |---|---:|---|---:|---:|
-| 5m | 343,548 | 2023-07-01 → 2026-10-05 | 0 | 0h |
-| 15m | 114,516 | 2023-07-01 → 2026-10-05 | 0 | 0h |
-| 1h | 28,629 | 2023-07-01 → 2026-10-05 | 0 | 0h |
-| 4h | 7,157 | 2023-07-01 → 2026-10-05 | 0 | 0h |
+| 5m | 361,139 | 2023-05-01 → 2026-10-05 | 0 | 0h |
+| 15m | 120,379 | 2023-05-01 → 2026-10-05 | 0 | 0h |
+| 1h | 30,094 | 2023-05-01 → 2026-10-05 | 0 | 0h |
+| 4h | 7,523 | 2023-05-01 → 2026-10-05 | 0 | 0h |
 | 1d (BTC only) | 1,738 | 2022-01-01 → 2026-10-04 | 0 | 0h |
 
 - **All 5 pairs passed:** 100% coverage, no duplicates, no impossible candles and no zero-volume filler candles. Binance's candles needed no repairs.
-- **Data size:** 55 MB.
+- **Data size:** 63 MB.
 - **Full report:** `results/checks/data_check.md`.
 - **The check really does fail on bad data.** As a one-off test, a copy of the 1h data was corrupted on purpose: 2 days deleted from ETH, a duplicate added to SOL, a BTC candle made impossible. The check flagged all three and exited with code 1.
 

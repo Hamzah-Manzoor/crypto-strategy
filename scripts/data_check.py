@@ -75,7 +75,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--exchange", default="binance")
     parser.add_argument("--timeframes", nargs="+", default=["5m", "15m", "1h", "4h"])
-    parser.add_argument("--start", default="20230701", help="data must start by this date (yyyymmdd)")
+    parser.add_argument("--start", default="20230501", help="data must start by this date (yyyymmdd)")
     parser.add_argument("--min-coverage", type=float, default=98.0, help="percent")
     parser.add_argument("--max-gap-hours", type=float, default=24.0)
     parser.add_argument("--out", type=Path, help="also write the markdown report here")

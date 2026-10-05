@@ -1,0 +1,8 @@
+filename,strategy,has_bias,total_signals,biased_entry_signals,biased_exit_signals,biased_indicators
+adx_supertrend_v1.py,AdxSupertrendV1,False,30,0,0,
+donchian_breakout_v1.py,DonchianBreakoutV1,False,30,0,0,
+ema_trend_v1.py,EmaTrendV1,False,30,0,0,
+macd_volume_v1.py,MacdVolumeV1,False,30,0,0,
+rsi_bb_reversion_v1.py,RsiBbReversionV1,False,30,0,0,
+squeeze_breakout_v1.py,SqueezeBreakoutV1,False,30,0,0,
+trend_pullback_v1.py,TrendPullbackV1,False,30,0,0,

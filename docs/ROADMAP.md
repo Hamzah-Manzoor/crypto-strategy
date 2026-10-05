@@ -18,18 +18,20 @@ Each phase ends with a review stop and one git commit.
 - [x] `CLAUDE.md`, `README.md`, `DECISIONS.md`, `ROADMAP.md`, `RISK_AND_SAFETY.md`
 
 ## Phase 3: Data ✅
-- [x] `lab.py download`: 5 pairs × 5m/15m/1h/4h from 2023-07-01, plus BTC 1d from 2022-01-01
+- [x] `lab.py download`: 5 pairs × 5m/15m/1h/4h from 2023-07-01 (extended to 2023-05-01 in Phase 4), plus BTC 1d from 2022-01-01
 - [x] Fallback checked: a real Bybit download worked through `exchange-bybit.json`; OKX did not resolve via DNS (Binance used)
 - [x] `data_check.py`: 100% coverage, 0 gaps (and shown to catch gaps, duplicates and bad candles)
 - [x] `regimes.py`: bull / bear / sideways windows inside each split, judged on the 5-coin basket
 - [x] `docs/SETUP.md`
 
-## Phase 4: Strategies
-- [ ] `lab_base.py`, `lab_indicators.py`, `templates/strategy_template.py`
-- [ ] 8 strategies: BuyHold, EmaTrend, AdxSupertrend, RsiBbReversion, DonchianBreakout, MacdVolume, SqueezeBreakout, TrendPullback
-- [ ] Lookahead analysis: no bias
-- [ ] Recursive analysis: `startup_candle_count` is enough
-- [ ] `docs/STRATEGIES.md`
+## Phase 4: Strategies ✅
+- [x] `labkit/base.py`, `labkit/indicators.py`, `templates/strategy_template.py`
+- [x] 8 strategies: BuyHold, EmaTrend, AdxSupertrend, RsiBbReversion, DonchianBreakout, MacdVolume, SqueezeBreakout, TrendPullback
+- [x] Lookahead analysis: no bias (7 strategies × 30 signals; a deliberately cheating strategy *was* caught)
+- [x] Recursive analysis: `startup_candle_count` is enough (worst error 0.003%)
+- [x] `lab.py check-bias` saves `results/checks/bias_check.md`
+- [x] Hyperopt parallel workers can import `labkit` (`PYTHONPATH` set in compose)
+- [x] `docs/STRATEGIES.md`
 
 ## Phase 5: Backtesting
 - [ ] `lab.py backtest` with all strategies in one run

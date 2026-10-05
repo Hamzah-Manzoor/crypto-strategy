@@ -7,7 +7,7 @@ A local lab for **testing many crypto trading strategies side by side** and impr
 - **Spot only:** BTC, ETH, SOL, BNB, XRP against USDT. Main timeframe is 1h; 15m and 4h are also supported.
 - **Honest testing:** realistic fees (0.1% per side), in-sample vs out-of-sample splits, walk-forward tests, and bull/bear/sideways market checks. A strategy has to earn its place on the leaderboard.
 
-> **Status:** Phase 3 of 8 (data) is done. See [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** Phase 4 of 8 (strategies) is done. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start (macOS)
 
@@ -18,7 +18,7 @@ cd crypto-strategy
 python3 scripts/lab.py setup      # folders, .env with a random FreqUI password, git hook, pulls Freqtrade 2026.9
 python3 scripts/lab.py test       # unit tests
 python3 scripts/lab.py safety     # should print: [safety] OK ...
-python3 scripts/lab.py download   # ~1 minute, about 3.3 years of candles, then a data check
+python3 scripts/lab.py download   # ~1 minute, about 3.4 years of candles, then a data check
 python3 scripts/lab.py regimes    # bull / bear / sideways test windows
 ```
 
@@ -49,7 +49,7 @@ Every command also has a `make` alias: `make setup`, `make test`, `make backtest
 | `download [--exchange bybit\|okx]` | Downloads price data for all pairs and timeframes, then runs the data check | ✅ Phase 3 |
 | `data-check` | Checks data coverage, gaps, duplicates and bad candles | ✅ Phase 3 |
 | `regimes [--days 90]` | Picks bull / bear / sideways windows inside in-sample and out-of-sample | ✅ Phase 3 |
-| `check-bias` | Runs lookahead and recursive analysis on all strategies | Phase 4 |
+| `check-bias [--strategies …]` | Lookahead + recursive analysis on all strategies; writes `results/checks/bias_check.md` | ✅ Phase 4 |
 | `backtest [--period …] [--timeframe …]` | Backtests all strategies in one run, then logs it and builds the leaderboard | Phase 5 |
 | `report` | Rebuilds leaderboards and `docs/RESULTS.md` | Phase 5 |
 | `exp list\|decide` | Experiment log | Phase 5 |
