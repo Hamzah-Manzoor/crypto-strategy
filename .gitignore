@@ -1,0 +1,35 @@
+# --- Secrets (rule 4: never commit) ---
+.env
+.env.*
+!.env.example
+
+# --- Downloaded market data ---
+user_data/data/
+
+# --- Raw Freqtrade output (summaries go to results/ instead) ---
+user_data/backtest_results/
+user_data/hyperopt_results/
+user_data/walkforward/
+user_data/plot/
+user_data/notebooks/
+user_data/freqaimodels/
+user_data/logs/
+user_data/db/
+*.log
+
+# --- Databases ---
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+
+# --- Hyperopt parameter files Freqtrade can drop next to strategies.
+#     We keep tuned params inside versioned strategy classes instead. ---
+user_data/strategies/*.json
+
+# --- Python / OS noise ---
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.DS_Store

@@ -1,0 +1,38 @@
+# Crypto Strategy Lab - Docker Compose
+#
+# The Freqtrade image is pinned to an exact release AND its multi-arch digest, so a
+# backtest run today and one run next year use exactly the same engine.
+# Upgrading = change the line below, re-run tests + a reference backtest, and log
+# the change in docs/DECISIONS.md.
+name: crypto-lab
+
+x-freqtrade-image: &freqtrade-image freqtradeorg/freqtrade:2026.9@sha256:989aff5636d8f0213ed44fe334c3314a194a51c0c755d16866960247aafd2eae
+
+services:
+  # Runs scripts/safety_check.py inside a container. Every Freqtrade service depends
+  # on it, so even a raw `docker compose run` / `up` refuses to start if it fails.
+  # To see why it failed:  docker compose logs safety
+  safety:
+    image: *freqtrade-image
+    entrypoint: ["python", "/lab/scripts/safety_check.py", "--root", "/lab"]
+    volumes:
+      - ./:/lab:ro
+    env_file:
+      - path: .env
+        required: false
+    restart: "no"
+
+  # One-off tool runs: download-data, backtesting, hyperopt, lookahead checks.
+  # Normally used through `python3 scripts/lab.py <command>`.
+  # Raw use:  docker compose run --rm freqtrade <freqtrade command> --config user_data/configs/base.json ...
+  freqtrade:
+    image: *freqtrade-image
+    profiles: ["tools"]
+    depends_on:
+      safety:
+        condition: service_completed_successfully
+    working_dir: /freqtrade
+    volumes:
+      - ./user_data:/freqtrade/user_data
+      - ./scripts:/freqtrade/scripts:ro
+      - ./results:/freqtrade/results

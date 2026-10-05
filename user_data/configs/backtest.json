@@ -1,0 +1,8 @@
+{
+  "bot_name": "crypto-lab-backtest",
+  "dry_run": true,
+  "fee": 0.001,
+  "export": "trades",
+  "backtest_breakdown": ["month"],
+  "disableparamexport": true
+}

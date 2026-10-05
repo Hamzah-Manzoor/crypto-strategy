@@ -1,0 +1,36 @@
+#!/bin/sh
+# Git pre-commit hook. `python3 scripts/lab.py setup` activates it with
+#   git config core.hooksPath scripts/hooks
+#
+# Hard rule 4: never commit downloaded data, logs, databases or secrets.
+# It also re-runs the safety check so an unsafe config can't be committed.
+
+ROOT=$(git rev-parse --show-toplevel)
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR)
+
+BLOCKED=$(printf '%s\n' "$STAGED" | grep -E \
+  -e '^user_data/(data|logs|db|backtest_results|hyperopt_results|walkforward|plot)/' \
+  -e '\.(sqlite|sqlite-shm|sqlite-wal|db|feather|parquet|log)$' \
+  -e '(^|/)\.env($|\.)' \
+  | grep -v -E '(^|/)\.env\.example$')
+
+if [ -n "$BLOCKED" ]; then
+  echo "=================================================================="
+  echo "!!  COMMIT BLOCKED: data, logs, databases or secrets are staged"
+  echo "=================================================================="
+  printf '  %s\n' $BLOCKED
+  echo "Unstage them with: git restore --staged <file>"
+  exit 1
+fi
+
+# Anything over 2 MB is almost certainly raw output, not a summary.
+printf '%s\n' "$STAGED" | while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  size=$(git cat-file -s ":$f" 2>/dev/null || echo 0)
+  if [ "$size" -gt 2000000 ]; then
+    echo "!!  COMMIT BLOCKED: $f is $size bytes (> 2 MB). Commit summaries, not raw output."
+    exit 1
+  fi
+done || exit 1
+
+exec python3 "$ROOT/scripts/safety_check.py"
