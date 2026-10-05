@@ -58,3 +58,26 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 **2026-10-06: Hyperopt never auto-exports parameters next to the strategy (`disableparamexport`).**
 - Freqtrade silently loads `<Strategy>.json` if it sits next to a strategy file. Then two backtests of the "same" strategy can use different settings without anyone noticing.
 - Tuned params go into a new versioned class instead (`EmaTrendV2`), so the code always shows exactly what ran.
+
+**2026-10-06: Data from 2023-07-01, test periods start 2023-10-01.**
+- The first 3 months only "warm up" slow indicators such as a 200-candle average. No trades are scored there.
+- **In-sample** is 2023-10-01 → 2025-10-01 (build and tune). **Out-of-sample** is 2025-10-01 → 2026-10-01 (check only).
+- BTC daily candles also go back to 2022-01-01, only so the 200-day average used in the regime cross-check exists from the first test day.
+
+**2026-10-06: Regime windows are picked inside each split and judged on the 5-coin basket.**
+- **First attempt:** picking by BTC alone over the whole range. Its "sideways" window (May–Sep 2025) was flat for BTC (+7%) but the 5-coin basket rose +36% (the ETH/XRP rally). That isn't sideways for what we trade.
+- **Second problem:** the biggest bear market (Nov 2025 → Feb 2026, basket −45%) sits entirely in out-of-sample. Using it during development would leak test data.
+- **What we do now:**
+  - Windows are judged on the equal-weight basket, using what prices did *inside* the window. The backward-looking BTC trend rule is kept only as a cross-check, because it lags turns.
+  - Bull, bear and sideways windows are chosen separately in-sample (for development) and out-of-sample (final check only).
+  - A window that moved less than 20% is labelled "weak" instead of being passed off as a trend.
+- See `results/checks/regimes.md`.
+
+**2026-10-06: Note that in-sample is bull-heavy.**
+- In-sample (Oct 2023 → Oct 2025) includes two big rallies: the late-2024 US-election rally (+137% basket in 90 days) and the Feb–Mar 2024 run.
+- Its worst stretch is the Feb–Apr 2025 drop (basket −28%).
+- Out-of-sample contains a deeper bear (−45%). So a strategy tuned only on in-sample has never seen a long bear market. Out-of-sample is a tough but fair test.
+
+**2026-10-06: Binance used; Bybit is the working fallback; OKX not reachable here.**
+- From this connection in Pakistan, `api.binance.com`, `data.binance.vision` and `api.bybit.com` answered. A real test download through `exchange-bybit.json` worked (and was deleted afterwards).
+- `www.okx.com` failed DNS lookup. The OKX override config stays for other networks.

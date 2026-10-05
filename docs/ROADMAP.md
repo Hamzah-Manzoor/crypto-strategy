@@ -17,12 +17,12 @@ Each phase ends with a review stop and one git commit.
 - [x] Git pre-commit hook (blocks data/logs/DBs/secrets, runs the safety check)
 - [x] `CLAUDE.md`, `README.md`, `DECISIONS.md`, `ROADMAP.md`, `RISK_AND_SAFETY.md`
 
-## Phase 3: Data
-- [ ] `lab.py download`: 5 pairs × 5m/15m/1h/4h from 2023-07-01
-- [ ] Bybit / OKX fallback tested if Binance fails
-- [ ] `data_check.py`: coverage and gap report
-- [ ] `regimes.py`: bull / bear / sideways windows from BTC data
-- [ ] `docs/SETUP.md`
+## Phase 3: Data ✅
+- [x] `lab.py download`: 5 pairs × 5m/15m/1h/4h from 2023-07-01, plus BTC 1d from 2022-01-01
+- [x] Fallback checked: a real Bybit download worked through `exchange-bybit.json`; OKX did not resolve via DNS (Binance used)
+- [x] `data_check.py`: 100% coverage, 0 gaps (and shown to catch gaps, duplicates and bad candles)
+- [x] `regimes.py`: bull / bear / sideways windows inside each split, judged on the 5-coin basket
+- [x] `docs/SETUP.md`
 
 ## Phase 4: Strategies
 - [ ] `lab_base.py`, `lab_indicators.py`, `templates/strategy_template.py`

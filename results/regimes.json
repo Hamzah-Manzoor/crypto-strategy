@@ -1,0 +1,109 @@
+{
+  "generated": "2026-10-05",
+  "source": "binance, 5-pair equal-weight basket from 4h candles + BTC/USDT 1d, data up to 2026-10-04",
+  "method": "90-day windows picked separately inside in-sample and out-of-sample: bull = biggest basket rise, bear = biggest basket fall, sideways = narrowest basket range with < 10% net move; no overlap within a split. 'weak' = a bull/bear window that moved less than 20%.",
+  "windows": {
+    "bull-is": {
+      "regime": "bull",
+      "split": "in-sample",
+      "start": "2024-10-26",
+      "end": "2025-01-23",
+      "timerange": "20241026-20250124",
+      "weak": false,
+      "basket_return_pct": 137.4,
+      "basket_range_pct": 149.1,
+      "basket_max_drawdown_pct": 16.5,
+      "btc_return_pct": 55.8,
+      "btc_trend_rule_share": {
+        "bull": 0.91,
+        "sideways": 0.09,
+        "bear": 0.0
+      }
+    },
+    "bear-is": {
+      "regime": "bear",
+      "split": "in-sample",
+      "start": "2025-01-26",
+      "end": "2025-04-25",
+      "timerange": "20250126-20250426",
+      "weak": false,
+      "basket_return_pct": -27.9,
+      "basket_range_pct": 68.4,
+      "basket_max_drawdown_pct": 40.6,
+      "btc_return_pct": -9.7,
+      "btc_trend_rule_share": {
+        "bull": 0.16,
+        "sideways": 0.8,
+        "bear": 0.04
+      }
+    },
+    "sideways-is": {
+      "regime": "sideways",
+      "split": "in-sample",
+      "start": "2024-04-04",
+      "end": "2024-07-02",
+      "timerange": "20240404-20240703",
+      "weak": false,
+      "basket_return_pct": -6.3,
+      "basket_range_pct": 22.7,
+      "basket_max_drawdown_pct": 17.7,
+      "btc_return_pct": -5.8,
+      "btc_trend_rule_share": {
+        "bull": 0.59,
+        "sideways": 0.41,
+        "bear": 0.0
+      }
+    },
+    "bull-oos": {
+      "regime": "bull",
+      "split": "out-of-sample",
+      "start": "2026-06-28",
+      "end": "2026-09-25",
+      "timerange": "20260628-20260926",
+      "weak": false,
+      "basket_return_pct": 54.7,
+      "basket_range_pct": 56.1,
+      "basket_max_drawdown_pct": 6.9,
+      "btc_return_pct": 40.1,
+      "btc_trend_rule_share": {
+        "bull": 0.22,
+        "sideways": 0.68,
+        "bear": 0.1
+      }
+    },
+    "bear-oos": {
+      "regime": "bear",
+      "split": "out-of-sample",
+      "start": "2025-11-08",
+      "end": "2026-02-05",
+      "timerange": "20251108-20260206",
+      "weak": false,
+      "basket_return_pct": -44.7,
+      "basket_range_pct": 87.8,
+      "basket_max_drawdown_pct": 46.8,
+      "btc_return_pct": -39.1,
+      "btc_trend_rule_share": {
+        "bull": 0.0,
+        "sideways": 0.47,
+        "bear": 0.53
+      }
+    },
+    "sideways-oos": {
+      "regime": "sideways",
+      "split": "out-of-sample",
+      "start": "2026-03-04",
+      "end": "2026-06-01",
+      "timerange": "20260304-20260602",
+      "weak": false,
+      "basket_return_pct": 0.8,
+      "basket_range_pct": 17.1,
+      "basket_max_drawdown_pct": 13.9,
+      "btc_return_pct": 4.5,
+      "btc_trend_rule_share": {
+        "bull": 0.0,
+        "sideways": 0.61,
+        "bear": 0.39
+      }
+    }
+  }
+}

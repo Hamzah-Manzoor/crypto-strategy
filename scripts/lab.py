@@ -28,6 +28,17 @@ import safety_check  # noqa: E402
 COMPOSE = ["docker", "compose", "--project-directory", str(ROOT), "-f", str(ROOT / "docker-compose.yml")]
 CONFIGS = "user_data/configs"  # same relative path on the host and in the container
 
+EXCHANGES = ["binance", "bybit", "okx"]  # data sources, in order of preference
+TIMEFRAMES = ["5m", "15m", "1h", "4h"]   # 1h main; 15m/4h alternatives; 5m only for --timeframe-detail
+DATA_START = "20230701"                  # 3 months of indicator warm-up before the in-sample period
+REGIME_DATA_START = "20220101"           # extra BTC daily history so a 200-day average exists from day one
+
+# Test periods (see docs/TESTING_METHODOLOGY.md). Tune on "is" only; "oos" is for checking.
+PERIODS = {
+    "is": ("20231001", "20251001"),
+    "oos": ("20251001", "20261001"),
+}
+
 USER_DATA_DIRS = ["data", "backtest_results", "hyperopt_results", "logs", "db", "walkforward"]
 RESULTS_DIRS = ["leaderboards", "hyperopt", "walkforward", "checks"]
 GENERATED_SECRETS = [
@@ -78,6 +89,31 @@ def freqtrade(args: list[str], check: bool = True) -> subprocess.CompletedProces
     """Run a one-off Freqtrade command in the pinned container (after the safety gate)."""
     safety_gate()
     return run([*COMPOSE, "run", "--rm", "freqtrade", *args], check=check)
+
+
+def container_python(script: str, args: list[str], check: bool = True) -> subprocess.CompletedProcess:
+    """Run one of our scripts inside the Freqtrade container (it has pandas)."""
+    safety_gate()
+    return run([*COMPOSE, "run", "--rm", "--entrypoint", "python", "freqtrade",
+                f"scripts/{script}", *args], check=check)
+
+
+def data_exchange() -> str:
+    """Exchange whose data we use: $LAB_EXCHANGE, else the first one with downloaded data."""
+    chosen = os.environ.get("LAB_EXCHANGE")
+    if chosen:
+        if chosen not in EXCHANGES:
+            die(f"LAB_EXCHANGE must be one of {EXCHANGES}")
+        return chosen
+    for name in EXCHANGES:
+        if any((ROOT / "user_data" / "data" / name).glob("*.feather")):
+            return name
+    return EXCHANGES[0]
+
+
+def exchange_configs(exchange: str) -> list[str]:
+    """Override config that switches the data source (base.json is Binance)."""
+    return [] if exchange == "binance" else [f"exchange-{exchange}.json"]
 
 
 def docker_ready() -> bool:
@@ -155,6 +191,50 @@ def cmd_show_config(args: argparse.Namespace) -> None:
     freqtrade(["show-config", *config_args(*args.configs)])
 
 
+def cmd_download(args: argparse.Namespace) -> None:
+    """Download candles for all pairs and timeframes (re-run any time to top up)."""
+    exchange = args.exchange
+    cfg = config_args(*exchange_configs(exchange))
+
+    say(f"Downloading {', '.join(TIMEFRAMES)} candles from {exchange}, starting {DATA_START}")
+    grid = freqtrade(["download-data", *cfg, "--timeframes", *TIMEFRAMES,
+                      "--timerange", f"{DATA_START}-"], check=False)
+
+    say(f"Downloading BTC/USDT daily candles from {REGIME_DATA_START} (for market-regime labels)")
+    extra = freqtrade(["download-data", *cfg, "--pairs", "BTC/USDT", "--timeframes", "1d",
+                       "--timerange", f"{REGIME_DATA_START}-"], check=False)
+
+    if grid.returncode or extra.returncode:
+        fallback = EXCHANGES[EXCHANGES.index(exchange) + 1:]
+        hint = f" Try another source: python3 scripts/lab.py download --exchange {fallback[0]}" if fallback else ""
+        die(f"download from {exchange} failed (region block or network problem?).{hint} "
+            "See docs/SETUP.md > Troubleshooting.")
+
+    say("Checking the downloaded data")
+    cmd_data_check(argparse.Namespace(exchange=exchange))
+
+
+def cmd_data_check(args: argparse.Namespace) -> None:
+    """Check coverage, gaps and bad candles; writes results/checks/data_check.md."""
+    exchange = args.exchange or data_exchange()
+    result = container_python("data_check.py", [
+        "--exchange", exchange, "--start", DATA_START, "--timeframes", *TIMEFRAMES,
+        "--out", "results/checks/data_check.md",
+    ], check=False)
+    if result.returncode:
+        die("data check failed - see the Problems list above and docs/SETUP.md > Troubleshooting")
+
+
+def cmd_regimes(args: argparse.Namespace) -> None:
+    """Pick bull / bear / sideways windows in each split; writes results/regimes.json."""
+    container_python("regimes.py", [
+        "--exchange", data_exchange(),
+        "--is", "-".join(PERIODS["is"]), "--oos", "-".join(PERIODS["oos"]),
+        "--days", str(args.days),
+        "--out-json", "results/regimes.json", "--out-md", "results/checks/regimes.md",
+    ])
+
+
 def cmd_ft(args: argparse.Namespace) -> None:
     """Run any raw Freqtrade command in the container (safety check first)."""
     if not args.ft_args:
@@ -183,6 +263,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = add("show-config", cmd_show_config)
     p.add_argument("configs", nargs="*", default=["backtest.json"],
                    help="override files in user_data/configs layered on base.json (default: backtest.json)")
+    p = add("download", cmd_download)
+    p.add_argument("--exchange", choices=EXCHANGES, default="binance",
+                   help="data source (default: binance; fall back to bybit if it is blocked)")
+    p = add("data-check", cmd_data_check)
+    p.add_argument("--exchange", choices=EXCHANGES, help="default: the exchange we have data for")
+    p = add("regimes", cmd_regimes)
+    p.add_argument("--days", type=int, default=90, help="window length in days (default: 90)")
     p = add("ft", cmd_ft)
     p.add_argument("ft_args", nargs=argparse.REMAINDER, help="-- <freqtrade args>")
     return parser
