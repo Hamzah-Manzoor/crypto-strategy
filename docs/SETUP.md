@@ -105,3 +105,53 @@ Picks a **bull**, a **bear** and a **sideways** 90-day window **inside each spli
 - `api.binance.com` and `data.binance.vision` work, so Binance is used.
 - `api.bybit.com` works, and a real test download through `exchange-bybit.json` succeeded, so Bybit is a working fallback.
 - `www.okx.com` doesn't resolve (DNS failure), so OKX isn't usable from this connection.
+
+## Paper-trading bots (Phase 7)
+
+Every bot is a **dry-run** Freqtrade: live Binance prices, a fake 1000 USDT wallet, no API keys. The list of bots lives in `user_data/configs/bots.json`:
+
+| Bot | Strategy | FreqUI | Role |
+|---|---|---|---|
+| `ema-trend-v2` | `EmaTrendV2` | http://127.0.0.1:8081 | **watch list**: passed Stage 1, failed Stage 2, so it's *not* promoted |
+| `buy-hold` | `BuyHoldV1` | http://127.0.0.1:8082 | baseline: buy & hold from the same start day |
+
+```bash
+python3 scripts/lab.py bots up        # safety check, generate configs, start, wait, show status
+python3 scripts/lab.py bots status    # state, dry_run, open/closed trades, profit per bot
+python3 scripts/lab.py bots logs      # last 50 log lines per bot (--tail N)
+python3 scripts/lab.py bots down      # stop and remove the containers (databases are kept)
+```
+
+- **Add or remove a bot:** edit `bots.json` (name, strategy, port, status, reason), then run `bots up`. Generated files (`docker-compose.bots.yml`, `user_data/configs/dryrun/*.json`) are rewritten; never edit them by hand.
+- **Own files per bot:** each bot keeps its own database `user_data/db/<bot>.sqlite` and log `user_data/logs/<bot>.log`, all git-ignored.
+  - Paper trades survive restarts.
+  - To restart a bot from a fresh wallet: `bots down <bot>`, delete its `.sqlite*` files, then `bots up <bot>`.
+- **After a Mac restart:** bots come back with Docker Desktop (`restart: unless-stopped`). They reuse the container exactly as it was created, including its `--dry-run` flag. Any config change only takes effect through `bots up`, which runs the safety check again.
+
+### FreqUI (the web dashboard)
+
+1. Open http://127.0.0.1:8081.
+2. Log in with `FREQTRADE__API_SERVER__USERNAME` and `FREQTRADE__API_SERVER__PASSWORD` from `.env` (`cat .env`).
+3. To see all bots in one tab: in FreqUI, open the bot menu, choose **Add new bot**, and enter `http://127.0.0.1:8082` with the same login. Every bot already allows the others' addresses (`CORS_origins`).
+
+The ports are bound to `127.0.0.1`, so FreqUI only opens on this Mac, not from your Wi-Fi network.
+
+### Telegram alerts (optional, off by default)
+
+1. In Telegram, talk to **@BotFather** and run `/newbot`. Keep the token it gives you.
+2. Send any message to your new bot. Then open `https://api.telegram.org/bot<TOKEN>/getUpdates` to find your `chat.id`.
+3. Create a file for **that one bot**. It's git-ignored, and the safety check still scans it.
+   ```bash
+   cat > .env.bot-ema-trend-v2 <<'X'
+   FREQTRADE__TELEGRAM__ENABLED=true
+   FREQTRADE__TELEGRAM__TOKEN=123456:ABC...
+   FREQTRADE__TELEGRAM__CHAT_ID=987654321
+   X
+   chmod 600 .env.bot-ema-trend-v2
+   ```
+4. Run `python3 scripts/lab.py bots up ema-trend-v2`.
+
+- **Use one Telegram bot (token) per Freqtrade bot.** Two programs reading the same token fight over its messages; Telegram answers "Conflict: terminated by other getUpdates request".
+- **What was tested:** Freqtrade accepts these three variables, as confirmed by its config validation with a fake token.
+- **Not tested end-to-end:** that needs your own Telegram token. After step 4, check `bots logs` for Telegram errors.
+- **A Telegram token can't touch an exchange.** There are no exchange keys anywhere, so the worst a leaked token allows is reading and controlling a *paper* bot. Still keep it private.

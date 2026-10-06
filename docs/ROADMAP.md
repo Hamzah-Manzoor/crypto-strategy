@@ -50,11 +50,13 @@ Each phase ends with a review stop and one git commit.
 - [x] Walk-forward (fixed and re-tuned modes) and all 6 regime windows for Stage 1 survivors
 - [x] Result: **no strategy promoted**. EmaTrendV2 passed Stage 1 and failed Stage 2 on consistency (watch list)
 
-## Phase 7: Paper trading
-- [ ] `bots.json` registry → generated `docker-compose.bots.yml`
-- [ ] One container per promoted strategy: own DB, log, FreqUI port
-- [ ] `lab.py bots up|down|status|logs`
-- [ ] Optional Telegram alerts documented
+## Phase 7: Paper trading ✅
+- [x] `bots.json` registry → generated `docker-compose.bots.yml` + `dryrun/<bot>.json`
+- [x] One dry-run container per bot: own SQLite DB, log and FreqUI port (127.0.0.1 only)
+- [x] `lab.py bots up|down|status|logs|generate`, with status reading `dry_run` back from each bot
+- [x] Running: `EmaTrendV2` (watch list, not promoted) + `BuyHoldV1` baseline, started 2026-10-06
+- [x] Safety: planted `dry_run=false` keeps the bot from ever starting; API rejects missing/wrong login (401)
+- [x] Optional Telegram alerts documented (per-bot env file, off by default)
 
 ## Phase 8: Docs
 - [ ] Every markdown file filled with real results

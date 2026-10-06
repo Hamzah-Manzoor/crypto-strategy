@@ -7,7 +7,7 @@ A local lab for **testing many crypto trading strategies side by side** and impr
 - **Spot only:** BTC, ETH, SOL, BNB, XRP against USDT. Main timeframe is 1h; 15m and 4h are also supported.
 - **Honest testing:** realistic fees (0.1% per side), in-sample vs out-of-sample splits, walk-forward tests, and bull/bear/sideways market checks. A strategy has to earn its place on the leaderboard.
 
-> **Status:** Phase 6 of 8 (validation) is done. No strategy passed both promotion stages yet. See [RESULTS](docs/RESULTS.md). See [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** Phase 7 of 8 (paper trading) is done. No strategy passed both promotion stages; `EmaTrendV2` (watch list) and a buy & hold baseline are paper-trading. See [RESULTS](docs/RESULTS.md). See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start (macOS)
 
@@ -39,7 +39,7 @@ Every command also has a `make` alias: `make setup`, `make test`, `make backtest
 3. `lab.py backtest --period is` builds the in-sample leaderboard.
 4. If it looks good, run `lab.py validate` (out-of-sample + stress fees) and `lab.py walkforward <Strategy>`.
 5. `lab.py exp decide <id> keep|tweak|drop "why"` records the decision.
-6. Strategies that pass the promotion rules go to paper trading: `lab.py bots up`, then `lab.py bots status`.
+6. Strategies that pass the promotion rules go to paper trading: add them to `user_data/configs/bots.json`, then run `lab.py bots up` and `lab.py bots status`. FreqUI runs at http://127.0.0.1:8081 (login in `.env`).
 
 ## All commands
 
@@ -63,7 +63,7 @@ Every command also has a `make` alias: `make setup`, `make test`, `make backtest
 | `hyperopt <Strategy> [--epochs 300]` | Tunes on in-sample only (seed 42, 6 workers), writes a `…T` tuned version, compares both | ✅ Phase 6 |
 | `walkforward <Strategy> [--fixed]` | 8 rolling 3-month test windows: re-tuned before each, or fixed settings | ✅ Phase 6 |
 | `stage2 [--strategies …]` | Stage 2: walk-forward + all 6 regime windows → promotion verdicts | ✅ Phase 6 |
-| `bots generate\|up\|down\|status\|logs` | Paper-trading bots, one container + FreqUI port each | Phase 7 |
+| `bots up\|down\|status\|logs\|generate [names…]` | Paper-trading bots from `user_data/configs/bots.json`: one dry-run container, database, log and FreqUI port each | ✅ Phase 7 |
 
 ## Project layout
 

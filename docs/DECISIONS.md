@@ -182,3 +182,11 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - An untuned strategy gets a **fixed-settings** walk-forward: the same 8 test windows, same thresholds, nothing re-tuned.
   - A tuned `…T` version gets a **re-tuned** walk-forward of its parent.
 - Both modes are run for `EmaTrendV2` for transparency. The thresholds weren't changed.
+
+**2026-10-06: Phase 7 runs two paper bots even though nothing was promoted (your choice).**
+- `EmaTrendV2` runs as a **watch-list** bot: it passed Stage 1 and failed Stage 2's consistency rule. `BuyHoldV1` runs as the **baseline**, started the same minute so the comparison is fair.
+- Paper trading is free, and live prices are the cleanest out-of-sample data there is. A bot's role (`promoted` / `watch-list` / `baseline`) is written in `bots.json` and shown by `bots status`, so a watch-list bot is never mistaken for a promoted one.
+
+**2026-10-06: Bot files are generated from one registry.**
+- `bots.json` → `docker-compose.bots.yml` + `dryrun/<bot>.json`, so ports, database names, CORS origins and the `--dry-run` flag can't drift apart.
+- The FreqUI login comes from `.env` through `FREQTRADE__API_SERVER__*` (Freqtrade validates the API block after merging environment variables, as confirmed by the bots starting). Optional Telegram settings come from a per-bot `.env.bot-<name>`, because one Telegram token can't be shared by two bots.

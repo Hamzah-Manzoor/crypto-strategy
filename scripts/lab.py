@@ -22,12 +22,14 @@ import shlex
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import bots  # noqa: E402
 import experiments  # noqa: E402
 import report  # noqa: E402
 import safety_check  # noqa: E402
@@ -827,6 +829,91 @@ def cmd_stage2(args: argparse.Namespace) -> None:
     print("\n" + md.read_text())
 
 
+def bots_compose() -> list[str]:
+    return [*COMPOSE, "-f", str(ROOT / "docker-compose.bots.yml")]
+
+
+def ui_login() -> tuple[str, str]:
+    env_path = ROOT / ".env"
+    if not env_path.exists():
+        die(".env is missing - run: python3 scripts/lab.py setup")
+    env = safety_check.parse_env_file(env_path)
+    user, password = env.get("FREQTRADE__API_SERVER__USERNAME"), env.get("FREQTRADE__API_SERVER__PASSWORD")
+    if not user or not password or len(env.get("FREQTRADE__API_SERVER__JWT_SECRET_KEY", "")) < 32:
+        die(".env needs FREQTRADE__API_SERVER__USERNAME, __PASSWORD and a 32+ character __JWT_SECRET_KEY "
+            "(delete .env and run setup to regenerate)")
+    return user, password
+
+
+def print_bot_status(selected: list[dict]) -> bool:
+    """Table of every bot's live state. Returns False if anything is wrong (loudly)."""
+    user, password = ui_login()
+    rows = [bots.bot_status(b, user, password) for b in selected]
+    print(f"\n{'bot':14} {'strategy':12} {'role':10} {'FreqUI':22} {'state':8} {'dry_run':7} "
+          f"{'open':>4} {'closed':>6} {'closed P/L':>10} {'all P/L':>8}  since")
+    ok = True
+    for r in rows:
+        url = f"http://127.0.0.1:{r['port']}"
+        if not r.get("reachable") or "error" in r:
+            ok = False
+            print(f"{r['name']:14} {r['strategy']:12} {r['status']:10} {url:22} DOWN     - {r.get('error', '')}")
+            continue
+        print(f"{r['name']:14} {r['running_strategy']:12} {r['status']:10} {url:22} {str(r['state']):8} "
+              f"{str(r['dry_run']):7} {r['open_trades']:>4} {r['closed_trades']:>6} "
+              f"{r['profit_closed_pct']:>+9.2f}% {r['profit_all_pct']:>+7.2f}%  {r['first_trade']}")
+        if r["dry_run"] is not True:
+            ok = False
+            print("!" * 72 + f"\n!!  {r['name']} REPORTS dry_run={r['dry_run']} - STOP IT NOW: "
+                  "python3 scripts/lab.py bots down\n" + "!" * 72)
+    return ok
+
+
+def cmd_bots(args: argparse.Namespace) -> None:
+    """Paper-trading bots: generate | up | down | status | logs (one dry-run container per bot)."""
+    registry = bots.load_registry()
+    selected = [b for b in registry if not args.names or b["name"] in args.names]
+    if args.names and len(selected) != len(set(args.names)):
+        die(f"unknown bot name in {args.names}; known: {[b['name'] for b in registry]}")
+    services = [f"bot-{b['name']}" for b in selected]
+
+    if args.action == "generate":
+        for path in bots.write_all(registry):
+            print(f"wrote {path.relative_to(ROOT)}")
+        safety_gate()
+    elif args.action == "up":
+        bots.write_all(registry)
+        safety_gate()
+        ui_login()
+        say(f"Starting {len(services)} dry-run bot(s): {', '.join(services)}")
+        run([*bots_compose(), "up", "-d", *services])
+        say("Waiting for the bots' APIs (first start downloads ~600 candles per pair)")
+        deadline = time.time() + args.wait
+        pending = list(selected)
+        while pending and time.time() < deadline:
+            for b in list(pending):
+                try:
+                    bots.api_get(b["port"], "ping", timeout=2)
+                    pending.remove(b)
+                except OSError:
+                    pass
+            time.sleep(3)
+        if pending:
+            print(f"Not answering yet: {[b['name'] for b in pending]} - check: python3 scripts/lab.py bots logs")
+        print_bot_status(selected)
+        say("FreqUI: open the URLs above, log in with the username/password from .env "
+            "(FREQTRADE__API_SERVER__USERNAME / __PASSWORD)")
+    elif args.action == "down":
+        say(f"Stopping {', '.join(services)}")
+        run([*bots_compose(), "stop", *services])
+        run([*bots_compose(), "rm", "-f", *services])
+    elif args.action == "status":
+        run([*bots_compose(), "ps", *services])
+        if not print_bot_status(selected):
+            sys.exit(1)
+    elif args.action == "logs":
+        run([*bots_compose(), "logs", "--tail", str(args.tail), *services])
+
+
 def cmd_ft(args: argparse.Namespace) -> None:
     """Run any raw Freqtrade command in the container (safety check first)."""
     if not args.ft_args:
@@ -907,6 +994,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--timeframe", default="1h", choices=["15m", "1h", "4h"])
     p = add("stage2", cmd_stage2)
     p.add_argument("--strategies", nargs="+", help="default: everything that passed stage 1")
+    p = add("bots", cmd_bots)
+    p.add_argument("action", choices=["generate", "up", "down", "status", "logs"])
+    p.add_argument("names", nargs="*", help="bot names from bots.json (default: all)")
+    p.add_argument("--tail", type=int, default=50, help="logs: lines per bot")
+    p.add_argument("--wait", type=int, default=240, help="up: seconds to wait for the APIs")
     p = add("ft", cmd_ft)
     p.add_argument("ft_args", nargs=argparse.REMAINDER, help="-- <freqtrade args>")
     return parser

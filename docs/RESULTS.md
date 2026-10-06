@@ -159,3 +159,10 @@ Details: [results/leaderboards/stage1_1h.md](../results/leaderboards/stage1_1h.m
 5. **The most promising lead** is `EmaTrendV2` re-tuned every quarter: 62% of quarters profitable and +23% over 2 years, but an efficiency of 0.49 against a 0.5 minimum. It's a candidate for a proper, pre-registered test later. It doesn't count now.
 
 **Out-of-sample looks used:** 9 runs (Stage 1: 3; walk-forwards: 3; out-of-sample regime windows: 3). All are logged with 👁 in the experiment log.
+
+### Phase 7: paper trading started (2026-10-06 09:21 UTC)
+
+- **`EmaTrendV2` (watch list, not promoted)** and **`BuyHoldV1` (baseline)** run as separate dry-run bots on live Binance prices. Each has a fake 1000 USDT wallet.
+- Buy & hold bought its 5 coins at the first candle. EmaTrendV2 waits for a 4h crossover and trades rarely (about 1–2 trades a week in backtests).
+- **Check with:** `python3 scripts/lab.py bots status`, or FreqUI at http://127.0.0.1:8081 / :8082.
+- **The question these bots answer:** do live, unseen prices treat `EmaTrendV2` the way its out-of-sample backtest did (small gains, much smaller drawdowns than buy & hold)? Give it weeks to months before reading anything into it. A handful of trades means nothing.

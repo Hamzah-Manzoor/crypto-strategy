@@ -1,0 +1,20 @@
+{
+  "bot_name": "lab-ema-trend-v2",
+  "strategy": "EmaTrendV2",
+  "dry_run": true,
+  "dry_run_wallet": 1000,
+  "initial_state": "running",
+  "api_server": {
+    "enabled": true,
+    "listen_ip_address": "0.0.0.0",
+    "listen_port": 8080,
+    "verbosity": "error",
+    "enable_openapi": false,
+    "CORS_origins": [
+      "http://127.0.0.1:8081",
+      "http://127.0.0.1:8082",
+      "http://localhost:8081",
+      "http://localhost:8082"
+    ]
+  }
+}

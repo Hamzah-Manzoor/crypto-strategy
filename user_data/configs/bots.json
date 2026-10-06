@@ -1,0 +1,19 @@
+{
+  "_comment": "Paper-trading bots. Edit this file, then run: python3 scripts/lab.py bots generate. status: promoted (passed both stages) | watch-list (runs for observation only, NOT promoted) | baseline.",
+  "bots": [
+    {
+      "name": "ema-trend-v2",
+      "strategy": "EmaTrendV2",
+      "port": 8081,
+      "status": "watch-list",
+      "reason": "passed stage 1 but failed stage 2 consistency (3 of 8 quarters profitable); watched on live prices, not promoted"
+    },
+    {
+      "name": "buy-hold",
+      "strategy": "BuyHoldV1",
+      "port": 8082,
+      "status": "baseline",
+      "reason": "buy & hold of the same 5 coins from the same day, so the watch-list bot has a fair comparison"
+    }
+  ]
+}

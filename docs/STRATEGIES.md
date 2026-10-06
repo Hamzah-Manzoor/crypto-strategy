@@ -17,7 +17,7 @@
 | 6 | `SqueezeBreakoutV1` | Volatility squeeze | hours to a day | coils that break upward | fake-outs, downtrends | dropped: tuned version failed stage 2 |
 | 7 | `TrendPullbackV1` | Dip buying in uptrends | hours | steady uptrends | trend changes, crashes | dropped: v2 replaced it |
 | 8 | `TrendPullbackV2` | Dip buying, 4h trend filter | hours | strong uptrends | trend changes | dropped: tuned OOS −1.8% |
-| 9 | `EmaTrendV2` | Trend following on 4h | days | multi-week trends | sideways ranges | **watch list**: stage 1 PASS (OOS +5.1%, DD 11.9%), stage 2 FAIL (3 of 8 quarters profitable) |
+| 9 | `EmaTrendV2` | Trend following on 4h | days | multi-week trends | sideways ranges | **watch list, paper-trading since 2026-10-06** (FreqUI :8081): stage 1 PASS (OOS +5.1%, DD 11.9%), stage 2 FAIL (3 of 8 quarters profitable) |
 | 10 | `DonchianBreakoutV2` | Breakout on 4h | days | breakouts that run | failed breakouts | dropped: IS +52% → OOS −7.6% |
 | 11 | `MacdVolumeV2` | Momentum + 4h trend | hours | trend-aligned bursts | choppy trend filter | dropped: worse than v1 in-sample |
 
