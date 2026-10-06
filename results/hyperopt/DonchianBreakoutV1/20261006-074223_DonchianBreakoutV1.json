@@ -1,0 +1,46 @@
+{
+ "id": "20261006-074223_DonchianBreakoutV1",
+ "strategy": "DonchianBreakoutV1",
+ "tuned_class": "DonchianBreakoutV1T",
+ "timerange": "20231001-20251001",
+ "timeframe": "1h",
+ "fee": 0.001,
+ "loss": "CalmarHyperOptLoss",
+ "spaces": [
+  "buy",
+  "sell",
+  "stoploss"
+ ],
+ "epochs": 300,
+ "seed": 42,
+ "min_trades": 50,
+ "result_file": "user_data/hyperopt_results/strategy_DonchianBreakoutV1_2026-10-06_07-39-08.fthypt",
+ "best": {
+  "epoch": 242,
+  "epochs_run": 300,
+  "last_epoch": 300,
+  "loss": -1.9835318575272873,
+  "params": {
+   "buy": {
+    "entry_period": 55,
+    "volume_min": 1.9
+   },
+   "sell": {
+    "exit_period": 15
+   },
+   "stoploss": {
+    "stoploss": -0.148
+   }
+  },
+  "metrics": {
+   "trades": 683,
+   "profit_pct": 18.984170847,
+   "max_dd_pct": 25.013905732651022,
+   "sharpe": 0.5403345004164887,
+   "calmar": 1.9835318575272873,
+   "win_rate_pct": 41.58125915080527,
+   "profit_factor": 1.0805474905689738,
+   "days": 731
+  }
+ }
+}

@@ -44,6 +44,13 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 - **The fee is read from the trades, not the zip's config copy.** The copy ignores `--fee`.
 - **Promotion thresholds live only in `scripts/rules.py`.** `docs/TESTING_METHODOLOGY.md` must match them (a test checks this). Changing a threshold needs a DECISIONS entry.
 - **Zero-fee runs are diagnostics only.** They're logged as `diagnostic` and are never a result.
+- **Tuning:**
+  - `lab.py hyperopt X` writes a generated `XT` subclass. Never hand-edit it. Run `lab.py check-bias --strategies XT` right after.
+  - Hyperopt uses exactly 6 workers: 11 ran out of memory, and results depend on the worker count.
+- **Out-of-sample is precious:**
+  - Choose candidates by a written in-sample rule first (log it in DECISIONS), then run `lab.py validate` **once**.
+  - To re-score after fixing something that isn't fitted to results (e.g. bias checks), use `lab.py report`. It rebuilds Stage 1 from saved runs, without a new OOS look.
+- **Walk-forward mode must match what would be deployed:** `--fixed` for untuned strategies, re-tuned (default) for the parent of a `…T`.
 
 ## How to add a strategy
 1. `cp templates/strategy_template.py user_data/strategies/my_idea_v1.py`, then rename the class to `MyIdeaV1`.

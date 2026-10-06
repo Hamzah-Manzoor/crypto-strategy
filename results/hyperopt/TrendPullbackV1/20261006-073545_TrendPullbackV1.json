@@ -1,0 +1,45 @@
+{
+ "id": "20261006-073545_TrendPullbackV1",
+ "strategy": "TrendPullbackV1",
+ "tuned_class": "TrendPullbackV1T",
+ "timerange": "20231001-20251001",
+ "timeframe": "1h",
+ "fee": 0.001,
+ "loss": "CalmarHyperOptLoss",
+ "spaces": [
+  "buy",
+  "sell",
+  "stoploss"
+ ],
+ "epochs": 300,
+ "seed": 42,
+ "min_trades": 50,
+ "result_file": "user_data/hyperopt_results/strategy_TrendPullbackV1_2026-10-06_07-31-46.fthypt",
+ "best": {
+  "epoch": 151,
+  "epochs_run": 300,
+  "last_epoch": 300,
+  "loss": 0.9109981976456843,
+  "params": {
+   "buy": {
+    "rsi_entry": 4
+   },
+   "sell": {
+    "rsi_exit": 65
+   },
+   "stoploss": {
+    "stoploss": -0.148
+   }
+  },
+  "metrics": {
+   "trades": 715,
+   "profit_pct": -4.129768562999998,
+   "max_dd_pct": 11.84778737309647,
+   "sharpe": -0.3852261572338943,
+   "calmar": -0.9109981976456843,
+   "win_rate_pct": 62.65734265734266,
+   "profit_factor": 0.936162119576996,
+   "days": 731
+  }
+ }
+}

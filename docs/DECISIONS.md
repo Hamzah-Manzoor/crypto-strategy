@@ -130,3 +130,55 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - A zero-fee diagnostic showed 5 of 7 strategies profitable before fees in-sample (1h). After 0.1% per side, only MACD Volume stays profitable.
 - The edge per trade (~0.1–0.3%) is about the size of the round-trip fee.
 - Phase 6 therefore focuses on fewer, better trades: higher timeframes, stricter filters, tuning that includes fees. Zero-fee runs stay diagnostics only and never count as results.
+
+**2026-10-06: Hand-designed v2 strategies decide on 4h candles but run on the 1h engine.**
+- Making the v2s plain 4h strategies would have split them from the 1h leaderboard, the 1h promotion rules and the 1h paper bots.
+- Freqtrade's `@informative("4h")` merges *closed* 4h candles into the 1h chart, so stoploss and trailing stops are still checked every hour.
+- The lookahead check passed for all 4 (30 signals each). That matters, because merged higher-timeframe data is a classic source of accidental lookahead.
+
+**2026-10-06: Hyperopt runs with exactly 6 workers.**
+- With 11 workers a worker was killed (SIGKILL, out of memory in Docker's 8 GB) after 88 of 300 epochs.
+- With 6 workers, two runs with seed 42 gave the identical best epoch, settings and score. Results depend on the worker count, so it's pinned (`HYPEROPT_JOBS` in `lab.py`).
+- A hyperopt run whose last epoch is below the requested count is rejected. (Freqtrade may legitimately skip a duplicate epoch.)
+- The first `MacdVolumeV1` tuning (11 workers) was redone with 6 workers so `MacdVolumeV1T` is reproducible.
+
+**2026-10-06: Tuned versions are generated `…T` subclasses.**
+- Numbering tuned versions as V2 would have clashed with the hand-designed v2s. Instead, `MacdVolumeV1T` means "MacdVolumeV1 with hyperopt settings".
+- The file is generated with a header recording how it was tuned (dates, loss, epochs, seed, best epoch, experiment ID). The settings are visible in the code, never in a hidden parameter file.
+
+**2026-10-06 08:13 UTC: Stage 1 candidates chosen BEFORE any out-of-sample look.**
+- **Rule (in-sample only):** from run `20261006-081119_is_1h` (all 23 versions, 1h, 0.1% fee), every strategy with profit > 0, profit factor ≥ 1.1 and at least 50 trades.
+- **Candidates (10):** EmaTrendV2T, DonchianBreakoutV2T, MacdVolumeV1T, TrendPullbackV2T, MacdVolumeV1, AdxSupertrendV1T, MacdVolumeV2T, DonchianBreakoutV2, EmaTrendV2, SqueezeBreakoutV1T.
+- **Why not all 23:** every extra strategy tested out-of-sample is another lottery ticket. Some would pass by luck alone. The other 13 lost money or barely broke even in-sample.
+- **What "out-of-sample" means here:** these 10 have never been run on dates after 2025-10-01 (the experiment log has 0 out-of-sample looks so far). Stage 1 is run **once** on this list.
+- **Known risks going in:**
+  - The tuned stops of EmaTrendV2T (−3%) and several others (about −14.8%) sit at the edges of the allowed range.
+  - The v2 designs were guided by in-sample results.
+
+**2026-10-06: Stage 1 result: the tuned in-sample stars failed out-of-sample, and one hand-designed version passed.**
+- Run once on the 10 pre-registered candidates. That was 3 out-of-sample runs: OOS, the 0.15% fee stress run and the 5m-fill run.
+- **PASS:** `EmaTrendV2` (untuned): OOS +5.1% with 11.9% max drawdown, while buy & hold lost 35.1% (62.9% drawdown).
+- **Collapsed:**
+  - `EmaTrendV2T`: in-sample +72% → OOS −1%.
+  - `DonchianBreakoutV2T`: +70% → −8%.
+  - `MacdVolumeV1T`: +26% → −11%.
+  - This is textbook overfitting: the tuner fitted settings to 2023-25 that didn't carry over.
+- **Lesson:** in this lab, hand-designed structural changes (4h decisions, trend filter, fewer trades) generalised better than tuned settings. Tuning stays in the toolbox, but a tuned version gets no credit until it passes out-of-sample.
+
+**2026-10-06: Bias checks were missing for the tuned `…T` versions; completed without a new out-of-sample look.**
+- Stage 1 first failed `SqueezeBreakoutV1T` (and marked the other `…T` versions) on "bias checks not run". I hadn't run `check-bias` on generated `…T` classes.
+- The bias check verifies the code reads no future data. It isn't fitted to any result, so it was run afterwards: all 11 `…T` versions passed.
+- Stage 1 was then **re-scored from the saved runs** (`report.rebuild_stage1_from_saved`), with no new out-of-sample backtest.
+- From now on, run `check-bias` right after `hyperopt` creates a `…T` file.
+
+**2026-10-06: `SqueezeBreakoutV1T` REVIEW, explained.**
+- It passed every Stage 1 rule but was flagged for a very small out-of-sample drawdown (2.4% < 3%).
+- **Review:** the small drawdown comes from being in the market only about 1% of the time (66 trades in 2 years, short holds). It's not a sign of hidden lookahead (the bias check passed); it's just a very small strategy.
+- It goes to Stage 2 for a complete verdict. Its out-of-sample return (+1.2% a year) is too small to matter in practice, whatever the verdict.
+
+**2026-10-06: Walk-forward mode follows what is deployed (clarification after Stage 1).**
+- The methodology said every walk-forward re-tunes each window. But `EmaTrendV2` passed Stage 1 **untuned**. Re-tuning it per window would test a different strategy ("EmaTrendV2 + periodic re-tuning") from the one that would be deployed.
+- **Rule now:**
+  - An untuned strategy gets a **fixed-settings** walk-forward: the same 8 test windows, same thresholds, nothing re-tuned.
+  - A tuned `…T` version gets a **re-tuned** walk-forward of its parent.
+- Both modes are run for `EmaTrendV2` for transparency. The thresholds weren't changed.

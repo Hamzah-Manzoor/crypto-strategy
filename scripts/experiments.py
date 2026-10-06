@@ -86,6 +86,20 @@ def log_run(run: dict, kind: str = "backtest", oos_look: bool = False, log: Path
     return ids
 
 
+def log_entry(fields: dict, log: Path = LOG) -> str:
+    """Append one free-form entry (hyperopt, walk-forward...). Returns its id."""
+    entries = load(log)
+    entry = {
+        "id": next_id(entries), "date": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+        "git": git_version(), "oos_look": False, "timeframe_detail": None, "code_sha": None,
+        "notes": "", "decision": "pending", "decision_note": "", **fields,
+    }
+    entry["metrics"] = {**{k: None for k in METRIC_KEYS}, **(fields.get("metrics") or {})}
+    entries.append(entry)
+    save(entries, log)
+    return entry["id"]
+
+
 def refresh(runs: list[dict], log: Path = LOG) -> int:
     """After metrics are recomputed, update the measured fields of matching entries.
     IDs, dates, notes and decisions are never touched. Returns entries updated."""
@@ -141,6 +155,21 @@ def row(e: dict) -> str:
             f"{decision} | {e.get('notes') or ''} | `{e['git']}` |")
 
 
+def status_table(entries: list[dict]) -> list[str]:
+    """Most recent decision per strategy version (ignoring pending / diagnostic / baseline rows)."""
+    latest: dict[str, dict] = {}
+    for e in entries:
+        if e["decision"] in ("keep", "tweak", "drop"):
+            latest[e["strategy"]] = e
+    if not latest:
+        return []
+    order = {"keep": 0, "tweak": 1, "drop": 2}
+    rows = sorted(latest.values(), key=lambda e: (order[e["decision"]], e["strategy"]))
+    return ["## Current status per strategy version", "",
+            "| Strategy | Decision | Why | From |", "|---|---|---|---|",
+            *[f"| `{e['strategy']}` | **{e['decision']}** | {e.get('decision_note', '')} | {e['id']} |" for e in rows], ""]
+
+
 def render(log: Path = LOG, doc: Path = DOC) -> None:
     entries = load(log)
     lines = [
@@ -158,7 +187,13 @@ def render(log: Path = LOG, doc: Path = DOC) -> None:
         "- **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).",
         "- Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.",
         "",
-        f"**{len(entries)} entries**, {sum(1 for e in entries if e.get('oos_look'))} of them out-of-sample looks.",
+        f"**{len(entries)} entries**, {sum(1 for e in entries if e.get('oos_look'))} of them out-of-sample looks "
+        f"(in {len({e['run_id'] for e in entries if e.get('oos_look')})} runs).",
+        "",
+        *status_table(entries),
+        "## All entries",
+        "",
+        "Rows from comparison runs stay `pending` unless that row needed its own decision.",
         "",
         "| ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |",
         "|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|",

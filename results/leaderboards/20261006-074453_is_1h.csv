@@ -1,0 +1,4 @@
+rank,strategy,profit_pct,cagr_pct,max_dd_pct,sharpe,sortino,calmar,profit_factor,win_rate_pct,trades,avg_hold_hours,exposure_pct,beats_bh,flags,timeframe,timerange,days,market_change_pct,code_sha
+1,BuyHoldV1,428.9108,129.7188,51.2859,1.6311,2.4783,2.5293,,100.0,5,17543.0,99.6263,baseline,,1h,20231001-20251001,731.0,433.2209,b2e985c30b60
+2,SqueezeBreakoutV1T,2.5733,1.2767,3.508,0.4102,0.7827,0.3639,1.2475,28.7879,66,14.7333,1.1081,no,,1h,20231001-20251001,731.0,433.2209,cbdd377732ae
+3,SqueezeBreakoutV1,-13.8736,-7.1862,23.1828,-0.8712,-1.3081,-0.31,0.81,29.2804,403,13.9,6.3566,no,,1h,20231001-20251001,731.0,433.2209,263751894f9c

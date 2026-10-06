@@ -7,7 +7,7 @@ A local lab for **testing many crypto trading strategies side by side** and impr
 - **Spot only:** BTC, ETH, SOL, BNB, XRP against USDT. Main timeframe is 1h; 15m and 4h are also supported.
 - **Honest testing:** realistic fees (0.1% per side), in-sample vs out-of-sample splits, walk-forward tests, and bull/bear/sideways market checks. A strategy has to earn its place on the leaderboard.
 
-> **Status:** Phase 5 of 8 (backtesting) is done. See [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** Phase 6 of 8 (validation) is done. No strategy passed both promotion stages yet. See [RESULTS](docs/RESULTS.md). See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start (macOS)
 
@@ -59,9 +59,10 @@ Every command also has a `make` alias: `make setup`, `make test`, `make backtest
 | `backtest [--period is] [--timeframe 1h] [--fee 0.001] [--detail 5m] [--notes …]` | Backtests all strategies in one run (buy & hold always included), logs it and builds the leaderboard. Refuses out-of-sample dates without `--allow-oos` | ✅ Phase 5 |
 | `report [--recompute]` | Rebuilds leaderboards, `docs/RESULTS.md` and `docs/EXPERIMENT_LOG.md` | ✅ Phase 5 |
 | `exp list [--strategy X]` / `exp decide <ID> keep\|tweak\|drop "why"` | Experiment log | ✅ Phase 5 |
-| `validate` | Stage 1 check: in-sample vs out-of-sample, stress fees | Phase 6 |
-| `hyperopt <Strategy>` | Auto-tunes settings on in-sample data (fixed seed) | Phase 6 |
-| `walkforward <Strategy>` | Rolling train/test windows | Phase 6 |
+| `validate [--strategies …]` | Stage 1: in-sample vs out-of-sample, 0.15% fee stress, 5m fills → `results/leaderboards/stage1_1h.md` | ✅ Phase 6 |
+| `hyperopt <Strategy> [--epochs 300]` | Tunes on in-sample only (seed 42, 6 workers), writes a `…T` tuned version, compares both | ✅ Phase 6 |
+| `walkforward <Strategy> [--fixed]` | 8 rolling 3-month test windows: re-tuned before each, or fixed settings | ✅ Phase 6 |
+| `stage2 [--strategies …]` | Stage 2: walk-forward + all 6 regime windows → promotion verdicts | ✅ Phase 6 |
 | `bots generate\|up\|down\|status\|logs` | Paper-trading bots, one container + FreqUI port each | Phase 7 |
 
 ## Project layout

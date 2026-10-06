@@ -31,6 +31,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import experiments  # noqa: E402
 import report  # noqa: E402
 import safety_check  # noqa: E402
+import tuning  # noqa: E402
 from rules import BASELINE  # noqa: E402
 
 COMPOSE = ["docker", "compose", "--project-directory", str(ROOT), "-f", str(ROOT / "docker-compose.yml")]
@@ -47,7 +48,16 @@ PERIODS = {
     "is": ("20231001", "20251001"),
     "oos": ("20251001", "20261001"),
 }
-STANDARD_FEE = 0.001  # 0.1% per side (Binance spot); stress runs use 0.0015
+STANDARD_FEE = 0.001  # 0.1% per side (Binance spot)
+STRESS_FEE = 0.0015   # stands in for slippage in the stage-1 stress run
+
+# Hyperopt defaults (docs/TESTING_METHODOLOGY.md section 7)
+HYPEROPT_LOSS = "CalmarHyperOptLoss"
+HYPEROPT_SPACES = ["buy", "sell", "stoploss"]
+HYPEROPT_EPOCHS = 300
+HYPEROPT_SEED = 42
+HYPEROPT_MIN_TRADES = 50
+HYPEROPT_JOBS = 6  # parallel workers; 11 ran Docker's 8 GB out of memory (worker SIGKILL)
 
 # Bias checks (lab.py check-bias): all inside the in-sample period.
 BIAS_TIMEFRAME = "1h"
@@ -569,11 +579,252 @@ def cmd_exp(args: argparse.Namespace) -> None:
         entries = [e for e in entries if args.strategy.lower() in e["strategy"].lower()]
     print(f"{'ID':6} {'date':10} {'strategy':20} {'period':12} {'tf':4} {'profit%':>8} {'maxDD%':>7} "
           f"{'sharpe':>6} {'calmar':>6} {'trades':>6}  decision")
+    def f(v, spec):
+        return format(v, spec) if isinstance(v, (int, float)) else format("-", spec.lstrip("+").split(".")[0] or ">")
+
     for e in entries[-args.last:]:
         m = e["metrics"]
         print(f"{e['id']:6} {e['date'][:10]:10} {e['strategy']:20} {e['period'] + ('*' if e.get('oos_look') else ''):12} "
-              f"{e['timeframe']:4} {m['profit_pct']:>+8.1f} {m['max_dd_pct']:>7.1f} {m['sharpe']:>6.2f} "
-              f"{m['calmar']:>6.2f} {m['trades']:>6}  {e['decision']} {e.get('decision_note', '')}")
+              f"{e['timeframe']:4} {f(m.get('profit_pct'), '>+8.1f')} {f(m.get('max_dd_pct'), '>7.1f')} "
+              f"{f(m.get('sharpe'), '>6.2f')} {f(m.get('calmar'), '>6.2f')} {f(m.get('trades'), '>6')}  "
+              f"{e['kind'][:4]} {e['decision']} {e.get('decision_note', '')}")
+
+
+def run_hyperopt(strategy: str, timerange: str, timeframe: str, epochs: int, min_trades: int,
+                 spaces: list[str] = HYPEROPT_SPACES, seed: int = HYPEROPT_SEED,
+                 loss: str = HYPEROPT_LOSS) -> tuple[Path, dict]:
+    """One Freqtrade hyperopt run; returns (result file, best epoch)."""
+    results_dir = ROOT / "user_data" / "hyperopt_results"
+    before = set(results_dir.glob("*.fthypt"))
+    freqtrade([
+        "hyperopt", *config_args(*exchange_configs(data_exchange()), "backtest.json"),
+        "--strategy", strategy, "--timeframe", timeframe, "--timerange", timerange,
+        "--hyperopt-loss", loss, "--spaces", *spaces, "--epochs", str(epochs),
+        "--random-state", str(seed), "--min-trades", str(min_trades), "--fee", str(STANDARD_FEE),
+        "--ignore-missing-spaces", "--disable-param-export", "-j", str(HYPEROPT_JOBS),
+    ])
+    new = sorted(set(results_dir.glob("*.fthypt")) - before)
+    if len(new) != 1:
+        die(f"expected one new hyperopt result file, found {len(new)}")
+    best = tuning.best_epoch(new[0])
+    # Completion is guaranteed by Freqtrade's exit code (freqtrade() stops on failure; an out-of-memory
+    # worker crash exits 1). Fewer saved epochs than requested = duplicates Freqtrade skipped.
+    best["epochs_requested"] = epochs
+    if best["epochs_run"] < epochs:
+        print(f"note: {epochs - best['epochs_run']} of {epochs} epochs skipped as duplicate settings")
+    return new[0], best
+
+
+def cmd_hyperopt(args: argparse.Namespace) -> None:
+    """Tune a strategy on IN-SAMPLE data, save a tuned `…T` version, compare both."""
+    timerange = "-".join(PERIODS["is"])
+    if args.timerange:
+        if touches_oos(args.timerange):
+            die("hyperopt never runs on out-of-sample data (that would make the OOS check meaningless)")
+        timerange = args.timerange
+    parent_file = tuning.find_strategy_file(args.strategy)
+    name, file_name = tuning.tuned_names(args.strategy, parent_file)
+    target = ROOT / "user_data" / "strategies" / file_name
+    if target.exists() and not args.force:
+        die(f"{target.relative_to(ROOT)} already exists and may have logged results. "
+            "Use --force to replace it (the old version stays in git history).")
+
+    say(f"Hyperopt {args.strategy} · {timerange} · {args.timeframe} · {args.epochs} epochs · seed {args.seed}")
+    fthypt, best = run_hyperopt(args.strategy, timerange, args.timeframe, args.epochs, args.min_trades,
+                                args.spaces, args.seed, args.loss)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    record = {
+        "id": f"{stamp}_{args.strategy}", "strategy": args.strategy, "tuned_class": name,
+        "timerange": timerange, "timeframe": args.timeframe, "fee": STANDARD_FEE, "loss": args.loss,
+        "spaces": args.spaces, "epochs": args.epochs, "seed": args.seed, "min_trades": args.min_trades,
+        "result_file": str(fthypt.relative_to(ROOT)), "best": best,
+    }
+    out = ROOT / "results" / "hyperopt" / args.strategy / f"{record['id']}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(record, indent=1) + "\n")
+    exp_id = experiments.log_entry({
+        "kind": "hyperopt", "run_id": record["id"], "strategy": args.strategy, "period": "is",
+        "timerange": timerange, "timeframe": args.timeframe, "fee": STANDARD_FEE,
+        "settings": best["params"], "metrics": best["metrics"],
+        "notes": f"{args.loss}, {args.epochs} epochs, seed {args.seed}, best epoch {best['epoch']} "
+                 f"(closed-trade metrics) -> {name}",
+    })
+    meta = {
+        "Tuned on": f"in-sample {timerange}, {args.timeframe}, fee {STANDARD_FEE:.2%} per side",
+        "Hyperopt": f"{args.loss}, spaces {' '.join(args.spaces)}, {args.epochs} epochs, seed {args.seed}, "
+                    f"min trades {args.min_trades}",
+        "Best epoch": f"{best['epoch']} of {best['epochs_run']}: {best['metrics']['trades']} trades, "
+                      f"{best['metrics']['profit_pct']:+.1f}% (closed-trade numbers)",
+        "Record": f"{out.relative_to(ROOT)} (experiment {exp_id})",
+    }
+    target.write_text(tuning.render_tuned(args.strategy, parent_file.stem, name, best["params"], meta))
+    say(f"Best settings: {json.dumps(best['params'])}")
+    say(f"Wrote {target.relative_to(ROOT)}; comparing {args.strategy} and {name} on in-sample")
+    backtest_run("is", args.timeframe, STANDARD_FEE, None, [args.strategy, name],
+                 f"hyperopt check: {args.strategy} vs tuned {name}", allow_oos=False)
+    experiments.render()
+
+
+def cmd_validate(args: argparse.Namespace) -> None:
+    """Stage 1: in-sample vs out-of-sample, fee stress and 5m fills, then the verdicts."""
+    strategies = args.strategies or discover_strategies()
+    say("Stage 1 looks at OUT-OF-SAMPLE data. Every look is logged - do this with final candidates only.")
+    is_run = backtest_run("is", args.timeframe, STANDARD_FEE, None, strategies, "stage 1: in-sample", False)
+    oos_run = backtest_run("oos", args.timeframe, STANDARD_FEE, None, strategies, "stage 1: out-of-sample", True)
+    stress = backtest_run("oos", args.timeframe, STRESS_FEE, None, strategies, "stage 1: fee stress 0.15%", True)
+    detail = None if args.no_detail else backtest_run(
+        "oos", args.timeframe, STANDARD_FEE, "5m", strategies, "stage 1: 5m intra-candle fills", True)
+    md, rows = report.write_stage1(is_run, oos_run, stress, detail)
+    report.update_results_doc()
+    print("\n" + md.read_text())
+    say(f"Stage 1 report: {md.relative_to(ROOT)}")
+
+
+def wf_backtest(strategies: list[str], timerange: str, timeframe: str, run_dir: Path, run_id: str,
+                strategy_path: Path | None = None) -> dict:
+    """One walk-forward window backtest -> run summary (kept under user_data/walkforward)."""
+    run_dir.mkdir(parents=True, exist_ok=True)
+    ft_args = [
+        "backtesting", *config_args(*exchange_configs(data_exchange()), "backtest.json"),
+        "--strategy-list", BASELINE, *strategies, "--timeframe", timeframe, "--timerange", timerange,
+        "--fee", str(STANDARD_FEE), "--cache", "none", "--export", "trades",
+        "--backtest-directory", str(run_dir.relative_to(ROOT)),
+    ]
+    if strategy_path:
+        ft_args += ["--strategy-path", str(strategy_path.relative_to(ROOT))]
+    freqtrade(ft_args)
+    summary = run_dir.with_suffix(".json")
+    container_python("metrics.py", ["--zip", str(next(run_dir.glob("*.zip")).relative_to(ROOT)), "--out",
+                                    str(summary.relative_to(ROOT)), "--run-id", run_id, "--period", "walk-forward"])
+    return report.load_run(summary)
+
+
+def cmd_walkforward(args: argparse.Namespace) -> None:
+    """Walk-forward: rolling 3-month test windows (re-tuned before each, or fixed settings)."""
+    strategy, mode = args.strategy, ("fixed" if args.fixed else "retuned")
+    parent_file = tuning.find_strategy_file(strategy)
+    windows = tuning.walkforward_windows(PERIODS["is"][0], PERIODS["oos"][1], args.train_months,
+                                         args.test_months, args.test_months)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    wf_id = f"{stamp}_{strategy}_{mode}"
+    wf_dir = ROOT / "user_data" / "walkforward" / wf_id
+    wf_dir.mkdir(parents=True, exist_ok=True)
+    how = ("fixed settings (no tuning), each window scored on its own" if mode == "fixed"
+           else f"re-tuned on the {args.train_months} months before each window ({args.epochs} epochs)")
+    say(f"Walk-forward {strategy}: {len(windows)} windows of {args.test_months} months, {how}. "
+        "Test windows include out-of-sample dates (logged).")
+
+    rows = []
+    for w in windows:
+        k = w["k"]
+        say(f"Window {k + 1}/{len(windows)}: train {w['train']}, test {w['test']}")
+        if mode == "fixed":
+            train = wf_backtest([strategy], w["train"], args.timeframe, wf_dir / f"train{k}", f"{wf_id}_train{k}")
+            train_m, params, cls, path = train["strategies"][strategy], None, strategy, None
+            train_profit, train_days, train_trades = train_m["profit_pct"], train_m["days"], train_m["trades"]
+        else:
+            fthypt, best = run_hyperopt(strategy, w["train"], args.timeframe, args.epochs, args.min_trades)
+            fthypt.unlink()  # 50-175 MB each; the best settings are kept in the walk-forward record
+            params, cls, path = best["params"], f"{strategy}WF{k}", wf_dir
+            (wf_dir / f"{parent_file.stem}_wf{k}.py").write_text(tuning.render_tuned(
+                strategy, parent_file.stem, cls, params,
+                {"Walk-forward": f"{wf_id} window {k}", "Tuned on": w["train"], "Tested on": w["test"]}))
+            train_profit, train_days = best["metrics"]["profit_pct"], best["metrics"]["days"]
+            train_trades = best["metrics"]["trades"]
+        test = wf_backtest([cls], w["test"], args.timeframe, wf_dir / f"test{k}", f"{wf_id}_test{k}", path)
+        m, bh = test["strategies"][cls], test["strategies"][BASELINE]
+        rows.append({
+            "k": k, "train": w["train"], "test": w["test"], "params": params,
+            "train_profit_pct": train_profit, "train_days": train_days, "train_trades": train_trades,
+            "test_profit_pct": m["profit_pct"], "test_days": m["days"], "test_max_dd_pct": m["max_dd_pct"],
+            "test_trades": m["trades"], "test_sharpe": m["sharpe"], "bh_test_profit_pct": bh["profit_pct"],
+        })
+
+    summ = tuning.walkforward_summary(rows)
+    record = {"id": wf_id, "strategy": strategy, "mode": mode, "timeframe": args.timeframe,
+              "epochs": None if mode == "fixed" else args.epochs, "min_trades": args.min_trades,
+              "train_months": args.train_months, "test_months": args.test_months, "loss": HYPEROPT_LOSS,
+              "seed": HYPEROPT_SEED, "fee": STANDARD_FEE, "windows": rows, "summary": summ}
+    (ROOT / "results" / "walkforward" / f"{wf_id}.json").write_text(json.dumps(record, indent=1) + "\n")
+    eff = summ["wf_efficiency"]
+    intro = (f"Fixed settings: `{strategy}` exactly as it would be deployed (nothing to tune), scored on each "
+             f"{args.test_months}-month window. 'Train' = the same strategy over the {args.train_months} months before "
+             "the window, used for the efficiency ratio."
+             if mode == "fixed" else
+             f"Re-tuned ({HYPEROPT_LOSS}, {args.epochs} epochs, seed {HYPEROPT_SEED}, min {args.min_trades} trades) on "
+             f"each {args.train_months}-month training window, then tested on the next {args.test_months} months it "
+             "never saw.")
+    md_lines = [
+        f"# Walk-forward · {strategy} · {mode} · {args.timeframe}", "",
+        intro + f" Fee {STANDARD_FEE:.2%} per side.", "",
+        "| # | Train | Test | Train profit | Train trades | Test profit | Test max DD | Test trades | Buy & hold (test) |",
+        "|---:|---|---|---:|---:|---:|---:|---:|---:|",
+        *[f"| {r['k']} | {r['train']} | {r['test']} | {r['train_profit_pct']:+.1f}% | {r['train_trades']} | "
+          f"{r['test_profit_pct']:+.1f}% | {r['test_max_dd_pct']:.1f}% | {r['test_trades']} | {r['bh_test_profit_pct']:+.1f}% |"
+          for r in rows],
+        "",
+        f"- **Profitable test windows:** {summ['profitable_windows_pct']:.0f}% of {summ['windows']}",
+        f"- **Stitched test result:** {summ['stitched_profit_pct']:+.1f}% ({summ['stitched_cagr_pct']:+.1f}% a year) "
+        f"vs buy & hold {summ['bh_stitched_profit_pct']:+.1f}% over the same windows",
+        f"- **Walk-forward efficiency:** " + ("n/a (training windows were not profitable on average)" if eff is None
+                                             else f"{eff:.2f} (test yearly return ÷ average training yearly return "
+                                                  f"{summ['mean_train_yearly_pct']:+.1f}%)"),
+        f"- **Worst test-window drawdown:** {summ['worst_window_dd_pct']:.1f}%", "",
+    ]
+    (ROOT / "results" / "walkforward" / f"{wf_id}.md").write_text("\n".join(md_lines))
+    experiments.log_entry({
+        "kind": "walkforward", "run_id": wf_id, "strategy": strategy, "period": f"walk-forward ({mode})",
+        "timerange": f"{windows[0]['test'].split('-')[0]}-{windows[-1]['test'].split('-')[1]}",
+        "timeframe": args.timeframe, "fee": STANDARD_FEE, "oos_look": True,
+        "settings": {"mode": mode, "epochs": record["epochs"]},
+        "metrics": {"profit_pct": summ["stitched_profit_pct"], "max_dd_pct": summ["worst_window_dd_pct"],
+                    "trades": summ["total_test_trades"], "profitable_windows_pct": summ["profitable_windows_pct"],
+                    "wf_efficiency": eff},
+        "notes": f"{mode}: {summ['profitable_windows_pct']:.0f}% windows profitable, efficiency "
+                 + ("n/a" if eff is None else f"{eff:.2f}"),
+    })
+    experiments.render()
+    print("\n".join(md_lines))
+    say(f"Walk-forward report: results/walkforward/{wf_id}.md")
+
+
+def latest_walkforward(strategy: str, mode: str) -> tuple[str | None, dict | None]:
+    files = sorted((ROOT / "results" / "walkforward").glob(f"*_{strategy}_{mode}.json"))
+    if not files:
+        return None, None
+    data = json.loads(files[-1].read_text())
+    return data["id"], data["summary"]
+
+
+def cmd_stage2(args: argparse.Namespace) -> None:
+    """Stage 2: walk-forward results + all six regime windows -> promotion verdicts."""
+    strategies = args.strategies
+    if not strategies:
+        s1 = ROOT / "results" / "leaderboards" / "stage1_1h.json"
+        if not s1.exists():
+            die("run lab.py validate first (or pass --strategies)")
+        strategies = [k for k, v in json.loads(s1.read_text())["results"].items() if v in ("PASS", "REVIEW")]
+        if not strategies:
+            die("no strategy passed stage 1 - nothing to promote")
+    windows = ["bull-is", "bear-is", "sideways-is", "bull-oos", "bear-oos", "sideways-oos"]
+    regime_dd = {s: {} for s in strategies}
+    regime_profit = {s: {} for s in strategies}
+    for window in windows:
+        run_summary = backtest_run(window, "1h", STANDARD_FEE, None, strategies, f"stage 2: regime {window}", True)
+        for s in strategies:
+            regime_dd[s][window] = run_summary["strategies"][s]["max_dd_pct"]
+            regime_profit[s][window] = run_summary["strategies"][s]["profit_pct"]
+    results = []
+    for s in strategies:
+        # The thing walk-forwarded must match the thing deployed: a tuned …T version is judged by
+        # re-tuning its parent in every window; an untuned strategy by its fixed settings.
+        base, mode = (s[:-1], "retuned") if s.endswith("T") else (s, "fixed")
+        wf_id, wf = latest_walkforward(base, mode)
+        results.append({"strategy": s, "wf_base": base, "wf_mode": mode, "wf_id": wf_id, "wf": wf,
+                        "regime_dd": regime_dd[s], "regime_profit": regime_profit[s]})
+    md = report.write_stage2(results)
+    report.update_results_doc()
+    print("\n" + md.read_text())
 
 
 def cmd_ft(args: argparse.Namespace) -> None:
@@ -632,6 +883,30 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("rest", nargs="*", help='decide: <ID> keep|tweak|drop "why"')
     p.add_argument("--strategy", help="list: filter by strategy name")
     p.add_argument("--last", type=int, default=40, help="list: show the last N entries")
+    p = add("hyperopt", cmd_hyperopt)
+    p.add_argument("strategy")
+    p.add_argument("--epochs", type=int, default=HYPEROPT_EPOCHS)
+    p.add_argument("--seed", type=int, default=HYPEROPT_SEED)
+    p.add_argument("--loss", default=HYPEROPT_LOSS)
+    p.add_argument("--spaces", nargs="+", default=HYPEROPT_SPACES)
+    p.add_argument("--min-trades", type=int, default=HYPEROPT_MIN_TRADES)
+    p.add_argument("--timeframe", default="1h", choices=["15m", "1h", "4h"])
+    p.add_argument("--timerange", help="default: the whole in-sample period (out-of-sample is refused)")
+    p.add_argument("--force", action="store_true", help="replace an existing tuned …T file")
+    p = add("validate", cmd_validate)
+    p.add_argument("--strategies", nargs="+", help="default: all")
+    p.add_argument("--timeframe", default="1h", choices=["15m", "1h", "4h"])
+    p.add_argument("--no-detail", action="store_true", help="skip the 5m intra-candle run")
+    p = add("walkforward", cmd_walkforward)
+    p.add_argument("strategy", help="re-tuned mode: the untuned parent; fixed mode: the strategy as deployed")
+    p.add_argument("--fixed", action="store_true", help="no tuning: score the strategy's own settings per window")
+    p.add_argument("--epochs", type=int, default=150)
+    p.add_argument("--min-trades", type=int, default=25, help="per 12-month training window")
+    p.add_argument("--train-months", type=int, default=12)
+    p.add_argument("--test-months", type=int, default=3)
+    p.add_argument("--timeframe", default="1h", choices=["15m", "1h", "4h"])
+    p = add("stage2", cmd_stage2)
+    p.add_argument("--strategies", nargs="+", help="default: everything that passed stage 1")
     p = add("ft", cmd_ft)
     p.add_argument("ft_args", nargs=argparse.REMAINDER, help="-- <freqtrade args>")
     return parser

@@ -5,6 +5,11 @@
    "ok": true,
    "recursive": "pass"
   },
+  "AdxSupertrendV1T": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
   "BuyHoldV1": {
    "lookahead": "skipped",
    "ok": true,
@@ -15,7 +20,37 @@
    "ok": true,
    "recursive": "pass"
   },
+  "DonchianBreakoutV1T": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "DonchianBreakoutV2": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "DonchianBreakoutV2T": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
   "EmaTrendV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "EmaTrendV1T": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "EmaTrendV2": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "EmaTrendV2T": {
    "lookahead": "pass",
    "ok": true,
    "recursive": "pass"
@@ -25,7 +60,27 @@
    "ok": true,
    "recursive": "pass"
   },
+  "MacdVolumeV1T": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "MacdVolumeV2": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "MacdVolumeV2T": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
   "RsiBbReversionV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "RsiBbReversionV1T": {
    "lookahead": "pass",
    "ok": true,
    "recursive": "pass"
@@ -35,11 +90,31 @@
    "ok": true,
    "recursive": "pass"
   },
+  "SqueezeBreakoutV1T": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
   "TrendPullbackV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "TrendPullbackV1T": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "TrendPullbackV2": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "TrendPullbackV2T": {
    "lookahead": "pass",
    "ok": true,
    "recursive": "pass"
   }
  },
- "updated": "2026-10-06 06:59"
+ "updated": "2026-10-06 08:43"
 }

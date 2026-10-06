@@ -42,11 +42,13 @@ Each phase ends with a review stop and one git commit.
 - [x] In-sample leaderboards for 1h, 15m, 4h, plus a zero-fee diagnostic: fees are the main problem
 - [x] 80 trades spot-checked: entries at the next candle's open
 
-## Phase 6: Validation
-- [ ] Out-of-sample check + stress fees + 5m intra-candle detail
-- [ ] Market regime tests
-- [ ] Hyperopt (fixed seed) → v2 strategies
-- [ ] Walk-forward for strategies that pass stage 1
+## Phase 6: Validation ✅
+- [x] Hyperopt for 11 strategies → generated `…T` tuned versions (seed 42, 6 workers, reproducibility verified)
+- [x] 4 hand-designed v2s for fewer trades (4h decisions via informative timeframe), all bias-checked
+- [x] In-sample regime tests for all 23 versions
+- [x] 10 candidates pre-registered from in-sample results, then Stage 1 run once: out-of-sample + 0.15% fee + 5m fills
+- [x] Walk-forward (fixed and re-tuned modes) and all 6 regime windows for Stage 1 survivors
+- [x] Result: **no strategy promoted**. EmaTrendV2 passed Stage 1 and failed Stage 2 on consistency (watch list)
 
 ## Phase 7: Paper trading
 - [ ] `bots.json` registry → generated `docker-compose.bots.yml`

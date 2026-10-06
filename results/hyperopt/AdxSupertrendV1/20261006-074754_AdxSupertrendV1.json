@@ -1,0 +1,45 @@
+{
+ "id": "20261006-074754_AdxSupertrendV1",
+ "strategy": "AdxSupertrendV1",
+ "tuned_class": "AdxSupertrendV1T",
+ "timerange": "20231001-20251001",
+ "timeframe": "1h",
+ "fee": 0.001,
+ "loss": "CalmarHyperOptLoss",
+ "spaces": [
+  "buy",
+  "sell",
+  "stoploss"
+ ],
+ "epochs": 300,
+ "seed": 42,
+ "min_trades": 50,
+ "result_file": "user_data/hyperopt_results/strategy_AdxSupertrendV1_2026-10-06_07-45-06.fthypt",
+ "best": {
+  "epoch": 292,
+  "epochs_run": 300,
+  "last_epoch": 300,
+  "loss": -7.4101550641670935,
+  "params": {
+   "buy": {
+    "adx_min": 29,
+    "st_multiplier": 4.0,
+    "st_period": 14
+   },
+   "sell": {},
+   "stoploss": {
+    "stoploss": -0.068
+   }
+  },
+  "metrics": {
+   "trades": 118,
+   "profit_pct": 14.404656747000002,
+   "max_dd_pct": 5.080479145458761,
+   "sharpe": 0.3420841541034679,
+   "calmar": 7.4101550641670935,
+   "win_rate_pct": 44.06779661016949,
+   "profit_factor": 1.3158073841957068,
+   "days": 731
+  }
+ }
+}

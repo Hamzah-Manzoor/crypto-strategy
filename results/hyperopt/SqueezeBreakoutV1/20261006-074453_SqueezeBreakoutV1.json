@@ -1,0 +1,44 @@
+{
+ "id": "20261006-074453_SqueezeBreakoutV1",
+ "strategy": "SqueezeBreakoutV1",
+ "tuned_class": "SqueezeBreakoutV1T",
+ "timerange": "20231001-20251001",
+ "timeframe": "1h",
+ "fee": 0.001,
+ "loss": "CalmarHyperOptLoss",
+ "spaces": [
+  "buy",
+  "sell",
+  "stoploss"
+ ],
+ "epochs": 300,
+ "seed": 42,
+ "min_trades": 50,
+ "result_file": "user_data/hyperopt_results/strategy_SqueezeBreakoutV1_2026-10-06_07-42-36.fthypt",
+ "best": {
+  "epoch": 118,
+  "epochs_run": 300,
+  "last_epoch": 300,
+  "loss": -2.1042432277323972,
+  "params": {
+   "buy": {
+    "kc_multiplier": 1.25,
+    "min_squeeze": 15
+   },
+   "sell": {},
+   "stoploss": {
+    "stoploss": -0.085
+   }
+  },
+  "metrics": {
+   "trades": 66,
+   "profit_pct": 2.573272473,
+   "max_dd_pct": 3.1960891987200597,
+   "sharpe": 0.1261436384574718,
+   "calmar": 2.1042432277323972,
+   "win_rate_pct": 28.78787878787879,
+   "profit_factor": 1.2475296346737106,
+   "days": 731
+  }
+ }
+}

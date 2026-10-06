@@ -1,0 +1,44 @@
+{
+ "id": "20261006-073853_EmaTrendV1",
+ "strategy": "EmaTrendV1",
+ "tuned_class": "EmaTrendV1T",
+ "timerange": "20231001-20251001",
+ "timeframe": "1h",
+ "fee": 0.001,
+ "loss": "CalmarHyperOptLoss",
+ "spaces": [
+  "buy",
+  "sell",
+  "stoploss"
+ ],
+ "epochs": 300,
+ "seed": 42,
+ "min_trades": 50,
+ "result_file": "user_data/hyperopt_results/strategy_EmaTrendV1_2026-10-06_07-35-58.fthypt",
+ "best": {
+  "epoch": 207,
+  "epochs_run": 298,
+  "last_epoch": 300,
+  "loss": -1.9910442414809673,
+  "params": {
+   "buy": {
+    "fast_period": 16,
+    "slow_period": 72
+   },
+   "sell": {},
+   "stoploss": {
+    "stoploss": -0.099
+   }
+  },
+  "metrics": {
+   "trades": 539,
+   "profit_pct": 15.82594099700001,
+   "max_dd_pct": 20.7738832837486,
+   "sharpe": 0.4528163363867554,
+   "calmar": 1.9910442414809673,
+   "win_rate_pct": 32.83858998144712,
+   "profit_factor": 1.0883488261316785,
+   "days": 731
+  }
+ }
+}

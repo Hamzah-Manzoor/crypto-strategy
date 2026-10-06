@@ -8,16 +8,20 @@
 
 | # | Strategy | Style | Holds for | Expect it to shine in | Expect it to struggle in | Status |
 |---|---|---|---|---|---|---|
-| 0 | `BuyHoldV1` | Baseline | whole period | bull markets | bear markets | baseline: IS 1h +429%, max DD 51% |
-| 1 | `EmaTrendV1` | Trend following | days | long smooth trends | sideways chop | **tweak**: IS 1h −4% (+26% before fees) |
-| 2 | `AdxSupertrendV1` | Trend strength | days | strong breakouts | slow grinds, chop | **drop?**: IS 1h −14%, loses even before fees |
-| 3 | `RsiBbReversionV1` | Mean reversion | hours | sideways with sharp dips | crashes | **drop?**: IS 1h −42%, loses even before fees |
-| 4 | `DonchianBreakoutV1` | Breakout | ~1 day | range breakouts that run | fake-outs | **tweak**: IS 1h −27% (+19% before fees) |
-| 5 | `MacdVolumeV1` | Momentum | hours | impulsive swings | quiet drifts, V-reversals | **keep**: IS 1h +18%, DD 7.6%, only profitable v1 |
-| 6 | `SqueezeBreakoutV1` | Volatility squeeze | hours to a day | coils that break upward | fake-outs, downtrends | **tweak**: IS 1h −14%, but +6.5% on 4h |
-| 7 | `TrendPullbackV1` | Dip buying in uptrends | hours | steady uptrends | trend changes, crashes | **tweak**: IS 1h −23%, but **+66% before fees** |
+| 0 | `BuyHoldV1` | Baseline | whole period | bull markets | bear markets | baseline: IS +429% (DD 51%), OOS −35% (DD 63%) |
+| 1 | `EmaTrendV1` | Trend following | days | long smooth trends | sideways chop | dropped: v2 replaced it |
+| 2 | `AdxSupertrendV1` | Trend strength | days | strong breakouts | slow grinds, chop | dropped: tuned version failed stage 1 |
+| 3 | `RsiBbReversionV1` | Mean reversion | hours | sideways with sharp dips | crashes | dropped: no edge even tuned |
+| 4 | `DonchianBreakoutV1` | Breakout | ~1 day | range breakouts that run | fake-outs | dropped: v2 replaced it |
+| 5 | `MacdVolumeV1` | Momentum | hours | impulsive swings | quiet drifts, V-reversals | dropped: OOS −0.7% (stage 1 FAIL) |
+| 6 | `SqueezeBreakoutV1` | Volatility squeeze | hours to a day | coils that break upward | fake-outs, downtrends | dropped: tuned version failed stage 2 |
+| 7 | `TrendPullbackV1` | Dip buying in uptrends | hours | steady uptrends | trend changes, crashes | dropped: v2 replaced it |
+| 8 | `TrendPullbackV2` | Dip buying, 4h trend filter | hours | strong uptrends | trend changes | dropped: tuned OOS −1.8% |
+| 9 | `EmaTrendV2` | Trend following on 4h | days | multi-week trends | sideways ranges | **watch list**: stage 1 PASS (OOS +5.1%, DD 11.9%), stage 2 FAIL (3 of 8 quarters profitable) |
+| 10 | `DonchianBreakoutV2` | Breakout on 4h | days | breakouts that run | failed breakouts | dropped: IS +52% → OOS −7.6% |
+| 11 | `MacdVolumeV2` | Momentum + 4h trend | hours | trend-aligned bursts | choppy trend filter | dropped: worse than v1 in-sample |
 
-All 8 passed the bias checks (details at the bottom). Status comes from the Phase 5 in-sample run (1h, 0.1% fee) and the decision in the [experiment log](EXPERIMENT_LOG.md). "Before fees" refers to a zero-fee diagnostic run. Analysis: [RESULTS](RESULTS.md).
+All strategies, plus the tuned `…T` versions, passed the bias checks (details at the bottom). **Status after Phase 6:** no strategy passed both promotion stages, so none goes to paper trading as "promoted". `EmaTrendV2` came closest and is on the watch list. Each tuned `…T` version failed out-of-sample; see the [experiment log](EXPERIMENT_LOG.md) status table. Analysis: [RESULTS](RESULTS.md).
 
 **Words used below:**
 - **EMA:** a moving average that weights recent candles more.
@@ -135,6 +139,56 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
   - Warm-up: 600 candles.
 - **Tunable:** RSI(2) entry 3–20, RSI(2) exit 50–90.
 - **Should work:** steady uptrends with normal noise (high win rate, short holds). **Should fail:** when the "dip" is the start of a crash (the EMA200 filter reacts late). Fees hurt the many small trades.
+
+---
+
+## Version 2: hand-designed for fewer, better trades (Phase 6)
+
+**Why:** Phase 5 showed that most v1 ideas have a small real edge that fees eat. Each v2 keeps its v1's idea, but:
+- **Decides on 4h candles.** It reads them through Freqtrade's *informative timeframe* feature, while still running on the 1h engine, so stoplosses are checked every hour and it stays in the same leaderboard.
+- **Adds a 4h uptrend filter.**
+- **Holds longer**, with wider trailing stops (+10% trigger, 5% trail).
+
+Each v2 subclasses its v1 (`class EmaTrendV2(EmaTrendV1)`) and overrides only what changed.
+
+**Honesty note:** these designs were guided by the in-sample results, so their in-sample numbers are partly fitted to those dates. Only the out-of-sample check (Stage 1) and walk-forward (Stage 2) count.
+
+### 8. Trend Pullback v2 (`TrendPullbackV2`)
+- **Changes vs v1:**
+  - Requires a 4h uptrend (4h close > 4h EMA50 > 4h EMA200).
+  - Deeper dip: RSI(2) < 5 instead of < 10.
+  - Holds for a bigger bounce: exits when close > EMA10 or RSI(2) > 80, instead of EMA5 / 70.
+  - Larger ROI table: 8% / 4% after 12h / 1.5% after 2 days.
+- **Risk:** stoploss −8%, no trailing stop, warm-up 600 candles.
+- **Tunable:** RSI(2) entry 2–15, exit 60–95.
+
+### 9. EMA Trend v2 (`EmaTrendV2`)
+- **Changes vs v1:**
+  - Crossover of **4h** EMAs 21/55, instead of 1h 12/50.
+  - Trend filter: 4h close > 4h EMA200.
+  - Stoploss −10%.
+  - Trailing stop starts at +10% with a 5% trail.
+- **Tunable:** 4h fast EMA ∈ {12, 21, 26}, slow ∈ {50, 55, 72}.
+
+### 10. Donchian Breakout v2 (`DonchianBreakoutV2`)
+- **Changes vs v1:**
+  - Channels built from **4h** candles. Entry: close above the previous 30 4h-candle high (about 5 days). Exit: close below the previous 10 4h-candle low (about 2 days).
+  - It enters only on the first hour after the 4h breakout.
+  - 4h volume must be at least 1.2× its average.
+  - 4h EMA50 must be above EMA200.
+  - Wider trailing stop.
+- **Tunable:** entry channel ∈ {20, 30, 42, 55} 4h candles, exit ∈ {6, 10, 15}, volume 1.0–2.5×.
+
+### 11. MACD Volume v2 (`MacdVolumeV2`)
+- **Changes vs v1:**
+  - Same 1h MACD signal, but only when the 4h trend is up (4h close > 4h EMA50 > 4h EMA200).
+  - Volume burst raised to 2.0× (range 1.5–3.5).
+- **Tunable:** MACD set, volume multiplier.
+
+### Tuned versions (`…T`)
+- `lab.py hyperopt <Strategy>` tunes a strategy on **in-sample data only**. It then writes a small generated subclass, for example `MacdVolumeV1T(MacdVolumeV1)`, containing only the tuned settings.
+- The file header records how it was tuned: dates, loss, epochs, seed, the best epoch, and the experiment ID.
+- Tuned files are never edited by hand. Re-tuning refuses to overwrite one without `--force`.
 
 ---
 

@@ -1,0 +1,46 @@
+{
+ "id": "20261006-075052_RsiBbReversionV1",
+ "strategy": "RsiBbReversionV1",
+ "tuned_class": "RsiBbReversionV1T",
+ "timerange": "20231001-20251001",
+ "timeframe": "1h",
+ "fee": 0.001,
+ "loss": "CalmarHyperOptLoss",
+ "spaces": [
+  "buy",
+  "sell",
+  "stoploss"
+ ],
+ "epochs": 300,
+ "seed": 42,
+ "min_trades": 50,
+ "result_file": "user_data/hyperopt_results/strategy_RsiBbReversionV1_2026-10-06_07-48-06.fthypt",
+ "best": {
+  "epoch": 242,
+  "epochs_run": 300,
+  "last_epoch": 300,
+  "loss": 0.00029867629831417376,
+  "params": {
+   "buy": {
+    "bb_std": 3.0,
+    "rsi_entry": 29
+   },
+   "sell": {
+    "rsi_exit": 62
+   },
+   "stoploss": {
+    "stoploss": -0.092
+   }
+  },
+  "metrics": {
+   "trades": 254,
+   "profit_pct": -0.001982162000001608,
+   "max_dd_pct": 17.34472590212078,
+   "sharpe": -6.921800589534937e-05,
+   "calmar": -0.00029867629831417376,
+   "win_rate_pct": 63.77952755905512,
+   "profit_factor": 0.9999702760257402,
+   "days": 731
+  }
+ }
+}

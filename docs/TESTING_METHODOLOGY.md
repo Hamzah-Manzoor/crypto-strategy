@@ -96,19 +96,32 @@ Windows are 90 days, picked on the **5-coin basket** (what we trade) by what pri
 | Loss | `CalmarHyperOptLoss` | Optimise return per unit of drawdown, matching how we rank |
 | Spaces | `buy sell stoploss` (not `roi`) | ROI tables overfit very easily |
 | Epochs | 300 | |
-| Seed | `--random-state 42` | Reproducible; checked by running twice |
+| Seed | `--random-state 42` | Reproducible (see below) |
+| Workers | 6 parallel (`-j 6`) | 11 workers ran Docker's 8 GB out of memory and a worker was killed mid-run |
 | `--min-trades` | 50 | Throws away "great" results that come from a handful of trades |
 | Parameter grids | Short lists of sensible values | Coarse grids overfit less than fine ones |
 
-- Tuned settings become a **new version** (`EmaTrendV2(EmaTrendV1)` with the values written into the code). They're never loaded from a hidden file.
-- A tuned version must then pass the same rules as everything else.
+- **Reproducibility, verified 2026-10-06:**
+  - Two runs of `MacdVolumeV1` with seed 42 and 6 workers gave the **identical** best epoch (134), settings and score.
+  - The result depends on the worker count, so the count is fixed at 6.
+  - A run that stops early (the last epoch number is below the requested count) is rejected.
+  - Freqtrade may skip an epoch whose settings repeat an earlier one. That's normal.
+- **Tuned settings become a new, generated class** named with a `T`: `MacdVolumeV1T(MacdVolumeV1)`, with the values written into the code and a header recording how it was tuned. They're never loaded from a hidden parameter file.
+- `lab.py hyperopt` then backtests the parent and the tuned version side by side on in-sample.
+- **A tuned version always looks better in-sample, because that's where it was tuned.** It must pass the same out-of-sample rules as everything else.
+- **Freqtrade's Calmar loss uses closed-trade drawdown internally.** That's fine for strategies that hold for hours or days. Our leaderboards still judge everything on the mark-to-market numbers.
 
 ## 8. Walk-forward, Phase 6
 
-For strategies that pass Stage 1:
-1. Tune on 12 months, test on the next 3 months, then slide forward 3 months. That gives about 8 test windows across in-sample and out-of-sample.
-2. Each window is tuned only on data before it, in a throwaway copy of the strategy folder.
-3. Only the test windows are scored.
+For strategies that pass Stage 1 (`lab.py walkforward <Strategy>`):
+1. Tune on 12 months, test on the next 3 months, then slide forward 3 months.
+   - That gives **8 test windows**, from 2024-10-01 to 2026-10-01: 4 in in-sample dates, 4 in out-of-sample dates.
+2. Each window is re-tuned only on the 12 months before it. Settings: Calmar loss, 150 epochs, seed 42, at least 25 trades.
+   - The tuned settings go into a uniquely named throwaway class, `XxxWF3`.
+3. Only the test windows are scored, at the normal 0.1% fee. Buy & hold over the same windows is shown for comparison.
+4. **The thing walk-forwarded must be the thing deployed** (clarified 2026-10-06, see DECISIONS):
+   - **Tuned `…T` version:** *re-tuned* walk-forward of its parent (`lab.py walkforward <Parent>`). The `…T` was produced by tuning, so the tuning process is what gets tested.
+   - **Untuned strategy (default settings):** *fixed-settings* walk-forward (`lab.py walkforward <Strategy> --fixed`). There's nothing to tune, so the deployed settings are scored window by window. The "training" window is the same strategy over the preceding 12 months, used for the efficiency ratio.
 
 - **Walk-forward efficiency** = yearly return on the test windows ÷ yearly return on their training windows. Near 1 means the tuning carries forward; near 0 or negative means it was fitting noise.
 

@@ -1,0 +1,4 @@
+rank,strategy,profit_pct,cagr_pct,max_dd_pct,sharpe,sortino,calmar,profit_factor,win_rate_pct,trades,avg_hold_hours,exposure_pct,beats_bh,flags,timeframe,timerange,days,market_change_pct,code_sha
+1,BuyHoldV1,428.9108,129.7188,51.2859,1.6311,2.4783,2.5293,,100.0,5,17543.0,99.6263,baseline,,1h,20231001-20251001,731.0,433.2209,b2e985c30b60
+2,DonchianBreakoutV2T,70.3676,30.4774,13.6621,1.4502,2.2838,2.2308,1.531,48.4043,188,111.0167,23.6283,no,,1h,20231001-20251001,731.0,433.2209,356cc360e013
+3,DonchianBreakoutV2,52.1961,23.3323,23.121,1.1864,1.8148,1.0091,1.4396,45.6853,197,89.5667,19.9961,no,,1h,20231001-20251001,731.0,433.2209,582fea7c6a12

@@ -1,0 +1,4 @@
+rank,strategy,profit_pct,cagr_pct,max_dd_pct,sharpe,sortino,calmar,profit_factor,win_rate_pct,trades,avg_hold_hours,exposure_pct,beats_bh,flags,timeframe,timerange,days,market_change_pct,code_sha
+1,BuyHoldV1,428.9108,129.7188,51.2859,1.6311,2.4783,2.5293,,100.0,5,17543.0,99.6263,baseline,,1h,20231001-20251001,731.0,433.2209,b2e985c30b60
+2,MacdVolumeV1T,25.4779,11.9995,5.6529,1.2073,2.8371,2.1227,1.4087,40.0538,372,8.3667,3.5286,no,,1h,20231001-20251001,731.0,433.2209,91306dff3439
+3,MacdVolumeV1,18.1465,8.6828,7.5515,0.7172,1.3376,1.1498,1.1355,36.5468,695,10.15,7.9901,no,,1h,20231001-20251001,731.0,433.2209,e1c7db8697df

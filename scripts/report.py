@@ -161,7 +161,8 @@ def load_bias() -> dict[str, bool]:
     return {name: v.get("ok") for name, v in json.loads(path.read_text()).get("strategies", {}).items()}
 
 
-def stage1(is_run: dict, oos_run: dict, stress_run: dict | None, bias: dict[str, bool]) -> list[dict]:
+def stage1(is_run: dict, oos_run: dict, stress_run: dict | None, bias: dict[str, bool],
+           detail_run: dict | None = None) -> list[dict]:
     bh_oos = oos_run["strategies"][rules.BASELINE]
     out = []
     for name, oos_m in oos_run["strategies"].items():
@@ -169,11 +170,13 @@ def stage1(is_run: dict, oos_run: dict, stress_run: dict | None, bias: dict[str,
             continue
         is_m = is_run["strategies"][name]
         stress_m = stress_run["strategies"].get(name) if stress_run else None
+        detail_m = detail_run["strategies"].get(name) if detail_run else None
         status, checks = rules.stage1(is_m, oos_m, stress_m, bh_oos, bias.get(name))
         out.append({
             "strategy": name, "status": status, "checks": checks,
             "is_profit_pct": is_m["profit_pct"], "oos_profit_pct": oos_m["profit_pct"],
             "stress_profit_pct": stress_m["profit_pct"] if stress_m else None,
+            "detail_profit_pct": detail_m["profit_pct"] if detail_m else None,
             "is_sharpe": is_m["sharpe"], "oos_sharpe": oos_m["sharpe"],
             "sharpe_kept": rules.sharpe_ratio_kept(is_m, oos_m),
             "oos_max_dd_pct": oos_m["max_dd_pct"], "oos_calmar": oos_m["calmar"],
@@ -184,11 +187,13 @@ def stage1(is_run: dict, oos_run: dict, stress_run: dict | None, bias: dict[str,
     return out
 
 
-def stage1_md(is_run: dict, oos_run: dict, stress_run: dict | None, rows: list[dict]) -> str:
+def stage1_md(is_run: dict, oos_run: dict, stress_run: dict | None, rows: list[dict],
+              detail_run: dict | None = None) -> str:
     bh_is, bh_oos = is_run["strategies"][rules.BASELINE], oos_run["strategies"][rules.BASELINE]
     body = [[
         f"**{r['status']}**", f"`{r['strategy']}`", num(r["is_profit_pct"], 1, sign=True), num(r["oos_profit_pct"], 1, sign=True),
-        num(r["stress_profit_pct"], 1, sign=True), num(r["is_sharpe"]), num(r["oos_sharpe"]),
+        num(r["stress_profit_pct"], 1, sign=True), num(r.get("detail_profit_pct"), 1, sign=True),
+        num(r["is_sharpe"]), num(r["oos_sharpe"]),
         "n/a" if r["sharpe_kept"] is None else f"{r['sharpe_kept']:.0%}", num(r["oos_max_dd_pct"], 1),
         num(r["oos_calmar"]), num(r["oos_profit_factor"]), f"{r['is_trades']} / {r['oos_trades']}",
     ] for r in rows]
@@ -199,10 +204,12 @@ def stage1_md(is_run: dict, oos_run: dict, stress_run: dict | None, rows: list[d
         f"- Out-of-sample: `{oos_run['run_id']}` ({oos_run['timerange']}) · buy & hold {bh_oos['profit_pct']:+.1f}%, "
         f"max DD {bh_oos['max_dd_pct']:.1f}%, Calmar {bh_oos['calmar']:.2f}",
         f"- Fee stress (0.15%/side): " + (f"`{stress_run['run_id']}`" if stress_run else "not run"),
+        f"- 5m intra-candle fills (information, not a rule): " + (f"`{detail_run['run_id']}`" if detail_run else "not run"),
         "",
-        *table(["Status", "Strategy", "IS profit", "OOS profit", "OOS @0.15% fee", "IS Sharpe", "OOS Sharpe",
-                "Sharpe kept", "OOS max DD %", "OOS Calmar", "OOS PF", "Trades IS / OOS"],
-               body, ["---", "---", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:"]),
+        *table(["Status", "Strategy", "IS profit", "OOS profit", "OOS @0.15% fee", "OOS 5m fills", "IS Sharpe",
+                "OOS Sharpe", "Sharpe kept", "OOS max DD %", "OOS Calmar", "OOS PF", "Trades IS / OOS"],
+               body, ["---", "---", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:",
+                      "---:"]),
         "", "## Why", "",
     ]
     for r in rows:
@@ -213,12 +220,13 @@ def stage1_md(is_run: dict, oos_run: dict, stress_run: dict | None, rows: list[d
     return "\n".join(lines) + "\n"
 
 
-def write_stage1(is_run: dict, oos_run: dict, stress_run: dict | None) -> tuple[Path, list[dict]]:
-    rows = stage1(is_run, oos_run, stress_run, load_bias())
+def write_stage1(is_run: dict, oos_run: dict, stress_run: dict | None,
+                 detail_run: dict | None = None) -> tuple[Path, list[dict]]:
+    rows = stage1(is_run, oos_run, stress_run, load_bias(), detail_run)
     BOARDS.mkdir(parents=True, exist_ok=True)
     tf = oos_run["timeframe"]
     md = BOARDS / f"stage1_{tf}.md"
-    md.write_text(stage1_md(is_run, oos_run, stress_run, rows))
+    md.write_text(stage1_md(is_run, oos_run, stress_run, rows, detail_run))
     flat = [{**{k: v for k, v in r.items() if k != "checks"},
              "failed_checks": " | ".join(t for ok, t in r["checks"] if not ok)} for r in rows]
     fields = list(flat[0]) if flat else ["strategy", "status"]
@@ -226,9 +234,51 @@ def write_stage1(is_run: dict, oos_run: dict, stress_run: dict | None) -> tuple[
     (BOARDS / f"stage1_{tf}.json").write_text(json.dumps({
         "is_run": is_run["run_id"], "oos_run": oos_run["run_id"],
         "stress_run": stress_run["run_id"] if stress_run else None,
+        "detail_run": detail_run["run_id"] if detail_run else None,
         "results": {r["strategy"]: r["status"] for r in rows},
     }, indent=1) + "\n")
     return md, rows
+
+
+# --------------------------------------------------------------------------- stage 2
+
+def write_stage2(results: list[dict]) -> Path:
+    """results: [{strategy, wf_base, wf (summary or None), wf_id, regime_dd {window: dd}, regime_profit {...}}]"""
+    for r in results:
+        r["status"], r["checks"] = rules.stage2(r["wf"], r["regime_dd"])
+    windows = ["bull-is", "bear-is", "sideways-is", "bull-oos", "bear-oos", "sideways-oos"]
+    body = []
+    for r in results:
+        wf = r["wf"] or {}
+        eff = wf.get("wf_efficiency")
+        body.append([f"**{r['status']}**", f"`{r['strategy']}`",
+                     f"{wf.get('profitable_windows_pct', 0):.0f}%" if wf else "n/a",
+                     "n/a" if eff is None else f"{eff:.2f}", num(wf.get("stitched_profit_pct"), 1, sign=True),
+                     num(wf.get("bh_stitched_profit_pct"), 1, sign=True),
+                     *[(f"{r['regime_profit'][w]:+.1f}% / {r['regime_dd'][w]:.1f}%" if w in r["regime_dd"] else "-")
+                       for w in windows]])
+    lines = [
+        "# Stage 2 · walk-forward and market regimes · 1h", "",
+        "Walk-forward = 8 rolling 3-month test windows. An untuned strategy is scored with its fixed settings; "
+        "a tuned `…T` version through its parent re-tuned on the 12 months before each window. "
+        "Regime cells: profit / max drawdown.", "",
+        *table(["Status", "Strategy", "WF windows profitable", "WF efficiency", "WF stitched profit", "B&H same windows",
+                *windows], body, ["---", "---", "---:", "---:", "---:", "---:", *["---:"] * len(windows)]),
+        "", "## Why", "",
+    ]
+    for r in results:
+        lines.append(f"**{r['strategy']} - {r['status']}**"
+                     + (f" (walk-forward, {r.get('wf_mode', '?')}: `{r['wf_id']}`)" if r.get("wf_id") else ""))
+        lines += [f"- {'✅' if ok else '❌'} {text}" for ok, text in r["checks"]]
+        lines.append("")
+    lines.append("Rules: docs/TESTING_METHODOLOGY.md (thresholds in scripts/rules.py).")
+    BOARDS.mkdir(parents=True, exist_ok=True)
+    md = BOARDS / "stage2_1h.md"
+    md.write_text("\n".join(lines) + "\n")
+    (BOARDS / "stage2_1h.json").write_text(json.dumps(
+        {"results": {r["strategy"]: r["status"] for r in results},
+         "details": [{k: v for k, v in r.items() if k != "checks"} for r in results]}, indent=1) + "\n")
+    return md
 
 
 # --------------------------------------------------------------------------- docs/RESULTS.md
@@ -249,6 +299,12 @@ def results_block(runs: list[dict]) -> str:
               f"{r['exposure_pct']:.0f}%", r["beats_bh"], r["flags"] or ""] for r in rows],
             ["---:", "---", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---", "---"])
         lines += ["", f"Full table: [results/leaderboards/{run['run_id']}.md](../results/leaderboards/{run['run_id']}.md)", ""]
+    s2 = BOARDS / "stage2_1h.json"
+    if s2.exists():
+        data = json.loads(s2.read_text())
+        lines += ["### Stage 2 verdicts · 1h (promotion to paper trading)", "",
+                  *[f"- `{k}`: **{v}**" for k, v in data["results"].items()], "",
+                  "Details: [results/leaderboards/stage2_1h.md](../results/leaderboards/stage2_1h.md)", ""]
     for tf in ("1h", "15m", "4h"):
         s1 = BOARDS / f"stage1_{tf}.json"
         if s1.exists():
@@ -269,10 +325,26 @@ def update_results_doc(runs: list[dict] | None = None) -> None:
     RESULTS_DOC.write_text(f"{head}{AUTO_START}\n{results_block(runs)}\n{AUTO_END}{tail}")
 
 
+def rebuild_stage1_from_saved(runs: list[dict]) -> list[Path]:
+    """Re-score saved stage-1 runs (e.g. after bias checks were completed).
+    Uses the runs already on disk - never a new out-of-sample look."""
+    by_id = {r["run_id"]: r for r in runs}
+    written = []
+    for path in sorted(BOARDS.glob("stage1_*.json")):
+        ids = json.loads(path.read_text())
+        is_run, oos_run = by_id.get(ids["is_run"]), by_id.get(ids["oos_run"])
+        if not is_run or not oos_run:
+            continue
+        md, _ = write_stage1(is_run, oos_run, by_id.get(ids.get("stress_run")), by_id.get(ids.get("detail_run")))
+        written.append(md)
+    return written
+
+
 def rebuild_all() -> int:
     runs = all_runs()
     for run in runs:
         write_run(run)
+    rebuild_stage1_from_saved(runs)
     update_results_doc(runs)
     return len(runs)
 

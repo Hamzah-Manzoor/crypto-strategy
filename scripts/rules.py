@@ -96,3 +96,27 @@ def stage1(is_m: dict, oos_m: dict, stress_m: dict | None, bh_oos: dict, bias_ok
     if flags:
         return "REVIEW", checks + [(False, "too good to be true? " + "; ".join(flags))]
     return "PASS", checks
+
+
+def stage2(wf: dict | None, regime_dd: dict[str, float]) -> tuple[str, list[tuple[bool, str]]]:
+    """Stage-2 verdict. wf = walk-forward summary (tuning.walkforward_summary);
+    regime_dd = {window name: max drawdown %} over all six regime windows."""
+    r = STAGE2
+    if wf is None:
+        checks = [(False, "walk-forward not run")]
+    else:
+        eff = wf["wf_efficiency"]
+        checks = [
+            (wf["profitable_windows_pct"] >= r["min_profitable_windows_pct"],
+             f"{wf['profitable_windows_pct']:.0f}% of {wf['windows']} walk-forward test windows profitable "
+             f"(>= {r['min_profitable_windows_pct']:g}%)"),
+            (eff is not None and eff >= r["min_wf_efficiency"],
+             "walk-forward efficiency " + ("n/a (training was not profitable)" if eff is None else f"{eff:.2f}")
+             + f" (>= {r['min_wf_efficiency']:g})"),
+        ]
+    if len(regime_dd) < 6:
+        checks.append((False, f"only {len(regime_dd)} of 6 regime windows tested"))
+    worst = max(regime_dd.items(), key=lambda kv: kv[1]) if regime_dd else ("none", 0.0)
+    checks.append((bool(regime_dd) and worst[1] <= r["max_dd_regime_pct"],
+                   f"worst regime drawdown {worst[1]:.1f}% in {worst[0]} (<= {r['max_dd_regime_pct']:g}%)"))
+    return ("PASS" if all(ok for ok, _ in checks) else "FAIL"), checks

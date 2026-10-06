@@ -1,0 +1,76 @@
+{
+ "results": {
+  "EmaTrendV2": "FAIL",
+  "SqueezeBreakoutV1T": "FAIL"
+ },
+ "details": [
+  {
+   "strategy": "EmaTrendV2",
+   "wf_base": "EmaTrendV2",
+   "wf_mode": "fixed",
+   "wf_id": "20261006-081742_EmaTrendV2_fixed",
+   "wf": {
+    "windows": 8,
+    "profitable_windows_pct": 37.5,
+    "stitched_profit_pct": 11.17471831931811,
+    "stitched_cagr_pct": 5.439422570174446,
+    "bh_stitched_profit_pct": 41.891298470199075,
+    "mean_train_yearly_pct": 6.175739253462763,
+    "wf_efficiency": 0.8807727054092414,
+    "worst_window_dd_pct": 12.2488,
+    "total_test_trades": 103
+   },
+   "regime_dd": {
+    "bull-is": 8.1407,
+    "bear-is": 8.6023,
+    "sideways-is": 13.1743,
+    "bull-oos": 5.1509,
+    "bear-oos": 2.7137,
+    "sideways-oos": 5.034
+   },
+   "regime_profit": {
+    "bull-is": 2.1122,
+    "bear-is": -7.9338,
+    "sideways-is": -9.9741,
+    "bull-oos": 12.5975,
+    "bear-oos": -0.1452,
+    "sideways-oos": -0.9688
+   },
+   "status": "FAIL"
+  },
+  {
+   "strategy": "SqueezeBreakoutV1T",
+   "wf_base": "SqueezeBreakoutV1",
+   "wf_mode": "retuned",
+   "wf_id": "20261006-081923_SqueezeBreakoutV1_retuned",
+   "wf": {
+    "windows": 8,
+    "profitable_windows_pct": 37.5,
+    "stitched_profit_pct": -5.853474908181056,
+    "stitched_cagr_pct": -2.9708677294190466,
+    "bh_stitched_profit_pct": 41.891298470199075,
+    "mean_train_yearly_pct": -0.2670189764800768,
+    "wf_efficiency": null,
+    "worst_window_dd_pct": 9.7882,
+    "total_test_trades": 210
+   },
+   "regime_dd": {
+    "bull-is": 1.1918,
+    "bear-is": 2.0067,
+    "sideways-is": 1.1121,
+    "bull-oos": 1.4258,
+    "bear-oos": 1.711,
+    "sideways-oos": 1.1522
+   },
+   "regime_profit": {
+    "bull-is": 0.9982,
+    "bear-is": -1.3945,
+    "sideways-is": -0.1433,
+    "bull-oos": 1.2557,
+    "bear-oos": 0.9394,
+    "sideways-oos": -0.7079
+   },
+   "status": "FAIL"
+  }
+ ]
+}

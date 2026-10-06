@@ -1,0 +1,18 @@
+{
+ "is_run": "20261006-081317_is_1h",
+ "oos_run": "20261006-081335_oos_1h",
+ "stress_run": "20261006-081347_oos_1h_fee0.15pct",
+ "detail_run": "20261006-081359_oos_1h_detail5m",
+ "results": {
+  "EmaTrendV2": "PASS",
+  "SqueezeBreakoutV1T": "REVIEW",
+  "AdxSupertrendV1T": "FAIL",
+  "MacdVolumeV1": "FAIL",
+  "EmaTrendV2T": "FAIL",
+  "TrendPullbackV2T": "FAIL",
+  "DonchianBreakoutV2": "FAIL",
+  "DonchianBreakoutV2T": "FAIL",
+  "MacdVolumeV2T": "FAIL",
+  "MacdVolumeV1T": "FAIL"
+ }
+}
