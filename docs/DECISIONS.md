@@ -199,3 +199,9 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 **2026-10-07: The in-sample leaderboard in RESULTS carries a permanent caution.**
 - Tuned `…T` versions top any in-sample table because they were tuned on it. `EmaTrendV2T` shows "beats buy & hold" there and lost money out-of-sample.
 - `report.py` now always prints a warning above in-sample tables, and the RESULTS summary leads with the Stage 1 / Stage 2 verdicts.
+
+**2026-10-07: Pre-registered test of "EmaTrendV2 re-tuned every quarter".**
+- The rules are in `docs/research/quarterly-retune-preregistration.md`, approved and committed **before** any test ran.
+- **Test A:** the identical Phase 6 process on 7 never-used quarters (Dec 2021 → Sep 2023). Pass if ≥ 5 of 7 quarters are profitable, efficiency ≥ 0.5, total profit > 0, and the worst quarter's drawdown ≤ 25%.
+- **If it passes:** a 3rd paper bot, re-tuned quarterly, reviewed on 2027-04-01.
+- **If it fails:** the idea is dropped, with no tweaking on the same data.
