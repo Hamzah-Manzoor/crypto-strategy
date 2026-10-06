@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import os
 import re
@@ -21,12 +22,16 @@ import shlex
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import experiments  # noqa: E402
+import report  # noqa: E402
 import safety_check  # noqa: E402
+from rules import BASELINE  # noqa: E402
 
 COMPOSE = ["docker", "compose", "--project-directory", str(ROOT), "-f", str(ROOT / "docker-compose.yml")]
 CONFIGS = "user_data/configs"  # same relative path on the host and in the container
@@ -42,6 +47,7 @@ PERIODS = {
     "is": ("20231001", "20251001"),
     "oos": ("20251001", "20261001"),
 }
+STANDARD_FEE = 0.001  # 0.1% per side (Binance spot); stress runs use 0.0015
 
 # Bias checks (lab.py check-bias): all inside the in-sample period.
 BIAS_TIMEFRAME = "1h"
@@ -221,9 +227,22 @@ def cmd_safety(args: argparse.Namespace) -> None:
 
 
 def cmd_test(args: argparse.Namespace) -> None:
-    """Run the unit tests."""
-    result = run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], check=False)
-    sys.exit(result.returncode)
+    """Run the unit tests (host tests, then the pandas tests inside the container)."""
+    say("Host tests (standard library)")
+    host = run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], check=False)
+    container = None
+    if args.host_only:
+        print("Skipping container tests (--host-only)")
+    elif not docker_ready():
+        print("Docker is not running: skipping container tests (start Docker Desktop to run them)")
+    else:
+        say("Container tests (pandas, inside the pinned Freqtrade image)")
+        safety_gate()
+        container = run([*COMPOSE, "run", "--rm", "--entrypoint", "python", "freqtrade",
+                         "-m", "unittest", "discover", "-s", "tests/container", "-v"], check=False)
+    failed = host.returncode or (container is not None and container.returncode)
+    say("Tests " + ("FAILED" if failed else "passed"))
+    sys.exit(1 if failed else 0)
 
 
 def cmd_show_config(args: argparse.Namespace) -> None:
@@ -346,6 +365,7 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
         f"Freqtrade 2026.9, timeframe {BIAS_TIMEFRAME}. Strategies: {', '.join(strategies)}.", "",
     ]
     failed = []
+    status = {name: {"lookahead": "not run", "recursive": "not run"} for name in strategies}
 
     if not args.skip_lookahead:
         report += [
@@ -363,6 +383,7 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
             if strategy_startup(name) == 0:
                 report.append(f"| {name} | skipped | - | - | - | no indicators; its trades only close at the "
                               "end of the test, which this check cannot evaluate |")
+                status[name]["lookahead"] = "skipped"
                 continue
             say(f"Lookahead analysis: {name}")
             tmp_csv = ROOT / "user_data" / "backtest_results" / f"lookahead_{name}.csv"
@@ -377,10 +398,12 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
                 if tmp_csv.exists() else None
             if result.returncode != 0 or row is None:
                 failed.append(f"{name} (lookahead did not run)")
+                status[name]["lookahead"] = "fail"
                 report.append(f"| {name} | **not checked** | - | - | - | - |")
                 continue
             rows_out.append(row)
             verdict = row.get("has_bias", "").strip()
+            status[name]["lookahead"] = "pass" if verdict == "False" else "fail"
             if verdict != "False":
                 failed.append(f"{name} (lookahead: {verdict})")
             shown = "no" if verdict == "False" else ("**YES**" if verdict == "True" else f"**{verdict}**")
@@ -406,10 +429,12 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
             if strategy_startup(name) == 0:
                 report += [f"### {name} (startup_candle_count = 0)", "",
                            "Skipped: no indicators, so nothing needs warm-up candles.", ""]
+                status[name]["recursive"] = "skipped"
                 continue
             say(f"Recursive analysis: {name}")
             verdict, md = recursive_check(name)
             report += md
+            status[name]["recursive"] = "pass" if verdict == "PASS" else "fail"
             if verdict != "PASS":
                 failed.append(f"{name} (recursive)")
 
@@ -417,10 +442,138 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
                else "**FAIL**: " + ", ".join(failed), ""]
     out = ROOT / "results" / "checks" / "bias_check.md"
     out.write_text("\n".join(report))
-    say(f"Report written to {out.relative_to(ROOT)}")
+    # Machine-readable verdicts for the promotion rules (merged, so a partial re-run keeps the others).
+    json_path = ROOT / "results" / "checks" / "bias_check.json"
+    saved = json.loads(json_path.read_text()).get("strategies", {}) if json_path.exists() else {}
+    for name, s in status.items():
+        merged = {**saved.get(name, {}), **{k: v for k, v in s.items() if v != "not run"}}
+        merged["ok"] = all(merged.get(k) in ("pass", "skipped") for k in ("lookahead", "recursive"))
+        saved[name] = merged
+    json_path.write_text(json.dumps({"updated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+                                     "strategies": saved}, indent=1, sort_keys=True) + "\n")
+    say(f"Report written to {out.relative_to(ROOT)} and {json_path.relative_to(ROOT)}")
     if failed:
         die("bias check failed: " + ", ".join(failed))
     print("Bias check PASSED for all strategies.")
+
+
+def resolve_period(period: str) -> tuple[str, str]:
+    """Period name -> (label, Freqtrade timerange). Names: is, oos, full, a regime window
+    from results/regimes.json (e.g. bull-is), or a literal yyyymmdd-yyyymmdd."""
+    if period in PERIODS:
+        return period, "-".join(PERIODS[period])
+    if period == "full":
+        return period, f"{PERIODS['is'][0]}-{PERIODS['oos'][1]}"
+    regimes = ROOT / "results" / "regimes.json"
+    windows = json.loads(regimes.read_text())["windows"] if regimes.exists() else {}
+    if period in windows:
+        return period, windows[period]["timerange"]
+    if re.fullmatch(r"\d{8}-\d{8}", period):
+        return "custom", period
+    die(f"unknown period '{period}'. Use: {', '.join([*PERIODS, 'full', *windows])} or yyyymmdd-yyyymmdd")
+
+
+def touches_oos(timerange: str) -> bool:
+    """True if any candle in the timerange is out-of-sample (IS end date is exclusive)."""
+    start, _, end = timerange.partition("-")
+    return not end or end > PERIODS["is"][1]
+
+
+def backtest_run(period: str, timeframe: str, fee: float, detail: str | None, strategies: list[str],
+                 notes: str, allow_oos: bool) -> dict:
+    """Backtest strategies in ONE Freqtrade run, summarise, log and report. Returns the run summary."""
+    label, timerange = resolve_period(period)
+    oos = touches_oos(timerange)
+    if oos and not allow_oos:
+        die(f"period '{period}' ({timerange}) includes out-of-sample data. Tuning and iterating must use "
+            "in-sample only. If this is a deliberate check, add --allow-oos (every OOS look is logged).")
+    if BASELINE not in strategies:
+        strategies = [BASELINE, *strategies]  # always compare against buy & hold
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    run_id = f"{stamp}_{label}_{timeframe}"
+    if abs(fee - STANDARD_FEE) > 1e-12:
+        run_id += f"_fee{fee * 100:g}pct"
+    if detail:
+        run_id += f"_detail{detail}"
+    run_dir = ROOT / "user_data" / "backtest_results" / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    say(f"Backtesting {len(strategies)} strategies · {label} ({timerange}) · {timeframe} · fee {fee:.2%}"
+        + (f" · detail {detail}" if detail else "") + (" · OUT-OF-SAMPLE LOOK" if oos else ""))
+    ft_args = [
+        "backtesting", *config_args(*exchange_configs(data_exchange()), "backtest.json"),
+        "--strategy-list", *strategies, "--timeframe", timeframe, "--timerange", timerange,
+        "--fee", str(fee), "--cache", "none", "--export", "trades",
+        "--backtest-directory", str(run_dir.relative_to(ROOT)),
+    ]
+    if detail:
+        ft_args += ["--timeframe-detail", detail]
+    if notes:
+        ft_args += ["--notes", notes]
+    freqtrade(ft_args)
+
+    zips = sorted(run_dir.glob("*.zip"))
+    if len(zips) != 1:
+        die(f"expected one result zip in {run_dir}, found {len(zips)}")
+    summary = f"results/runs/{run_id}.json"
+    container_python("metrics.py", ["--zip", str(zips[0].relative_to(ROOT)), "--out", summary,
+                                    "--run-id", run_id, "--period", label, "--notes", notes])
+    run_summary = report.load_run(ROOT / summary)
+    board = report.write_run(run_summary)
+    ids = experiments.log_run(run_summary, oos_look=oos)
+    experiments.render()
+    report.update_results_doc()
+    print("\n" + board.read_text())
+    say(f"Leaderboard: {board.relative_to(ROOT)} · experiments {ids[0]}..{ids[-1]} logged")
+    return run_summary
+
+
+def cmd_backtest(args: argparse.Namespace) -> None:
+    """Backtest all strategies in one run, then build the leaderboard and log the experiment."""
+    backtest_run(args.period, args.timeframe, args.fee, args.detail,
+                 args.strategies or discover_strategies(), args.notes, args.allow_oos)
+
+
+def cmd_report(args: argparse.Namespace) -> None:
+    """Rebuild every leaderboard, docs/RESULTS.md and docs/EXPERIMENT_LOG.md."""
+    if args.recompute:
+        for path in sorted((ROOT / "results" / "runs").glob("*.json")):
+            run_summary = report.load_run(path)
+            zip_path = ROOT / run_summary["zip"]
+            if not zip_path.exists():
+                print(f"skip {path.name}: raw result {run_summary['zip']} no longer exists")
+                continue
+            container_python("metrics.py", ["--zip", run_summary["zip"], "--out", str(path.relative_to(ROOT)),
+                                            "--run-id", run_summary["run_id"], "--period", run_summary["period"],
+                                            "--notes", run_summary.get("notes", "")])
+    n = report.rebuild_all()
+    if args.recompute:
+        print(f"Updated measured fields of {experiments.refresh(report.all_runs())} experiment entries")
+    experiments.render()
+    print(f"Rebuilt {n} leaderboards, docs/RESULTS.md and docs/EXPERIMENT_LOG.md")
+
+
+def cmd_exp(args: argparse.Namespace) -> None:
+    """Experiment log: list entries or record a keep / tweak / drop decision."""
+    if args.action == "decide":
+        if len(args.rest) < 3:
+            die('usage: lab.py exp decide <ID> keep|tweak|drop "why"')
+        entry = experiments.decide(args.rest[0], args.rest[1], " ".join(args.rest[2:]))
+        experiments.render()
+        print(f"{entry['id']} {entry['strategy']} ({entry['period']} {entry['timeframe']}): "
+              f"{entry['decision']} - {entry['decision_note']}")
+        return
+    entries = experiments.load()
+    if args.strategy:
+        entries = [e for e in entries if args.strategy.lower() in e["strategy"].lower()]
+    print(f"{'ID':6} {'date':10} {'strategy':20} {'period':12} {'tf':4} {'profit%':>8} {'maxDD%':>7} "
+          f"{'sharpe':>6} {'calmar':>6} {'trades':>6}  decision")
+    for e in entries[-args.last:]:
+        m = e["metrics"]
+        print(f"{e['id']:6} {e['date'][:10]:10} {e['strategy']:20} {e['period'] + ('*' if e.get('oos_look') else ''):12} "
+              f"{e['timeframe']:4} {m['profit_pct']:>+8.1f} {m['max_dd_pct']:>7.1f} {m['sharpe']:>6.2f} "
+              f"{m['calmar']:>6.2f} {m['trades']:>6}  {e['decision']} {e.get('decision_note', '')}")
 
 
 def cmd_ft(args: argparse.Namespace) -> None:
@@ -447,7 +600,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     add("setup", cmd_setup)
     add("safety", cmd_safety)
-    add("test", cmd_test)
+    p = add("test", cmd_test)
+    p.add_argument("--host-only", action="store_true", help="skip the container tests (no Docker needed)")
     p = add("show-config", cmd_show_config)
     p.add_argument("configs", nargs="*", default=["backtest.json"],
                    help="override files in user_data/configs layered on base.json (default: backtest.json)")
@@ -462,6 +616,22 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--strategies", nargs="+", help="default: every strategy in user_data/strategies")
     p.add_argument("--skip-lookahead", action="store_true")
     p.add_argument("--skip-recursive", action="store_true")
+    p = add("backtest", cmd_backtest)
+    p.add_argument("--period", default="is",
+                   help="is (default), oos, full, a regime window like bull-is, or yyyymmdd-yyyymmdd")
+    p.add_argument("--timeframe", default="1h", choices=["15m", "1h", "4h"])
+    p.add_argument("--strategies", nargs="+", help="default: all (buy & hold is always added)")
+    p.add_argument("--fee", type=float, default=STANDARD_FEE, help="per side, default 0.001 (0.1%%)")
+    p.add_argument("--detail", choices=["5m"], help="simulate fills inside each candle with 5m data")
+    p.add_argument("--notes", default="", help="free text stored with the result and the experiment log")
+    p.add_argument("--allow-oos", action="store_true", help="allow periods that include out-of-sample data")
+    p = add("report", cmd_report)
+    p.add_argument("--recompute", action="store_true", help="re-read the raw result zips (needs Docker)")
+    p = add("exp", cmd_exp)
+    p.add_argument("action", choices=["list", "decide"])
+    p.add_argument("rest", nargs="*", help='decide: <ID> keep|tweak|drop "why"')
+    p.add_argument("--strategy", help="list: filter by strategy name")
+    p.add_argument("--last", type=int, default=40, help="list: show the last N entries")
     p = add("ft", cmd_ft)
     p.add_argument("ft_args", nargs=argparse.REMAINDER, help="-- <freqtrade args>")
     return parser

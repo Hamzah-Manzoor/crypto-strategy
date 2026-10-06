@@ -7,7 +7,7 @@ A local lab for **testing many crypto trading strategies side by side** and impr
 - **Spot only:** BTC, ETH, SOL, BNB, XRP against USDT. Main timeframe is 1h; 15m and 4h are also supported.
 - **Honest testing:** realistic fees (0.1% per side), in-sample vs out-of-sample splits, walk-forward tests, and bull/bear/sideways market checks. A strategy has to earn its place on the leaderboard.
 
-> **Status:** Phase 4 of 8 (strategies) is done. See [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** Phase 5 of 8 (backtesting) is done. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start (macOS)
 
@@ -22,7 +22,13 @@ python3 scripts/lab.py download   # ~1 minute, about 3.4 years of candles, then 
 python3 scripts/lab.py regimes    # bull / bear / sideways test windows
 ```
 
-Coming in the next phases: `backtest` → `report`, which takes you from data to your first leaderboard.
+Then your first leaderboard (about a minute):
+
+```bash
+python3 scripts/lab.py backtest --period is --timeframe 1h --notes "my first run"
+```
+
+It prints the leaderboard, saves it to `results/leaderboards/`, updates `docs/RESULTS.md`, and logs the run in `docs/EXPERIMENT_LOG.md`.
 
 Every command also has a `make` alias: `make setup`, `make test`, `make backtest ARGS="--period oos"`.
 
@@ -50,9 +56,9 @@ Every command also has a `make` alias: `make setup`, `make test`, `make backtest
 | `data-check` | Checks data coverage, gaps, duplicates and bad candles | ✅ Phase 3 |
 | `regimes [--days 90]` | Picks bull / bear / sideways windows inside in-sample and out-of-sample | ✅ Phase 3 |
 | `check-bias [--strategies …]` | Lookahead + recursive analysis on all strategies; writes `results/checks/bias_check.md` | ✅ Phase 4 |
-| `backtest [--period …] [--timeframe …]` | Backtests all strategies in one run, then logs it and builds the leaderboard | Phase 5 |
-| `report` | Rebuilds leaderboards and `docs/RESULTS.md` | Phase 5 |
-| `exp list\|decide` | Experiment log | Phase 5 |
+| `backtest [--period is] [--timeframe 1h] [--fee 0.001] [--detail 5m] [--notes …]` | Backtests all strategies in one run (buy & hold always included), logs it and builds the leaderboard. Refuses out-of-sample dates without `--allow-oos` | ✅ Phase 5 |
+| `report [--recompute]` | Rebuilds leaderboards, `docs/RESULTS.md` and `docs/EXPERIMENT_LOG.md` | ✅ Phase 5 |
+| `exp list [--strategy X]` / `exp decide <ID> keep\|tweak\|drop "why"` | Experiment log | ✅ Phase 5 |
 | `validate` | Stage 1 check: in-sample vs out-of-sample, stress fees | Phase 6 |
 | `hyperopt <Strategy>` | Auto-tunes settings on in-sample data (fixed seed) | Phase 6 |
 | `walkforward <Strategy>` | Rolling train/test windows | Phase 6 |

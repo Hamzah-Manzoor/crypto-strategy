@@ -8,16 +8,16 @@
 
 | # | Strategy | Style | Holds for | Expect it to shine in | Expect it to struggle in | Status |
 |---|---|---|---|---|---|---|
-| 0 | `BuyHoldV1` | Baseline | whole period | bull markets | bear markets | baseline |
-| 1 | `EmaTrendV1` | Trend following | days | long smooth trends | sideways chop | v1, bias-checked |
-| 2 | `AdxSupertrendV1` | Trend strength | days | strong breakouts | slow grinds, chop | v1, bias-checked |
-| 3 | `RsiBbReversionV1` | Mean reversion | hours | sideways with sharp dips | crashes | v1, bias-checked |
-| 4 | `DonchianBreakoutV1` | Breakout | ~1 day | range breakouts that run | fake-outs | v1, bias-checked |
-| 5 | `MacdVolumeV1` | Momentum | hours | impulsive swings | quiet drifts, V-reversals | v1, bias-checked |
-| 6 | `SqueezeBreakoutV1` | Volatility squeeze | hours to a day | coils that break upward | fake-outs, downtrends | v1, bias-checked |
-| 7 | `TrendPullbackV1` | Dip buying in uptrends | hours | steady uptrends | trend changes, crashes | v1, bias-checked |
+| 0 | `BuyHoldV1` | Baseline | whole period | bull markets | bear markets | baseline: IS 1h +429%, max DD 51% |
+| 1 | `EmaTrendV1` | Trend following | days | long smooth trends | sideways chop | **tweak**: IS 1h −4% (+26% before fees) |
+| 2 | `AdxSupertrendV1` | Trend strength | days | strong breakouts | slow grinds, chop | **drop?**: IS 1h −14%, loses even before fees |
+| 3 | `RsiBbReversionV1` | Mean reversion | hours | sideways with sharp dips | crashes | **drop?**: IS 1h −42%, loses even before fees |
+| 4 | `DonchianBreakoutV1` | Breakout | ~1 day | range breakouts that run | fake-outs | **tweak**: IS 1h −27% (+19% before fees) |
+| 5 | `MacdVolumeV1` | Momentum | hours | impulsive swings | quiet drifts, V-reversals | **keep**: IS 1h +18%, DD 7.6%, only profitable v1 |
+| 6 | `SqueezeBreakoutV1` | Volatility squeeze | hours to a day | coils that break upward | fake-outs, downtrends | **tweak**: IS 1h −14%, but +6.5% on 4h |
+| 7 | `TrendPullbackV1` | Dip buying in uptrends | hours | steady uptrends | trend changes, crashes | **tweak**: IS 1h −23%, but **+66% before fees** |
 
-"Bias-checked" means the strategy passed lookahead and recursive analysis (details at the bottom). It does **not** yet say whether it makes money; that comes in Phases 5 and 6.
+All 8 passed the bias checks (details at the bottom). Status comes from the Phase 5 in-sample run (1h, 0.1% fee) and the decision in the [experiment log](EXPERIMENT_LOG.md). "Before fees" refers to a zero-fee diagnostic run. Analysis: [RESULTS](RESULTS.md).
 
 **Words used below:**
 - **EMA:** a moving average that weights recent candles more.

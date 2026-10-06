@@ -40,4 +40,5 @@ services:
     volumes:
       - ./user_data:/freqtrade/user_data
       - ./scripts:/freqtrade/scripts:ro
+      - ./tests:/freqtrade/tests:ro
       - ./results:/freqtrade/results

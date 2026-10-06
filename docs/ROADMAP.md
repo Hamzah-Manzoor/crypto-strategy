@@ -33,12 +33,14 @@ Each phase ends with a review stop and one git commit.
 - [x] Hyperopt parallel workers can import `labkit` (`PYTHONPATH` set in compose)
 - [x] `docs/STRATEGIES.md`
 
-## Phase 5: Backtesting
-- [ ] `lab.py backtest` with all strategies in one run
-- [ ] `report.py` leaderboard (markdown + CSV) with promotion rules applied
-- [ ] Experiment log (`results/experiments.jsonl` → `docs/EXPERIMENT_LOG.md`)
-- [ ] `docs/TESTING_METHODOLOGY.md` (rules written down *before* looking at out-of-sample)
-- [ ] In-sample leaderboards for 1h, 15m, 4h
+## Phase 5: Backtesting ✅
+- [x] `lab.py backtest` with all strategies in one run, plus an out-of-sample guard (`--allow-oos`)
+- [x] `metrics.py`: mark-to-market risk numbers from the wallet value (fixes Freqtrade's 0% drawdown for buy & hold)
+- [x] `report.py` leaderboard (markdown + CSV); `rules.py` promotion rules with stage-1 verdicts ready
+- [x] Experiment log (`results/experiments.jsonl` → `docs/EXPERIMENT_LOG.md`), `lab.py exp list|decide`
+- [x] `docs/TESTING_METHODOLOGY.md` written *before* any out-of-sample look; a test keeps it in sync with `rules.py`
+- [x] In-sample leaderboards for 1h, 15m, 4h, plus a zero-fee diagnostic: fees are the main problem
+- [x] 80 trades spot-checked: entries at the next candle's open
 
 ## Phase 6: Validation
 - [ ] Out-of-sample check + stress fees + 5m intra-candle detail

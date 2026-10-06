@@ -107,3 +107,26 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 **2026-10-06: Open issue for Phase 5: Freqtrade's drawdown ignores open trades.**
 - In the smoke backtest, Buy & Hold showed **0% drawdown** over Q1 2024, although prices dipped. Freqtrade's max drawdown is built from *closed* trades only, and Buy & Hold closes nothing until the end.
 - Comparing strategies with Buy & Hold "on a risk-adjusted basis" needs drawdown from the wallet value over time (mark-to-market). The report script in Phase 5 must use Freqtrade's wallet-based metrics, or compute drawdown itself.
+
+**2026-10-06: All risk metrics are computed from the wallet's mark-to-market value.**
+- Freqtrade's headline drawdown, Sortino and Calmar only count closed trades. For buy & hold over Q1 2024 they showed 0% drawdown, Sortino −100 and Calmar −100, while the real wallet fell 17.5%.
+- `scripts/metrics.py` rebuilds the wallet value at every candle from the `<strategy>_wallet.feather` file in each result zip. Our drawdown matches Freqtrade's separate wallet statistics exactly.
+- Sharpe and Sortino use daily returns × √365, with a risk-free rate of 0. Calmar = CAGR ÷ max drawdown.
+
+**2026-10-06: Leaderboards are sorted by Calmar.**
+- It answers "how much did I earn per unit of worst pain", which is the honest way to compare against buy & hold.
+- Raw profit would crown buy & hold in every bull market.
+
+**2026-10-06: The fee is read from the trades, not from the config copy in the zip.**
+- The config copy inside a result zip keeps the file value (0.001) even when the run used `--fee`.
+- Trusting it mislabelled our zero-fee runs. It would also have silently broken the 0.15% fee stress rule.
+- `metrics.py` now reads `fee_open`/`fee_close` from the trades, and fails loudly if they disagree.
+
+**2026-10-06: Promotion rules frozen before any out-of-sample look.**
+- `scripts/rules.py` and `docs/TESTING_METHODOLOGY.md` were written before running OOS. A unit test keeps the doc and the code in sync.
+- Backtests that touch OOS dates refuse to run without `--allow-oos`, and those runs are marked 👁 in the experiment log.
+
+**2026-10-06: Phase 5 finding: costs, not signals, are the main problem for most v1 strategies.**
+- A zero-fee diagnostic showed 5 of 7 strategies profitable before fees in-sample (1h). After 0.1% per side, only MACD Volume stays profitable.
+- The edge per trade (~0.1–0.3%) is about the size of the round-trip fee.
+- Phase 6 therefore focuses on fewer, better trades: higher timeframes, stricter filters, tuning that includes fees. Zero-fee runs stay diagnostics only and never count as results.

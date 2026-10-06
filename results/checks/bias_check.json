@@ -1,0 +1,45 @@
+{
+ "strategies": {
+  "AdxSupertrendV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "BuyHoldV1": {
+   "lookahead": "skipped",
+   "ok": true,
+   "recursive": "skipped"
+  },
+  "DonchianBreakoutV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "EmaTrendV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "MacdVolumeV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "RsiBbReversionV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "SqueezeBreakoutV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "TrendPullbackV1": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  }
+ },
+ "updated": "2026-10-06 06:59"
+}

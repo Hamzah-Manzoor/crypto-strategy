@@ -35,6 +35,15 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 - **Lookahead analysis runs one strategy per call.** With `--strategy-list`, Freqtrade 2026.9 analyses the first strategy's trades for every strategy. `lab.py check-bias` already handles this.
 - **Market loading is spot-only** (`ccxt_config.options.fetchMarkets.types = ["spot"]` in `base.json`), so runs never depend on Binance's futures API.
 - Every backtest or hyperopt run through `lab.py` is logged to `results/experiments.jsonl`.
+- **Results pipeline:**
+  - `lab.py backtest` → Freqtrade zip in `user_data/backtest_results/<run_id>/` (ignored).
+  - `scripts/metrics.py` (container, pandas) → `results/runs/<run_id>.json`.
+  - `scripts/report.py` → `results/leaderboards/` and `docs/RESULTS.md`.
+  - `scripts/experiments.py` → `docs/EXPERIMENT_LOG.md`.
+- **Risk metrics are mark-to-market.** Never use Freqtrade's trade-based `max_drawdown`/`sortino`/`calmar`: they ignore open trades.
+- **The fee is read from the trades, not the zip's config copy.** The copy ignores `--fee`.
+- **Promotion thresholds live only in `scripts/rules.py`.** `docs/TESTING_METHODOLOGY.md` must match them (a test checks this). Changing a threshold needs a DECISIONS entry.
+- **Zero-fee runs are diagnostics only.** They're logged as `diagnostic` and are never a result.
 
 ## How to add a strategy
 1. `cp templates/strategy_template.py user_data/strategies/my_idea_v1.py`, then rename the class to `MyIdeaV1`.
