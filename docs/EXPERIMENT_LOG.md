@@ -12,7 +12,7 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**257 entries**, 45 of them out-of-sample looks (in 9 runs).
+**280 entries**, 45 of them out-of-sample looks (in 9 runs).
 
 ## Current status per strategy version
 
@@ -43,6 +43,29 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0280 | 2026-10-06 | backtest | `TrendPullbackV2T` | is | 1h | 0.10% | +10.2 | 3.7 | 1.31 | 1.35 | 240 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0279 | 2026-10-06 | backtest | `TrendPullbackV2` | is | 1h | 0.10% | +3.9 | 9.2 | 0.27 | 0.21 | 675 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0278 | 2026-10-06 | backtest | `TrendPullbackV1T` | is | 1h | 0.10% | -4.1 | 12.0 | -0.29 | -0.17 | 715 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0277 | 2026-10-06 | backtest | `TrendPullbackV1` | is | 1h | 0.10% | -22.7 | 32.2 | -1.02 | -0.38 | 1941 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0276 | 2026-10-06 | backtest | `SqueezeBreakoutV1T` | is | 1h | 0.10% | +2.6 | 3.5 | 0.41 | 0.36 | 66 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0275 | 2026-10-06 | backtest | `SqueezeBreakoutV1` | is | 1h | 0.10% | -13.9 | 23.2 | -0.87 | -0.31 | 403 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0274 | 2026-10-06 | backtest | `RsiBbReversionV1T` | is | 1h | 0.10% | -0.1 | 18.2 | 0.05 | -0.00 | 254 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0273 | 2026-10-06 | backtest | `RsiBbReversionV1` | is | 1h | 0.10% | -41.9 | 53.6 | -1.28 | -0.44 | 699 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0272 | 2026-10-06 | backtest | `MacdVolumeV2T` | is | 1h | 0.10% | +7.2 | 3.4 | 1.16 | 1.05 | 81 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0271 | 2026-10-06 | backtest | `MacdVolumeV2` | is | 1h | 0.10% | -1.5 | 12.6 | -0.10 | -0.06 | 261 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0270 | 2026-10-06 | backtest | `MacdVolumeV1T` | is | 1h | 0.10% | +25.5 | 5.7 | 1.21 | 2.12 | 372 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0269 | 2026-10-06 | backtest | `MacdVolumeV1` | is | 1h | 0.10% | +18.1 | 7.6 | 0.72 | 1.15 | 695 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0268 | 2026-10-06 | backtest | `EmaTrendV2T` | is | 1h | 0.10% | +72.1 | 9.6 | 1.99 | 3.26 | 115 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0267 | 2026-10-06 | backtest | `EmaTrendV2` | is | 1h | 0.10% | +21.5 | 20.5 | 0.65 | 0.50 | 126 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0266 | 2026-10-06 | backtest | `EmaTrendV1T` | is | 1h | 0.10% | +15.8 | 25.5 | 0.51 | 0.30 | 539 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0265 | 2026-10-06 | backtest | `EmaTrendV1` | is | 1h | 0.10% | -4.2 | 26.1 | -0.03 | -0.08 | 675 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0264 | 2026-10-06 | backtest | `DonchianBreakoutV2T` | is | 1h | 0.10% | +70.4 | 13.7 | 1.45 | 2.23 | 188 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0263 | 2026-10-06 | backtest | `DonchianBreakoutV2` | is | 1h | 0.10% | +52.2 | 23.1 | 1.19 | 1.01 | 197 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0262 | 2026-10-06 | backtest | `DonchianBreakoutV1T` | is | 1h | 0.10% | +19.0 | 25.6 | 0.49 | 0.35 | 683 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0261 | 2026-10-06 | backtest | `DonchianBreakoutV1` | is | 1h | 0.10% | -27.3 | 49.6 | -0.51 | -0.30 | 1329 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0260 | 2026-10-06 | backtest | `AdxSupertrendV1T` | is | 1h | 0.10% | +14.4 | 6.5 | 0.76 | 1.06 | 118 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0259 | 2026-10-06 | backtest | `AdxSupertrendV1` | is | 1h | 0.10% | -13.9 | 20.4 | -0.69 | -0.35 | 240 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
+| E0258 | 2026-10-06 | backtest | `BuyHoldV1` | is | 1h | 0.10% | +428.9 | 51.3 | 1.63 | 2.53 | 5 | baseline | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
 | E0257 | 2026-10-06 | backtest | `SqueezeBreakoutV1T` | sideways-oos 👁 | 1h | 0.10% | -0.7 | 1.2 | -1.94 | -2.46 | 9 | pending | stage 2: regime sideways-oos | `fa623ac+dirty` |
 | E0256 | 2026-10-06 | backtest | `EmaTrendV2` | sideways-oos 👁 | 1h | 0.10% | -1.0 | 5.0 | -0.19 | -0.77 | 15 | pending | stage 2: regime sideways-oos | `fa623ac+dirty` |
 | E0255 | 2026-10-06 | backtest | `BuyHoldV1` | sideways-oos 👁 | 1h | 0.10% | +0.8 | 15.6 | -0.30 | 0.22 | 5 | baseline | stage 2: regime sideways-oos | `fa623ac+dirty` |

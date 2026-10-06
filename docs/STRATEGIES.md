@@ -40,7 +40,8 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
 - **Entry / exit:** buy at the start. Never sell; open trades are valued at the end of the test.
 - **Risk:** no stoploss, no ROI.
 - **Why it matters:** in a bull market it's very hard to beat on raw profit. A strategy earns its place by beating it **on a risk-adjusted basis**: similar return with a much smaller drawdown, or doing far better in bear markets.
-- **Known measurement issue:** Freqtrade measures drawdown on *closed* trades, so a strategy that never closes shows 0% drawdown. Phase 5 fixes this by measuring drawdown on the wallet's value over time.
+- **Known measurement issue:** Freqtrade measures drawdown on *closed* trades, so a strategy that never closes shows 0% drawdown. Since Phase 5, every risk number in this lab is measured on the wallet's value at every candle instead.
+- **Status:** baseline in every run. In-sample (Oct 2023 → Oct 2025): **+429%**, max drawdown 51%. Out-of-sample (Oct 2025 → Oct 2026): **−35%**, max drawdown 63%. Paper-trading as the baseline bot since 2026-10-06.
 
 ## 1. EMA Trend (`EmaTrendV1`): trend following
 
@@ -55,6 +56,7 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
   - Warm-up: 600 candles.
 - **Tunable:** fast EMA ∈ {8, 12, 16, 21, 26}, slow EMA ∈ {34, 50, 72, 100}.
 - **Should work:** long, smooth trends. **Should fail:** sideways chop (whipsaws: many small losses plus fees). It also exits late at tops.
+- **Status: dropped.** In-sample −4.2% after fees, but +26% before fees: 675 trades of fees ate the edge. Tuned (`EmaTrendV1T`): +15.8%, but profit factor 1.09 was below the candidate rule. Replaced by `EmaTrendV2`.
 
 ## 2. ADX Supertrend (`AdxSupertrendV1`): trend strength
 
@@ -69,6 +71,7 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
   - Warm-up: 300 candles.
 - **Tunable:** ATR length ∈ {7, 10, 14}, multiplier ∈ {2.0 … 4.0}, ADX minimum 15–35.
 - **Should work:** strong, sustained moves. **Should fail:** high ADX also appears at the *end* of trends, so it can buy into blow-off tops. It misses slow grinds and gets false flips in chop.
+- **Status: dropped.** −13.9% in-sample, and it loses even with zero fees. Tuned (`AdxSupertrendV1T`): +14.4% in-sample, but out-of-sample only +1.6% with profit factor 1.09; it kept only 28% of its Sharpe (Stage 1 FAIL).
 
 ## 3. RSI + Bollinger Reversion (`RsiBbReversionV1`): mean reversion
 
@@ -83,6 +86,7 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
   - Warm-up: 200 candles.
 - **Tunable:** RSI entry 20–40, band width ∈ {1.5, 2.0, 2.5, 3.0}, RSI exit 55–75.
 - **Should work:** sideways or gently rising markets with sharp dips (high win rate). **Should fail:** crashes, where "oversold" keeps getting more oversold. Losses are rarer but bigger than wins.
+- **Status: dropped.** −41.9% in-sample, the worst of all, and still −23% with zero fees. Tuned: −0.1%. Buying dips in a strong bull market kept getting stopped out.
 
 ## 4. Donchian Breakout (`DonchianBreakoutV1`): breakout
 
@@ -97,6 +101,7 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
   - Warm-up: 120 candles (not recursive).
 - **Tunable:** N ∈ {20, 30, 40, 55}, M ∈ {10, 15, 20}, volume multiplier 0.8–2.0.
 - **Should work:** breakouts that keep running. Low win rate, big winners. **Should fail:** fake-outs in ranges; strings of small losses are normal.
+- **Status: dropped.** −27.3% in-sample (1,329 trades), +19% before fees. Tuned: profit factor 1.08. Replaced by `DonchianBreakoutV2`.
 
 ## 5. MACD Volume (`MacdVolumeV1`): momentum
 
@@ -111,6 +116,7 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
   - Warm-up: 400 candles.
 - **Tunable:** MACD set ∈ {12-26-9, 8-17-9, 5-35-5}, volume multiplier 1.0–3.0.
 - **Should work:** impulsive moves after pauses. **Should fail:** quiet drifts (rarely trades) and sharp V-reversals (MACD is late at both ends).
+- **Status: dropped.** The only original idea profitable after fees in-sample (+18.1%, max drawdown 7.6%). Out-of-sample it went flat (−0.7%, Sharpe 0): Stage 1 FAIL. The tuned `MacdVolumeV1T` did worse out-of-sample (−11%).
 
 ## 6. Squeeze Breakout (`SqueezeBreakoutV1`): volatility squeeze
 
@@ -125,6 +131,7 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
   - Warm-up: 200 candles.
 - **Tunable:** Keltner multiplier ∈ {1.0, 1.25, 1.5, 2.0}, minimum squeeze length 3–20.
 - **Should work:** consolidations that resolve upward. **Should fail:** fake-ups that reverse. In downtrends most releases break down, so it rarely trades (which is fine).
+- **Status: dropped.** −13.9% in-sample on 1h (better on 4h). Tuned `SqueezeBreakoutV1T` passed Stage 1 (REVIEW: in the market ~1% of the time, +1.2% a year) but failed Stage 2: profitable in 3 of 8 quarters, −5.9% across them.
 
 ## 7. Trend Pullback (`TrendPullbackV1`): buy dips in uptrends
 
@@ -139,6 +146,7 @@ The full glossary is in [GLOSSARY](GLOSSARY.md).
   - Warm-up: 600 candles.
 - **Tunable:** RSI(2) entry 3–20, RSI(2) exit 50–90.
 - **Should work:** steady uptrends with normal noise (high win rate, short holds). **Should fail:** when the "dip" is the start of a crash (the EMA200 filter reacts late). Fees hurt the many small trades.
+- **Status: dropped.** −22.7% in-sample over 1,941 trades, but **+66% before fees**: the clearest case of fees eating a real edge. Tuned: still −4.1%. Its v2 cut trades by two thirds.
 
 ---
 
@@ -161,6 +169,7 @@ Each v2 subclasses its v1 (`class EmaTrendV2(EmaTrendV1)`) and overrides only wh
   - Larger ROI table: 8% / 4% after 12h / 1.5% after 2 days.
 - **Risk:** stoploss −8%, no trailing stop, warm-up 600 candles.
 - **Tunable:** RSI(2) entry 2–15, exit 60–95.
+- **Status: dropped.** Untuned +3.9% in-sample. Tuned (`TrendPullbackV2T`, RSI(2) < 2): +10.2% in-sample, then −1.8% out-of-sample (Stage 1 FAIL).
 
 ### 9. EMA Trend v2 (`EmaTrendV2`)
 - **Changes vs v1:**
@@ -169,6 +178,12 @@ Each v2 subclasses its v1 (`class EmaTrendV2(EmaTrendV1)`) and overrides only wh
   - Stoploss −10%.
   - Trailing stop starts at +10% with a 5% trail.
 - **Tunable:** 4h fast EMA ∈ {12, 21, 26}, slow ∈ {50, 55, 72}.
+- **Status: watch list, paper-trading since 2026-10-06 (FreqUI :8081). Not promoted.**
+  - In-sample: +21.5% (126 trades, max drawdown 20.5%).
+  - **Stage 1 PASS:** out-of-sample +5.1% with max drawdown 11.9% while buy & hold lost 35%; still positive at 0.15% fee and with 5m fills.
+  - **Stage 2 FAIL:** profitable in only 3 of 8 quarters (rule: 60%).
+  - Re-tuning it every quarter did better (5 of 8 quarters, +23%) but missed the efficiency rule (0.49 vs 0.5); a lead for future work.
+  - The once-tuned `EmaTrendV2T` (+72% in-sample) lost 1% out-of-sample: overfitted.
 
 ### 10. Donchian Breakout v2 (`DonchianBreakoutV2`)
 - **Changes vs v1:**
@@ -178,12 +193,14 @@ Each v2 subclasses its v1 (`class EmaTrendV2(EmaTrendV1)`) and overrides only wh
   - 4h EMA50 must be above EMA200.
   - Wider trailing stop.
 - **Tunable:** entry channel ∈ {20, 30, 42, 55} 4h candles, exit ∈ {6, 10, 15}, volume 1.0–2.5×.
+- **Status: dropped.** The biggest in-sample improvement (−27% → **+52%**), but out-of-sample −7.6% (tuned: −8.2%). Its in-sample success didn't generalise.
 
 ### 11. MACD Volume v2 (`MacdVolumeV2`)
 - **Changes vs v1:**
   - Same 1h MACD signal, but only when the 4h trend is up (4h close > 4h EMA50 > 4h EMA200).
   - Volume burst raised to 2.0× (range 1.5–3.5).
 - **Tunable:** MACD set, volume multiplier.
+- **Status: dropped.** The 4h filter removed good trades: −5.8% in-sample (v1 was +18%). Tuned: +7.2% in-sample, but only 18 out-of-sample trades and −2.0%.
 
 ### Tuned versions (`…T`)
 - `lab.py hyperopt <Strategy>` tunes a strategy on **in-sample data only**. It then writes a small generated subclass, for example `MacdVolumeV1T(MacdVolumeV1)`, containing only the tuned settings.
@@ -209,6 +226,7 @@ Two automatic checks guard against strategies that look great only because they 
 | SqueezeBreakoutV1 | no bias | 200 | 0.000% |
 | TrendPullbackV1 | no bias | 600 | 0.003% (EMA200) |
 
+- **v2 and tuned versions:** the 4 hand-designed v2s (warm-up 600, worst error 0.003%) and all 11 tuned `…T` versions also passed both checks in Phase 6. Full table: `results/checks/bias_check.md`.
 - **The check can catch cheating:** a throw-away strategy that peeks one candle ahead was flagged with "has_bias: Yes".
 - **The warm-up counts matter:** with only 100 warm-up candles, ADX would be off by 0.86% and MACD by 0.59%.
 - **Full output:** `results/checks/bias_check.md` and `results/checks/lookahead.csv`.

@@ -58,12 +58,29 @@ Each phase ends with a review stop and one git commit.
 - [x] Safety: planted `dry_run=false` keeps the bot from ever starting; API rejects missing/wrong login (401)
 - [x] Optional Telegram alerts documented (per-bot env file, off by default)
 
-## Phase 8: Docs
-- [ ] Every markdown file filled with real results
-- [ ] `docs/GLOSSARY.md`
-- [ ] Pakistan / PVARA section in `docs/RISK_AND_SAFETY.md`
+## Phase 8: Docs ✅
+- [x] Every markdown file filled with real results (summary tables, a status line per strategy, paper-trading check-in)
+- [x] `docs/GLOSSARY.md`: 87 trading and testing terms in plain English
+- [x] Pakistan section in `docs/RISK_AND_SAFETY.md`: Virtual Assets Act 2026, PVARA licensing status, State Bank of Pakistan April 2026 change, with dated sources
+- [x] Final all-versions in-sample leaderboard (identical to the earlier run: backtests are reproducible)
 
-## Later ideas (not scheduled)
-- [ ] Protections (cooldown after losses, max-drawdown pause)
-- [ ] More pairs, chosen once and then frozen, to test whether results generalise
-- [ ] Multi-timeframe confirmation (e.g. 4h trend filter on 1h entries)
+## Next steps (suggested, not scheduled)
+
+**Watch what's running**
+- [ ] Check the paper bots every week or two (`lab.py bots status`). After about 2–3 months, compare `EmaTrendV2`'s live paper results with its backtest over the same dates (`lab.py backtest --period <start>-<end> --allow-oos`).
+
+**Follow the leads the data gave us**
+- [ ] **EmaTrendV2 with quarterly re-tuning:** it was the near-miss in Stage 2 (5 of 8 quarters profitable, efficiency 0.49 vs 0.5).
+  - Pre-register the exact process in DECISIONS first: what gets re-tuned, how often, how many epochs.
+  - Then judge it only on data that arrives *after* that date (paper trading), because our out-of-sample year has now been looked at 9 times.
+- [ ] **Narrower hyperopt spaces:** several tuned stops hit the edges of the allowed range. Try fewer, more meaningful parameters (or none) rather than wider ranges.
+- [ ] **Fee-aware design for the strategies with a real gross edge** (Trend Pullback: +66% before fees). Use higher timeframes, or require a minimum expected move per trade larger than the round-trip fee.
+
+**Make the lab stronger**
+- [ ] **Protections:** cooldown after a stoploss, pause after a drawdown. Freqtrade supports these natively.
+- [ ] **More pairs, chosen once and then frozen,** to see whether results hold beyond 5 coins.
+- [ ] **A paper-vs-backtest report:** a `lab.py` command that backtests a bot's live period and puts it next to its paper trades.
+- [ ] **Clean-up command** for raw output: hyperopt result files reached about 2.4 GB (`user_data/hyperopt_results/` can be deleted at any time).
+
+**Before *any* real money (not planned)**
+- [ ] Everything in [RISK_AND_SAFETY](RISK_AND_SAFETY.md) > "What would be required before ever going live", including a PVARA-licensed platform.

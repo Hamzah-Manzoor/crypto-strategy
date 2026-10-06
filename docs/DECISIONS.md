@@ -190,3 +190,12 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 **2026-10-06: Bot files are generated from one registry.**
 - `bots.json` → `docker-compose.bots.yml` + `dryrun/<bot>.json`, so ports, database names, CORS origins and the `--dry-run` flag can't drift apart.
 - The FreqUI login comes from `.env` through `FREQTRADE__API_SERVER__*` (Freqtrade validates the API block after merging environment variables, as confirmed by the bots starting). Optional Telegram settings come from a per-bot `.env.bot-<name>`, because one Telegram token can't be shared by two bots.
+
+**2026-10-07: Pakistan legal facts are dated and sourced, not remembered.**
+- The Pakistan section of RISK_AND_SAFETY was researched on 2026-10-07: PVARA's own site, The Block, CoinDesk, NextGen.pk, CoinMarketCap Academy.
+- Each fact carries its date, because the licensing regime was mid-rollout: NOC deadline 5 Sept 2026, full licences expected Q4 2026.
+- It's explicitly not legal advice and must be re-checked before any real-money decision.
+
+**2026-10-07: The in-sample leaderboard in RESULTS carries a permanent caution.**
+- Tuned `…T` versions top any in-sample table because they were tuned on it. `EmaTrendV2T` shows "beats buy & hold" there and lost money out-of-sample.
+- `report.py` now always prints a warning above in-sample tables, and the RESULTS summary leads with the Stage 1 / Stage 2 verdicts.

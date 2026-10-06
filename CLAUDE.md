@@ -14,11 +14,15 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 |---|---|
 | `scripts/lab.py` | Task runner, the single entry point (stdlib only). `python3 scripts/lab.py --help` |
 | `scripts/safety_check.py` | The safety gate (tests in `tests/test_safety_check.py`) |
+| `scripts/metrics.py` | (container) result zip → `results/runs/<run>.json`, mark-to-market risk metrics |
+| `scripts/report.py`, `rules.py` | leaderboards, stage-1/2 verdicts, `docs/RESULTS.md` auto block; `rules.py` = the only place thresholds live |
+| `scripts/experiments.py`, `tuning.py`, `bots.py` | experiment log; hyperopt / walk-forward helpers; paper-bot generation + status client |
+| `docker-compose.bots.yml` | GENERATED from `user_data/configs/bots.json`: one dry-run bot per entry |
 | `docker-compose.yml` | Pinned image `freqtradeorg/freqtrade:2026.9@sha256:…`, `safety` + `freqtrade` (tools) services |
 | `user_data/configs/` | `base.json` (always loaded first) plus small overrides: `backtest.json`, `exchange-*.json`, `dryrun/<bot>.json` |
 | `user_data/strategies/` | One file per strategy **version** (`ema_trend_v1.py` → `class EmaTrendV1`) plus shared code in the `labkit/` sub-package (`base.py`: `LabBaseStrategy`; `indicators.py`: Supertrend, Keltner, Donchian…). Freqtrade doesn't scan sub-folders, so `labkit` is never listed as a strategy |
 | `templates/strategy_template.py` | Copy this to start a new strategy |
-| `results/` | Committed summaries: leaderboards, experiment log, hyperopt params, walk-forward reports |
+| `results/` | Committed summaries: `runs/` (one JSON per backtest), `leaderboards/`, `experiments.jsonl`, `hyperopt/`, `walkforward/`, `checks/`, `regimes.json` |
 | `docs/` | Methodology, results, decisions, roadmap, safety, glossary |
 
 ## Conventions
@@ -72,9 +76,17 @@ python3 scripts/lab.py download     # candles (re-run to top up), then data chec
 python3 scripts/lab.py data-check   # coverage / gaps report
 python3 scripts/lab.py regimes      # bull / bear / sideways windows per split
 python3 scripts/lab.py check-bias   # lookahead + recursive analysis, must PASS for every strategy
+python3 scripts/lab.py backtest     # all strategies, in-sample, 1h -> leaderboard + experiment log
+python3 scripts/lab.py hyperopt X   # in-sample tuning -> generated XT (then check-bias XT)
+python3 scripts/lab.py validate --strategies ...   # stage 1 (OOS look - pre-register candidates first)
+python3 scripts/lab.py walkforward X [--fixed]     # stage 2 input
+python3 scripts/lab.py stage2 --strategies ...     # stage 2 verdicts
+python3 scripts/lab.py report       # rebuild leaderboards / RESULTS / EXPERIMENT_LOG (no Docker needed)
+python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
+python3 scripts/lab.py bots up|down|status|logs    # paper bots from user_data/configs/bots.json
 python3 scripts/lab.py ft -- <any freqtrade command and flags>
 ```
-More commands (download, backtest, report, hyperopt, walkforward, bots) are added phase by phase. `README.md` has the full table.
+`README.md` has the full command table; `<command> --help` lists every option.
 
 ## What NOT to do
 - Don't add API keys, set `dry_run: false`, switch to futures/margin, or bind ports to anything other than `127.0.0.1`.

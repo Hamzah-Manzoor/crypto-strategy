@@ -167,3 +167,7 @@ Statuses:
 | 11 | No regime wipe-out | Max DD ≤ 30% in every regime window (bull, bear, sideways; IS and OOS) |
 
 **After promotion:** the strategy paper-trades as its own dry-run bot. It's watched for the gap between paper results and backtest results, which is the last reality check.
+
+---
+
+**How it went when these rules were applied (Phases 5–6):** 23 versions were tested, and 10 were pre-registered for Stage 1. 1 passed and 1 was flagged REVIEW; both then failed Stage 2, so none was promoted. The full story is in [RESULTS](RESULTS.md), and every run is in the [experiment log](EXPERIMENT_LOG.md).

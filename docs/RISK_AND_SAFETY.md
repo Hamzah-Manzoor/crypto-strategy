@@ -65,5 +65,34 @@ This project doesn't go live. If you ever decided to, this is the minimum, and i
 7. **A kill switch and monitoring.** Know how to stop the bot and cancel orders from your phone, and set alerts for errors and drawdown.
 8. **A separate, reviewed live config.** Never reuse this lab's configs. The safety check would (correctly) refuse them anyway.
 
-### Pakistan note
-You are in Pakistan. Live crypto trading would have to follow the **Virtual Assets Act 2026** and use a platform licensed by the **Pakistan Virtual Assets Regulatory Authority (PVARA)**. Exact licensing rules and the list of licensed platforms will be researched from official sources and added here in Phase 8. Rules in this area change quickly, so always check the current official PVARA guidance before acting.
+### Pakistan: what the rules looked like on 2026-10-07
+
+You're in Pakistan, so any live trading would fall under Pakistan's crypto law. Below is what public sources said on the date above. **This isn't legal advice. Rules here are changing fast, so check the official sources again before doing anything with real money.**
+
+**The law and the regulator**
+- **Virtual Assets Act, 2026.** Parliament passed it on **6 March 2026**; it takes effect on publication in the official Gazette. It's Pakistan's first full legal framework for crypto.
+- **The Act made PVARA permanent.** The Pakistan Virtual Assets Regulatory Authority had run as a temporary body under a presidential ordinance since **July 2025**. It's now a permanent federal regulator that **licenses, supervises, inspects and can punish** crypto service providers (VASPs): exchanges, custodians, wallet providers, token issuers and investment platforms.
+- **Licensing is mandatory** for any VASP serving Pakistan. Applicants need recognition from a major regulator (e.g. US, EU, Singapore), minimum capital, and Sharia-compliant services.
+- **Operating without a licence is punishable:** up to PKR 50 million and 5 years in prison for the provider. These penalties target *providers*, not people who use them, but an unlicensed platform gives you no legal protection.
+
+**Where licensing stood (as reported by mid-September 2026)**
+- **No exchange held a full PVARA licence yet.**
+  - Binance and HTX received **No-Objection Certificates (NOCs)** in December 2025. That's an early step that let them register with the Financial Monitoring Unit for anti-money-laundering purposes, but it **does not** permit them to operate yet.
+  - Firms already active before 5 March 2026 had to apply for an NOC by **5 September 2026**. Full licences were expected in **Q4 2026**.
+- **Banks: the State Bank of Pakistan lifted its 2018 crypto ban on 15 April 2026.**
+  - Banks may now open accounts for PVARA-licensed providers and for firms seeking approval, under strict KYC/AML rules.
+  - Banks still may **not** invest in, trade or hold crypto with their own money or customer deposits.
+- **Tax:** formalising the market is expected to bring capital-gains tax on crypto. The exact treatment for individuals wasn't clear from these sources. Ask a tax adviser or check FBR guidance before trading for real.
+
+**What this means for this lab if you ever went live**
+1. Use **only a platform PVARA lists as fully licensed**, not one that merely has an NOC. Check pvara.gov.pk; on 2026-10-07 its "About" page didn't show a public register, so ask PVARA directly if needed.
+2. Everything in the checklist above still applies: trade-only key, no withdrawal permission, IP whitelist, tiny amounts, a separate reviewed config.
+3. Re-check this section's facts on the day you decide. Several of them were expected to change in Q4 2026.
+
+**Sources (read 2026-10-07):**
+- [PVARA, About](https://www.pvara.gov.pk/about) (official)
+- [The Block, 6 Mar 2026: Pakistan parliament passes Virtual Assets Act](https://www.theblock.co/news/regulation/2026-03-06-pakistan-parliament-passes-virtual-assets-act-formalizing-crypto-regulatory-authority-392665)
+- [CoinDesk, 15 Apr 2026: Pakistan lifts seven-year ban, banks may serve licensed providers](https://www.coindesk.com/policy/2026/04/15/pakistan-lifts-seven-year-ban-allowing-banks-to-service-virtual-asset-providers)
+- [NextGen.pk, 10 Sep 2026: PVARA licensing goes live](https://nextgen.pk/news/pakistan-pvara-virtual-assets-act-2026-crypto-licensing-goes-live)
+- [CoinMarketCap Academy: Pakistan law gives PVARA power to license crypto firms](https://coinmarketcap.com/academy/article/pakistan-law-gives-pvara-power-to-license-crypto-firms)
+- [Wikipedia: Pakistan Virtual Assets Regulatory Authority](https://en.wikipedia.org/wiki/Pakistan_Virtual_Assets_Regulatory_Authority)
