@@ -12,30 +12,32 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**280 entries**, 45 of them out-of-sample looks (in 9 runs).
+**281 entries**, 45 of them out-of-sample looks (in 9 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
-| `EmaTrendV2` | **tweak** | EmaTrendV2 re-tuned each quarter: 62% windows, +23.3% stitched, efficiency 0.49 (just under 0.5) - most promising direction | E0239 |
-| `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
+| `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
+| `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
 | `DonchianBreakoutV1` | **drop** | DonchianBreakoutV1T IS +19.0% but PF 1.08 < 1.1; not a candidate | E0069 |
-| `DonchianBreakoutV2` | **drop** | DonchianBreakoutV2 untuned: IS +52% but OOS -7.6% (stage 1 FAIL) | E0212 |
 | `DonchianBreakoutV2T` | **drop** | stage 1 FAIL | E0206 |
+| `DonchianBreakoutV2` | **drop** | DonchianBreakoutV2 untuned: IS +52% but OOS -7.6% (stage 1 FAIL) | E0212 |
 | `EmaTrendV1` | **drop** | EmaTrendV1T IS +15.8% but PF 1.09 < 1.1; not a candidate | E0065 |
 | `EmaTrendV2T` | **drop** | stage 1 FAIL | E0205 |
-| `MacdVolumeV1` | **drop** | MacdVolumeV1 untuned: OOS -0.7%, Sharpe gone (stage 1 FAIL) | E0209 |
+| `EmaTrendV2` + quarterly re-tuning | **drop** | pre-registered fresh-data test FAILED: 2 of 7 quarters profitable, efficiency -0.84, -12.3% (buy & hold -65.3%) - process dropped, no retry on same data | E0281 |
 | `MacdVolumeV1T` | **drop** | stage 1 FAIL | E0207 |
-| `MacdVolumeV2` | **drop** | MacdVolumeV2T: only 18 OOS trades and -2.0% (stage 1 FAIL) | E0097 |
+| `MacdVolumeV1` | **drop** | MacdVolumeV1 untuned: OOS -0.7%, Sharpe gone (stage 1 FAIL) | E0209 |
 | `MacdVolumeV2T` | **drop** | stage 1 FAIL | E0211 |
+| `MacdVolumeV2` | **drop** | MacdVolumeV2T: only 18 OOS trades and -2.0% (stage 1 FAIL) | E0097 |
 | `RsiBbReversionV1` | **drop** | RsiBbReversionV1T breaks even in-sample (-0.1%); idea does not work here | E0081 |
-| `SqueezeBreakoutV1` | **drop** | SqueezeBreakoutV1 re-tuned walk-forward: 38% windows, stitched -5.9% | E0238 |
 | `SqueezeBreakoutV1T` | **drop** | SqueezeBreakoutV1T: stage 1 REVIEW, stage 2 FAIL; +1.2% a year is too small to matter | E0214 |
+| `SqueezeBreakoutV1` | **drop** | SqueezeBreakoutV1T: passed stage 1 (REVIEW, ~1% exposure) but failed stage 2 (38% windows, efficiency n/a) | E0073 |
+| `SqueezeBreakoutV1` + quarterly re-tuning | **drop** | SqueezeBreakoutV1 re-tuned walk-forward: 38% windows, stitched -5.9% | E0238 |
 | `TrendPullbackV1` | **drop** | TrendPullbackV1T still loses in-sample (-4.1%); not a candidate | E0061 |
-| `TrendPullbackV2` | **drop** | TrendPullbackV2T: IS +10.2% but OOS -1.8% (stage 1 FAIL) | E0085 |
 | `TrendPullbackV2T` | **drop** | stage 1 FAIL | E0208 |
+| `TrendPullbackV2` | **drop** | TrendPullbackV2T: IS +10.2% but OOS -1.8% (stage 1 FAIL) | E0085 |
 
 ## All entries
 
@@ -43,6 +45,7 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0281 | 2026-10-06 | walkforward | `EmaTrendV2` | walk-forward (retuned) | 1h | 0.10% | -12.3 | 12.3 | n/a | n/a | 93 | drop: pre-registered fresh-data test FAILED: 2 of 7 quarters profitable, efficiency -0.84, -12.3% (buy & hold -65.3%) - process dropped, no retry on same data | retuned: 29% windows profitable, efficiency -0.84 | `fdeea75+dirty` |
 | E0280 | 2026-10-06 | backtest | `TrendPullbackV2T` | is | 1h | 0.10% | +10.2 | 3.7 | 1.31 | 1.35 | 240 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
 | E0279 | 2026-10-06 | backtest | `TrendPullbackV2` | is | 1h | 0.10% | +3.9 | 9.2 | 0.27 | 0.21 | 675 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
 | E0278 | 2026-10-06 | backtest | `TrendPullbackV1T` | is | 1h | 0.10% | -4.1 | 12.0 | -0.29 | -0.17 | 715 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
@@ -84,7 +87,7 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 | E0242 | 2026-10-06 | backtest | `SqueezeBreakoutV1T` | bull-is | 1h | 0.10% | +1.0 | 1.2 | 1.54 | 3.45 | 3 | pending | stage 2: regime bull-is | `fa623ac+dirty` |
 | E0241 | 2026-10-06 | backtest | `EmaTrendV2` | bull-is | 1h | 0.10% | +2.1 | 8.1 | 0.54 | 1.09 | 22 | pending | stage 2: regime bull-is | `fa623ac+dirty` |
 | E0240 | 2026-10-06 | backtest | `BuyHoldV1` | bull-is | 1h | 0.10% | +134.4 | 22.5 | 5.49 | 135.83 | 5 | baseline | stage 2: regime bull-is | `fa623ac+dirty` |
-| E0239 | 2026-10-06 | walkforward | `EmaTrendV2` | walk-forward (retuned) 👁 | 1h | 0.10% | +23.3 | 11.4 | n/a | n/a | 109 | tweak: EmaTrendV2 re-tuned each quarter: 62% windows, +23.3% stitched, efficiency 0.49 (just under 0.5) - most promising direction | retuned: 62% windows profitable, efficiency 0.49 | `fa623ac+dirty` |
+| E0239 | 2026-10-06 | walkforward | `EmaTrendV2` | walk-forward (retuned) 👁 | 1h | 0.10% | +23.3 | 11.4 | n/a | n/a | 109 | drop: superseded by E0281: the near-miss did not hold on fresh 2021-2023 data | retuned: 62% windows profitable, efficiency 0.49 | `fa623ac+dirty` |
 | E0238 | 2026-10-06 | walkforward | `SqueezeBreakoutV1` | walk-forward (retuned) 👁 | 1h | 0.10% | -5.9 | 9.8 | n/a | n/a | 210 | drop: SqueezeBreakoutV1 re-tuned walk-forward: 38% windows, stitched -5.9% | retuned: 38% windows profitable, efficiency n/a | `fa623ac+dirty` |
 | E0237 | 2026-10-06 | walkforward | `EmaTrendV2` | walk-forward (fixed) 👁 | 1h | 0.10% | +11.2 | 12.2 | n/a | n/a | 103 | tweak: EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | fixed: 38% windows profitable, efficiency 0.88 | `fa623ac+dirty` |
 | E0236 | 2026-10-06 | backtest | `SqueezeBreakoutV1T` | oos 👁 | 1h+5m | 0.10% | +1.2 | 2.4 | 0.35 | 0.50 | 40 | pending | stage 1: 5m intra-candle fills | `fa623ac+dirty` |

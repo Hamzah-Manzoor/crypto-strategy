@@ -160,14 +160,22 @@ def status_table(entries: list[dict]) -> list[str]:
     latest: dict[str, dict] = {}
     for e in entries:
         if e["decision"] in ("keep", "tweak", "drop"):
-            latest[e["strategy"]] = e
+            latest[label(e)] = e
     if not latest:
         return []
     order = {"keep": 0, "tweak": 1, "drop": 2}
-    rows = sorted(latest.values(), key=lambda e: (order[e["decision"]], e["strategy"]))
+    rows = sorted(latest.items(), key=lambda kv: (order[kv[1]["decision"]], kv[0]))
     return ["## Current status per strategy version", "",
             "| Strategy | Decision | Why | From |", "|---|---|---|---|",
-            *[f"| `{e['strategy']}` | **{e['decision']}** | {e.get('decision_note', '')} | {e['id']} |" for e in rows], ""]
+            *[f"| {name} | **{e['decision']}** | {e.get('decision_note', '')} | {e['id']} |" for name, e in rows], ""]
+
+
+def label(e: dict) -> str:
+    """Status-table row name. A re-tuning walk-forward tests a *process* (re-tune every quarter),
+    not the strategy's fixed settings, so it gets its own row."""
+    if e["kind"] == "walkforward" and (e.get("settings") or {}).get("mode") == "retuned":
+        return f"`{e['strategy']}` + quarterly re-tuning"
+    return f"`{e['strategy']}`"
 
 
 def render(log: Path = LOG, doc: Path = DOC) -> None:

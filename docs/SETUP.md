@@ -73,6 +73,7 @@ Picks a **bull**, a **bear** and a **sideways** 90-day window **inside each spli
 | `Docker is installed but not running` / `Cannot connect to the Docker daemon` | Open Docker Desktop and wait for "Engine running". |
 | `service "safety" didn't complete successfully: exit 1` | The safety check failed inside Docker. See why with `docker compose logs safety`, or run `python3 scripts/lab.py safety`. Fix the config; don't bypass the check. |
 | Very slow backtests / hyperopt | Give Docker more CPUs and memory (Settings → Resources). |
+| `Found orphan containers ([crypto-lab-bot-…])` warning | Harmless. The paper bots are defined in the second compose file (`docker-compose.bots.yml`), so commands that only load `docker-compose.yml` don't know them. **Don't add `--remove-orphans`**: it would delete the running bots (`bots up` would bring them back, with their paper trades kept). |
 | `no space left on device` | `docker system prune` removes old containers and images. The pinned image is pulled again by `setup`. |
 | Permission errors writing `user_data/` | Docker Desktop on macOS maps file ownership automatically. On Linux, run `sudo chown -R 1000:1000 user_data results` (the container user is `ftuser`, uid 1000). |
 
@@ -95,6 +96,12 @@ Picks a **bull**, a **bear** and a **sideways** 90-day window **inside each spli
 | 1h | 30,094 | 2023-05-01 → 2026-10-05 | 0 | 0h |
 | 4h | 7,523 | 2023-05-01 → 2026-10-05 | 0 | 0h |
 | 1d (BTC only) | 1,738 | 2022-01-01 → 2026-10-04 | 0 | 0h |
+
+**Extra history (added 2026-10-07 for the quarterly re-tuning test):**
+- **What:** 1h and 4h for all 5 pairs now go back to **2020-08-11** (SOL's Binance listing). 1h: 53,928 candles per pair, 99.96% coverage. 4h: 100% coverage.
+- **Gaps:** 20 hours missing in the 1h files, from short Binance outages in 2020–2023. The longest is 4h, on 21 Dec 2020 and 13 Aug 2021. Freqtrade fills such gaps in backtests.
+- **Report:** `results/checks/data_check_20200811_1h-4h.md`.
+- **Command:** `python3 scripts/lab.py download --start 20200811 --timeframes 1h 4h`.
 
 - **All 5 pairs passed:** 100% coverage, no duplicates, no impossible candles and no zero-volume filler candles. Binance's candles needed no repairs.
 - **Data size:** 63 MB.

@@ -1,0 +1,195 @@
+{
+ "id": "20261006-204740_EmaTrendV2_retuned_20201201-20230901",
+ "strategy": "EmaTrendV2",
+ "mode": "retuned",
+ "range": "20201201-20230901",
+ "timeframe": "1h",
+ "epochs": 150,
+ "min_trades": 25,
+ "train_months": 12,
+ "test_months": 3,
+ "loss": "CalmarHyperOptLoss",
+ "seed": 42,
+ "fee": 0.001,
+ "windows": [
+  {
+   "k": 0,
+   "train": "20201201-20211201",
+   "test": "20211201-20220301",
+   "params": {
+    "buy": {
+     "fast_period": 26,
+     "slow_period": 50
+    },
+    "sell": {},
+    "stoploss": {
+     "stoploss": -0.037
+    }
+   },
+   "train_profit_pct": 36.588613384,
+   "train_days": 365,
+   "train_trades": 66,
+   "test_profit_pct": -2.6711,
+   "test_days": 90.0,
+   "test_max_dd_pct": 2.7248,
+   "test_trades": 6,
+   "test_sharpe": -1.6587,
+   "bh_test_profit_pct": -34.9226
+  },
+  {
+   "k": 1,
+   "train": "20210301-20220301",
+   "test": "20220301-20220601",
+   "params": {
+    "buy": {
+     "fast_period": 26,
+     "slow_period": 50
+    },
+    "sell": {},
+    "stoploss": {
+     "stoploss": -0.035
+    }
+   },
+   "train_profit_pct": 18.694192599,
+   "train_days": 365,
+   "train_trades": 60,
+   "test_profit_pct": 1.1467,
+   "test_days": 92.0,
+   "test_max_dd_pct": 6.8638,
+   "test_trades": 12,
+   "test_sharpe": 0.1453,
+   "bh_test_profit_pct": -35.8511
+  },
+  {
+   "k": 2,
+   "train": "20210601-20220601",
+   "test": "20220601-20220901",
+   "params": {
+    "buy": {
+     "fast_period": 26,
+     "slow_period": 55
+    },
+    "sell": {},
+    "stoploss": {
+     "stoploss": -0.031
+    }
+   },
+   "train_profit_pct": 3.7339521110000002,
+   "train_days": 365,
+   "train_trades": 44,
+   "test_profit_pct": -1.535,
+   "test_days": 92.0,
+   "test_max_dd_pct": 3.4412,
+   "test_trades": 7,
+   "test_sharpe": -1.1104,
+   "bh_test_profit_pct": -25.1067
+  },
+  {
+   "k": 3,
+   "train": "20210901-20220901",
+   "test": "20220901-20221201",
+   "params": {
+    "buy": {
+     "fast_period": 12,
+     "slow_period": 72
+    },
+    "sell": {},
+    "stoploss": {
+     "stoploss": -0.034
+    }
+   },
+   "train_profit_pct": 5.574010345,
+   "train_days": 365,
+   "train_trades": 51,
+   "test_profit_pct": -6.072,
+   "test_days": 91.0,
+   "test_max_dd_pct": 7.4289,
+   "test_trades": 15,
+   "test_sharpe": -2.5223,
+   "bh_test_profit_pct": -10.7998
+  },
+  {
+   "k": 4,
+   "train": "20211201-20221201",
+   "test": "20221201-20230301",
+   "params": {
+    "buy": {
+     "fast_period": 12,
+     "slow_period": 50
+    },
+    "sell": {},
+    "stoploss": {
+     "stoploss": -0.031
+    }
+   },
+   "train_profit_pct": -2.9840937160000003,
+   "train_days": 365,
+   "train_trades": 46,
+   "test_profit_pct": -4.0151,
+   "test_days": 90.0,
+   "test_max_dd_pct": 6.4347,
+   "test_trades": 12,
+   "test_sharpe": -1.7959,
+   "bh_test_profit_pct": 21.6458
+  },
+  {
+   "k": 5,
+   "train": "20220301-20230301",
+   "test": "20230301-20230601",
+   "params": {
+    "buy": {
+     "fast_period": 12,
+     "slow_period": 50
+    },
+    "sell": {},
+    "stoploss": {
+     "stoploss": -0.034
+    }
+   },
+   "train_profit_pct": -2.538299562,
+   "train_days": 365,
+   "train_trades": 47,
+   "test_profit_pct": -0.2944,
+   "test_days": 92.0,
+   "test_max_dd_pct": 12.2586,
+   "test_trades": 30,
+   "test_sharpe": 0.0191,
+   "bh_test_profit_pct": 13.7516
+  },
+  {
+   "k": 6,
+   "train": "20220601-20230601",
+   "test": "20230601-20230901",
+   "params": {
+    "buy": {
+     "fast_period": 12,
+     "slow_period": 50
+    },
+    "sell": {},
+    "stoploss": {
+     "stoploss": -0.032
+    }
+   },
+   "train_profit_pct": 1.0473806549999995,
+   "train_days": 365,
+   "train_trades": 69,
+   "test_profit_pct": 0.6542,
+   "test_days": 92.0,
+   "test_max_dd_pct": 4.5201,
+   "test_trades": 11,
+   "test_sharpe": 0.2693,
+   "bh_test_profit_pct": -10.0519
+  }
+ ],
+ "summary": {
+  "windows": 7,
+  "profitable_windows_pct": 28.571428571428573,
+  "stitched_profit_pct": -12.294897001292115,
+  "stitched_cagr_pct": -7.21975470646764,
+  "bh_stitched_profit_pct": -65.28838426296618,
+  "mean_train_yearly_pct": 8.587965116571429,
+  "wf_efficiency": -0.840682816996581,
+  "worst_window_dd_pct": 12.2586,
+  "total_test_trades": 93
+ }
+}

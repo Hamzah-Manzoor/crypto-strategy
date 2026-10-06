@@ -182,7 +182,7 @@ Each v2 subclasses its v1 (`class EmaTrendV2(EmaTrendV1)`) and overrides only wh
   - In-sample: +21.5% (126 trades, max drawdown 20.5%).
   - **Stage 1 PASS:** out-of-sample +5.1% with max drawdown 11.9% while buy & hold lost 35%; still positive at 0.15% fee and with 5m fills.
   - **Stage 2 FAIL:** profitable in only 3 of 8 quarters (rule: 60%).
-  - Re-tuning it every quarter did better (5 of 8 quarters, +23%) but missed the efficiency rule (0.49 vs 0.5); a lead for future work.
+  - Re-tuning it every quarter looked better on 2024–26 data (5 of 8 quarters, +23%). In a pre-registered test on 7 never-used quarters (2021-12 → 2023-09) it **failed**: 2 of 7 profitable, −12.3%. That process is dropped. See `docs/research/quarterly-retune-preregistration.md`.
   - The once-tuned `EmaTrendV2T` (+72% in-sample) lost 1% out-of-sample: overfitted.
 
 ### 10. Donchian Breakout v2 (`DonchianBreakoutV2`)

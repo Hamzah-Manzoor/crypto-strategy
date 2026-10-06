@@ -205,3 +205,11 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - **Test A:** the identical Phase 6 process on 7 never-used quarters (Dec 2021 → Sep 2023). Pass if ≥ 5 of 7 quarters are profitable, efficiency ≥ 0.5, total profit > 0, and the worst quarter's drawdown ≤ 25%.
 - **If it passes:** a 3rd paper bot, re-tuned quarterly, reviewed on 2027-04-01.
 - **If it fails:** the idea is dropped, with no tweaking on the same data.
+
+**2026-10-07: Quarterly re-tuning of EmaTrendV2 failed its pre-registered fresh-data test, so it's dropped.**
+- **Test A** (7 never-used quarters, Dec 2021 → Sep 2023): 2 of 7 quarters profitable (needed 5), efficiency −0.84 (needed 0.5), total −12.3% (needed > 0). Only the drawdown rule passed (12.3% ≤ 25%).
+- **As decided in advance:** no third paper bot and no tweaked retry on the same data.
+- **Lessons:**
+  - The Phase 6 near-miss came from over-used data.
+  - EmaTrendV2's trend filter limits losses in crashes (−12% vs buy & hold −65%), but that's not an edge.
+- Details: `docs/research/quarterly-retune-preregistration.md`.

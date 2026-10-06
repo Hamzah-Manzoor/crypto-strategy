@@ -51,6 +51,8 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 - **Tuning:**
   - `lab.py hyperopt X` writes a generated `XT` subclass. Never hand-edit it. Run `lab.py check-bias --strategies XT` right after.
   - Hyperopt uses exactly 6 workers: 11 ran out of memory, and results depend on the worker count.
+- **New research ideas get a pre-registration file** in `docs/research/` (process, data, pass rules, what happens on pass or fail). Commit and push it **before** running the test, then append the results below it without editing the rules.
+- **Data before 2023-10-01 (1h and 4h go back to 2020-08-11):** the 7 quarters 2021-12 → 2023-09 were used once, for the quarterly re-tuning test. Treat them as *used* for that idea. Any other idea testing on them needs its own pre-registration.
 - **Out-of-sample is precious:**
   - Choose candidates by a written in-sample rule first (log it in DECISIONS), then run `lab.py validate` **once**.
   - To re-score after fixing something that isn't fitted to results (e.g. bias checks), use `lab.py report`. It rebuilds Stage 1 from saved runs, without a new OOS look.

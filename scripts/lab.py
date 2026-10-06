@@ -265,16 +265,17 @@ def cmd_show_config(args: argparse.Namespace) -> None:
 def cmd_download(args: argparse.Namespace) -> None:
     """Download candles for all pairs and timeframes (re-run any time to top up)."""
     exchange = args.exchange
+    start, timeframes = args.start or DATA_START, args.timeframes or TIMEFRAMES
     cfg = config_args(*exchange_configs(exchange))
 
-    say(f"Downloading {', '.join(TIMEFRAMES)} candles from {exchange}, starting {DATA_START}")
-    # Pass 1 (--prepend) extends existing files back to DATA_START; pass 2 adds new candles.
+    say(f"Downloading {', '.join(timeframes)} candles from {exchange}, starting {start}")
+    # Pass 1 (--prepend) extends existing files back to `start`; pass 2 adds new candles.
     # On a fresh download pass 1 does all the work and pass 2 has nothing left to fetch.
-    grid = freqtrade(["download-data", *cfg, "--timeframes", *TIMEFRAMES, "--prepend",
-                      "--timerange", f"{DATA_START}-"], check=False)
+    grid = freqtrade(["download-data", *cfg, "--timeframes", *timeframes, "--prepend",
+                      "--timerange", f"{start}-"], check=False)
     if grid.returncode == 0:
-        grid = freqtrade(["download-data", *cfg, "--timeframes", *TIMEFRAMES,
-                          "--timerange", f"{DATA_START}-"], check=False)
+        grid = freqtrade(["download-data", *cfg, "--timeframes", *timeframes,
+                          "--timerange", f"{start}-"], check=False)
 
     say(f"Downloading BTC/USDT daily candles from {REGIME_DATA_START} (for market-regime labels)")
     extra = freqtrade(["download-data", *cfg, "--pairs", "BTC/USDT", "--timeframes", "1d",
@@ -287,15 +288,17 @@ def cmd_download(args: argparse.Namespace) -> None:
             "See docs/SETUP.md > Troubleshooting.")
 
     say("Checking the downloaded data")
-    cmd_data_check(argparse.Namespace(exchange=exchange))
+    cmd_data_check(argparse.Namespace(exchange=exchange, start=args.start, timeframes=args.timeframes))
 
 
 def cmd_data_check(args: argparse.Namespace) -> None:
     """Check coverage, gaps and bad candles; writes results/checks/data_check.md."""
     exchange = args.exchange or data_exchange()
+    start, timeframes = args.start or DATA_START, args.timeframes or TIMEFRAMES
+    out = ("results/checks/data_check.md" if (start, timeframes) == (DATA_START, TIMEFRAMES)
+           else f"results/checks/data_check_{start}_{'-'.join(timeframes)}.md")
     result = container_python("data_check.py", [
-        "--exchange", exchange, "--start", DATA_START, "--timeframes", *TIMEFRAMES,
-        "--out", "results/checks/data_check.md",
+        "--exchange", exchange, "--start", start, "--timeframes", *timeframes, "--out", out,
     ], check=False)
     if result.returncode:
         die("data check failed - see the Problems list above and docs/SETUP.md > Troubleshooting")
@@ -705,10 +708,14 @@ def cmd_walkforward(args: argparse.Namespace) -> None:
     """Walk-forward: rolling 3-month test windows (re-tuned before each, or fixed settings)."""
     strategy, mode = args.strategy, ("fixed" if args.fixed else "retuned")
     parent_file = tuning.find_strategy_file(strategy)
-    windows = tuning.walkforward_windows(PERIODS["is"][0], PERIODS["oos"][1], args.train_months,
-                                         args.test_months, args.test_months)
+    first, last = args.from_date or PERIODS["is"][0], args.to_date or PERIODS["oos"][1]
+    windows = tuning.walkforward_windows(first, last, args.train_months, args.test_months, args.test_months)
+    if not windows:
+        die(f"no complete {args.train_months}+{args.test_months}-month window fits in {first}-{last}")
+    custom = (first, last) != (PERIODS["is"][0], PERIODS["oos"][1])
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    wf_id = f"{stamp}_{strategy}_{mode}"
+    # A custom range gets its dates in the id, so stage 2 (which reads the standard runs) never picks it up.
+    wf_id = f"{stamp}_{strategy}_{mode}" + (f"_{first}-{last}" if custom else "")
     wf_dir = ROOT / "user_data" / "walkforward" / wf_id
     wf_dir.mkdir(parents=True, exist_ok=True)
     how = ("fixed settings (no tuning), each window scored on its own" if mode == "fixed"
@@ -743,7 +750,7 @@ def cmd_walkforward(args: argparse.Namespace) -> None:
         })
 
     summ = tuning.walkforward_summary(rows)
-    record = {"id": wf_id, "strategy": strategy, "mode": mode, "timeframe": args.timeframe,
+    record = {"id": wf_id, "strategy": strategy, "mode": mode, "range": f"{first}-{last}", "timeframe": args.timeframe,
               "epochs": None if mode == "fixed" else args.epochs, "min_trades": args.min_trades,
               "train_months": args.train_months, "test_months": args.test_months, "loss": HYPEROPT_LOSS,
               "seed": HYPEROPT_SEED, "fee": STANDARD_FEE, "windows": rows, "summary": summ}
@@ -757,7 +764,7 @@ def cmd_walkforward(args: argparse.Namespace) -> None:
              f"each {args.train_months}-month training window, then tested on the next {args.test_months} months it "
              "never saw.")
     md_lines = [
-        f"# Walk-forward · {strategy} · {mode} · {args.timeframe}", "",
+        f"# Walk-forward · {strategy} · {mode} · {args.timeframe} · {first}-{last}", "",
         intro + f" Fee {STANDARD_FEE:.2%} per side.", "",
         "| # | Train | Test | Train profit | Train trades | Test profit | Test max DD | Test trades | Buy & hold (test) |",
         "|---:|---|---|---:|---:|---:|---:|---:|---:|",
@@ -777,7 +784,8 @@ def cmd_walkforward(args: argparse.Namespace) -> None:
     experiments.log_entry({
         "kind": "walkforward", "run_id": wf_id, "strategy": strategy, "period": f"walk-forward ({mode})",
         "timerange": f"{windows[0]['test'].split('-')[0]}-{windows[-1]['test'].split('-')[1]}",
-        "timeframe": args.timeframe, "fee": STANDARD_FEE, "oos_look": True,
+        "timeframe": args.timeframe, "fee": STANDARD_FEE,
+        "oos_look": touches_oos(f"{windows[0]['test'].split('-')[0]}-{windows[-1]['test'].split('-')[1]}"),
         "settings": {"mode": mode, "epochs": record["epochs"]},
         "metrics": {"profit_pct": summ["stitched_profit_pct"], "max_dd_pct": summ["worst_window_dd_pct"],
                     "trades": summ["total_test_trades"], "profitable_windows_pct": summ["profitable_windows_pct"],
@@ -946,8 +954,12 @@ def build_parser() -> argparse.ArgumentParser:
     p = add("download", cmd_download)
     p.add_argument("--exchange", choices=EXCHANGES, default="binance",
                    help="data source (default: binance; fall back to bybit if it is blocked)")
+    p.add_argument("--start", help=f"yyyymmdd (default {DATA_START}); earlier dates extend existing files")
+    p.add_argument("--timeframes", nargs="+", help=f"default: {' '.join(TIMEFRAMES)}")
     p = add("data-check", cmd_data_check)
     p.add_argument("--exchange", choices=EXCHANGES, help="default: the exchange we have data for")
+    p.add_argument("--start", help=f"data must start by this date (default {DATA_START})")
+    p.add_argument("--timeframes", nargs="+", help=f"default: {' '.join(TIMEFRAMES)}")
     p = add("regimes", cmd_regimes)
     p.add_argument("--days", type=int, default=90, help="window length in days (default: 90)")
     p = add("check-bias", cmd_check_bias)
@@ -992,6 +1004,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--train-months", type=int, default=12)
     p.add_argument("--test-months", type=int, default=3)
     p.add_argument("--timeframe", default="1h", choices=["15m", "1h", "4h"])
+    p.add_argument("--from", dest="from_date", help="first training day yyyymmdd (default: in-sample start)")
+    p.add_argument("--to", dest="to_date", help="last test day yyyymmdd, exclusive (default: out-of-sample end)")
     p = add("stage2", cmd_stage2)
     p.add_argument("--strategies", nargs="+", help="default: everything that passed stage 1")
     p = add("bots", cmd_bots)

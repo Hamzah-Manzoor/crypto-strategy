@@ -21,6 +21,7 @@ All 8 build phases are done. See [ROADMAP](docs/ROADMAP.md).
   1. **Fees are the main enemy of busy strategies.** 5 of 7 original ideas made money before fees, but only 1 after.
   2. **Auto-tuning overfits.** The best tuned versions made +70% in-sample and then *lost* money out-of-sample.
   3. **The hand-designed `EmaTrendV2`** (trend following on 4h candles) passed the out-of-sample check: +5.1% while buy & hold lost 35%. It then failed the consistency check, making money in only 3 of 8 quarters.
+  4. **Re-tuning it every quarter looked promising** on familiar data, then **failed a pre-registered test** on never-used 2021–23 data. See [docs/research/](docs/research/quarterly-retune-preregistration.md).
 - **Paper trading now:** `EmaTrendV2` (watch list) and a buy & hold baseline run as dry-run bots, with dashboards at http://127.0.0.1:8081 and :8082.
 
 ## Quick start (macOS)

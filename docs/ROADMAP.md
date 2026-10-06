@@ -70,9 +70,7 @@ Each phase ends with a review stop and one git commit.
 - [ ] Check the paper bots every week or two (`lab.py bots status`). After about 2–3 months, compare `EmaTrendV2`'s live paper results with its backtest over the same dates (`lab.py backtest --period <start>-<end> --allow-oos`).
 
 **Follow the leads the data gave us**
-- [ ] **EmaTrendV2 with quarterly re-tuning:** it was the near-miss in Stage 2 (5 of 8 quarters profitable, efficiency 0.49 vs 0.5).
-  - Pre-register the exact process in DECISIONS first: what gets re-tuned, how often, how many epochs.
-  - Then judge it only on data that arrives *after* that date (paper trading), because our out-of-sample year has now been looked at 9 times.
+- [x] **EmaTrendV2 with quarterly re-tuning:** pre-registered and tested on 7 never-used quarters (2021-12 → 2023-09) on 2026-10-07. **Failed** (2 of 7 quarters profitable, −12.3%), so it's dropped. See `docs/research/`.
 - [ ] **Narrower hyperopt spaces:** several tuned stops hit the edges of the allowed range. Try fewer, more meaningful parameters (or none) rather than wider ranges.
 - [ ] **Fee-aware design for the strategies with a real gross edge** (Trend Pullback: +66% before fees). Use higher timeframes, or require a minimum expected move per trade larger than the round-trip fee.
 

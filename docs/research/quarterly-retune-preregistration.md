@@ -56,3 +56,33 @@ Buy & hold over the same windows is reported for context. It isn't a rule, becau
 ## 5. Results
 
 _To be filled in after Test A runs, without editing anything above this line._
+
+### Test A: run 2026-10-07 → **FAIL**. The idea is dropped.
+
+Run `20261006-204740_EmaTrendV2_retuned_20201201-20230901`. Full table: `results/walkforward/20261006-204740_EmaTrendV2_retuned_20201201-20230901.md`.
+
+| # | Rule | Threshold | Result | |
+|---|---|---|---|---|
+| A1 | Profitable test windows | ≥ 5 of 7 | **2 of 7** (29%) | ❌ |
+| A2 | Walk-forward efficiency | ≥ 0.5 | **−0.84** | ❌ |
+| A3 | All 7 windows together, after fees | > 0 | **−12.3%** (−7.2% a year) | ❌ |
+| A4 | Worst single-window drawdown | ≤ 25% | 12.3% | ✅ |
+
+| Test window | Tuned settings | Trades | Result | Buy & hold |
+|---|---|---:|---:|---:|
+| Dec 2021 → Mar 2022 | EMA 26/50, stop −3.7% | 6 | −2.7% | −34.9% |
+| Mar → Jun 2022 | EMA 26/50, stop −3.5% | 12 | +1.1% | −35.9% |
+| Jun → Sep 2022 | EMA 26/55, stop −3.1% | 7 | −1.5% | −25.1% |
+| Sep → Dec 2022 | EMA 12/72, stop −3.4% | 15 | −6.1% | −10.8% |
+| Dec 2022 → Mar 2023 | EMA 12/50, stop −3.1% | 12 | −4.0% | +21.6% |
+| Mar → Jun 2023 | EMA 12/50, stop −3.4% | 30 | −0.3% | +13.8% |
+| Jun → Sep 2023 | EMA 12/50, stop −3.2% | 11 | +0.7% | −10.1% |
+
+**What it means, in plain words:**
+- **The re-tuning process has no edge on fresh data.** The settings it picked from each past year didn't carry over to the next quarter (efficiency −0.84: the training years made money, the following quarters lost).
+- **The Phase 6 near-miss (5 of 8 quarters, +23%) was most likely luck,** on data we'd already looked at many times. That's exactly why this test was required.
+- **It did protect capital in the crash.** −12.3% while buy & hold lost 65%, with a worst drawdown of only 12.3%. That comes from EmaTrendV2's 4h trend filter keeping it in cash during downtrends, not from the re-tuning. It's capital protection without an edge: it lost a little instead of a lot.
+- **The known weakness showed up again.** In all 7 windows the tuner pushed the stop to the tightest allowed edge (−3.1% to −3.7%).
+
+**Decision, as pre-registered:** the idea is **dropped**. No third paper bot. No tweaked version (wider stop range, other epochs) will be tried on these 7 quarters. The fixed `EmaTrendV2` watch-list bot keeps running; it's a different strategy and this test didn't cover it.
+
