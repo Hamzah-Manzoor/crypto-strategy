@@ -281,6 +281,79 @@ def write_stage2(results: list[dict]) -> Path:
     return md
 
 
+# --------------------------------------------------------------------------- Round 2
+
+def write_round2_selection(dev_run: dict) -> tuple[Path, list[str]]:
+    selected, lines = rules.select_for_exam(dev_run["strategies"], load_bias())
+    md = BOARDS / "round2_selection.md"
+    md.write_text("\n".join([
+        "# Round 2 · exam candidates (pre-registered dev rule)", "",
+        f"Dev run `{dev_run['run_id']}` ({dev_run['timerange']}, {dev_run['timeframe']}, fee "
+        f"{100 * (dev_run.get('fee') or 0):.2f}%). Rule: profit > 0, profit factor >= "
+        f"{rules.DEV_SELECT['min_profit_factor']}, >= {rules.DEV_SELECT['min_trades']} trades, bias checks "
+        f"passed; best {rules.DEV_SELECT['per_idea']} per idea by Calmar.", "",
+        *lines, "", f"**Exam candidates:** {', '.join(f'`{s}`' for s in selected) or 'none'}", "",
+    ]))
+    (BOARDS / "round2_selection.json").write_text(json.dumps(
+        {"dev_run": dev_run["run_id"], "selected": selected}, indent=1) + "\n")
+    return md, selected
+
+
+def write_exam(exam_run: dict, stress_run: dict | None, detail_run: dict | None) -> tuple[Path, dict]:
+    bias = load_bias()
+    bh = exam_run["strategies"][rules.BASELINE]
+    rows = []
+    for name, m in exam_run["strategies"].items():
+        if name == rules.BASELINE:
+            continue
+        stress_m = stress_run["strategies"].get(name) if stress_run else None
+        detail_m = detail_run["strategies"].get(name) if detail_run else None
+        status, checks = rules.exam(m, stress_m, bh, bias.get(name))
+        rows.append({"strategy": name, "status": status, "checks": checks, "m": m,
+                     "stress": stress_m["profit_pct"] if stress_m else None,
+                     "detail": detail_m["profit_pct"] if detail_m else None})
+    rows.sort(key=lambda r: (r["status"] != "PASS", -r["m"]["calmar"]))
+    body = [[f"**{r['status']}**", f"`{r['strategy']}`", num(r["m"]["profit_pct"], 1, sign=True),
+             num(r["m"]["profit_factor"]), str(r["m"]["trades"]), num(r["m"]["max_dd_pct"], 1), num(r["m"]["calmar"]),
+             num(r["stress"], 1, sign=True), num(r["detail"], 1, sign=True),
+             f"{r['m'].get('quarters_profitable', 0)} / {r['m'].get('quarters_total', 0)}",
+             num(r["m"].get("worst_quarter_pct"), 1, sign=True)] for r in rows]
+    quarters = [q["quarter"] for q in bh.get("quarters", []) if not q["partial"]]
+
+    def qrow(label, m):
+        by_q = {q["quarter"]: q["ret_pct"] for q in m.get("quarters", [])}
+        return [label, *[num(by_q.get(q), 1, sign=True) for q in quarters]]
+
+    lines = [
+        "# Round 2 exam · holdout · 1h", "",
+        f"- Exam run: `{exam_run['run_id']}` ({exam_run['timerange']}) · buy & hold {bh['profit_pct']:+.1f}%, "
+        f"max DD {bh['max_dd_pct']:.1f}%, Calmar {bh['calmar']:.2f}",
+        "- Fee stress (0.15%/side): " + (f"`{stress_run['run_id']}`" if stress_run else "not run"),
+        "- 5m intra-candle fills (information, not a rule): " + (f"`{detail_run['run_id']}`" if detail_run else "not run"),
+        "",
+        *table(["Status", "Strategy", "Profit %", "PF", "Trades", "Max DD %", "Calmar", "@0.15% fee", "5m fills",
+                "Quarters +", "Worst quarter"], body,
+               ["---", "---", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:"]),
+        "", "## Quarter by quarter (profit %)", "",
+        *table(["Strategy", *quarters], [qrow("buy & hold", bh), *[qrow(f"`{r['strategy']}`", r["m"]) for r in rows]],
+               ["---", *["---:"] * len(quarters)]),
+        "", "## Why", "",
+    ]
+    for r in rows:
+        lines.append(f"**{r['strategy']} - {r['status']}**")
+        lines += [f"- {'✅' if ok else '❌'} {text}" for ok, text in r["checks"]]
+        lines.append("")
+    lines.append("Rules: docs/research/round2-preregistration.md (numbers in scripts/rules.py → EXAM).")
+    BOARDS.mkdir(parents=True, exist_ok=True)
+    md = BOARDS / "exam_round2.md"
+    md.write_text("\n".join(lines) + "\n")
+    verdicts = {r["strategy"]: r["status"] for r in rows}
+    (BOARDS / "exam_round2.json").write_text(json.dumps({
+        "exam_run": exam_run["run_id"], "stress_run": stress_run["run_id"] if stress_run else None,
+        "detail_run": detail_run["run_id"] if detail_run else None, "results": verdicts}, indent=1) + "\n")
+    return md, verdicts
+
+
 # --------------------------------------------------------------------------- docs/RESULTS.md
 
 def results_block(runs: list[dict]) -> str:
@@ -301,6 +374,12 @@ def results_block(runs: list[dict]) -> str:
               f"{r['exposure_pct']:.0f}%", r["beats_bh"], r["flags"] or ""] for r in rows],
             ["---:", "---", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---", "---"])
         lines += ["", f"Full table: [results/leaderboards/{run['run_id']}.md](../results/leaderboards/{run['run_id']}.md)", ""]
+    exam = BOARDS / "exam_round2.json"
+    if exam.exists():
+        data = json.loads(exam.read_text())
+        lines += ["### Round 2 exam verdicts (holdout 2021-01 → 2023-10)", "",
+                  *[f"- `{k}`: **{v}**" for k, v in data["results"].items()], "",
+                  "Details: [results/leaderboards/exam_round2.md](../results/leaderboards/exam_round2.md)", ""]
     s2 = BOARDS / "stage2_1h.json"
     if s2.exists():
         data = json.loads(s2.read_text())

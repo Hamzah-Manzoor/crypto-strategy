@@ -12,12 +12,16 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**281 entries**, 45 of them out-of-sample looks (in 9 runs).
+**296 entries**, 45 of them out-of-sample looks (in 9 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
+| `EmaTrendV3` | **keep** | Round 2 dev: selected for the exam by the pre-registered rule | E0291 |
+| `EmaTrendV3b` | **keep** | Round 2 dev: selected for the exam by the pre-registered rule | E0292 |
+| `MomentumRotationV1` | **keep** | Round 2 dev: selected for the exam by the pre-registered rule | E0293 |
+| `MomentumRotationV1b` | **keep** | Round 2 dev: selected for the exam by the pre-registered rule | E0294 |
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
@@ -38,6 +42,8 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `TrendPullbackV1` | **drop** | TrendPullbackV1T still loses in-sample (-4.1%); not a candidate | E0061 |
 | `TrendPullbackV2T` | **drop** | stage 1 FAIL | E0208 |
 | `TrendPullbackV2` | **drop** | TrendPullbackV2T: IS +10.2% but OOS -1.8% (stage 1 FAIL) | E0085 |
+| `TrendPullbackV3` | **drop** | Round 2 dev: not eligible for exam (profit factor below 1.1) - idea A dropped | E0289 |
+| `TrendPullbackV3b` | **drop** | Round 2 dev: not eligible for exam (profit factor below 1.1) - idea A dropped | E0290 |
 
 ## All entries
 
@@ -45,6 +51,21 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0296 | 2026-10-07 | backtest | `TrendPullbackV1` | dev | 1h | 0.10% | -43.4 | 50.8 | -1.66 | -0.34 | 2714 | pending | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0295 | 2026-10-07 | backtest | `EmaTrendV2` | dev | 1h | 0.10% | +36.0 | 20.5 | 0.71 | 0.53 | 165 | pending | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0294 | 2026-10-07 | backtest | `MomentumRotationV1b` | dev | 1h | 0.10% | +363.1 | 39.6 | 1.48 | 1.68 | 64 | keep: Round 2 dev: selected for the exam by the pre-registered rule | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0293 | 2026-10-07 | backtest | `MomentumRotationV1` | dev | 1h | 0.10% | +355.4 | 43.4 | 1.30 | 1.51 | 56 | keep: Round 2 dev: selected for the exam by the pre-registered rule | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0292 | 2026-10-07 | backtest | `EmaTrendV3b` | dev | 1h | 0.10% | +14.2 | 25.0 | 0.38 | 0.18 | 123 | keep: Round 2 dev: selected for the exam by the pre-registered rule | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0291 | 2026-10-07 | backtest | `EmaTrendV3` | dev | 1h | 0.10% | +14.8 | 25.0 | 0.40 | 0.19 | 122 | keep: Round 2 dev: selected for the exam by the pre-registered rule | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0290 | 2026-10-07 | backtest | `TrendPullbackV3b` | dev | 1h | 0.10% | +1.1 | 15.3 | 0.09 | 0.02 | 239 | drop: Round 2 dev: not eligible for exam (profit factor below 1.1) - idea A dropped | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0289 | 2026-10-07 | backtest | `TrendPullbackV3` | dev | 1h | 0.10% | -7.7 | 22.6 | -0.23 | -0.12 | 271 | drop: Round 2 dev: not eligible for exam (profit factor below 1.1) - idea A dropped | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0288 | 2026-10-07 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
+| E0287 | 2026-10-07 | backtest | `TrendPullbackV1` | dev | 1h | 0.10% | -43.4 | 50.8 | -1.66 | -0.34 | 2714 | pending | Round 2 dev: first versions of ideas A/B/C vs their Round 1 ancestors | `bc0e5cd+dirty` |
+| E0286 | 2026-10-07 | backtest | `EmaTrendV2` | dev | 1h | 0.10% | +36.0 | 20.5 | 0.71 | 0.53 | 165 | pending | Round 2 dev: first versions of ideas A/B/C vs their Round 1 ancestors | `bc0e5cd+dirty` |
+| E0285 | 2026-10-07 | backtest | `MomentumRotationV1` | dev | 1h | 0.10% | +355.4 | 43.4 | 1.30 | 1.51 | 56 | pending | Round 2 dev: first versions of ideas A/B/C vs their Round 1 ancestors | `bc0e5cd+dirty` |
+| E0284 | 2026-10-07 | backtest | `EmaTrendV3` | dev | 1h | 0.10% | +14.8 | 25.0 | 0.40 | 0.19 | 122 | pending | Round 2 dev: first versions of ideas A/B/C vs their Round 1 ancestors | `bc0e5cd+dirty` |
+| E0283 | 2026-10-07 | backtest | `TrendPullbackV3` | dev | 1h | 0.10% | -7.7 | 22.6 | -0.23 | -0.12 | 271 | pending | Round 2 dev: first versions of ideas A/B/C vs their Round 1 ancestors | `bc0e5cd+dirty` |
+| E0282 | 2026-10-07 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 2 dev: first versions of ideas A/B/C vs their Round 1 ancestors | `bc0e5cd+dirty` |
 | E0281 | 2026-10-06 | walkforward | `EmaTrendV2` | walk-forward (retuned) | 1h | 0.10% | -12.3 | 12.3 | n/a | n/a | 93 | drop: pre-registered fresh-data test FAILED: 2 of 7 quarters profitable, efficiency -0.84, -12.3% (buy & hold -65.3%) - process dropped, no retry on same data | retuned: 29% windows profitable, efficiency -0.84 | `fdeea75+dirty` |
 | E0280 | 2026-10-06 | backtest | `TrendPullbackV2T` | is | 1h | 0.10% | +10.2 | 3.7 | 1.31 | 1.35 | 240 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |
 | E0279 | 2026-10-06 | backtest | `TrendPullbackV2` | is | 1h | 0.10% | +3.9 | 9.2 | 0.27 | 0.21 | 675 | pending | final in-sample leaderboard, all 23 versions (Phase 8) | `f8f79d6` |

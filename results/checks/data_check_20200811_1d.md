@@ -1,0 +1,13 @@
+# Data check - binance
+
+Checked 2026-10-07 08:49 UTC. Rules: data from 2020-08-11, coverage >= 98.0%, no gap > 24h, no duplicates, no impossible candles.
+
+| Pair | TF | First | Last | Candles | Missing | Coverage | Longest gap | Zero-vol | Status |
+|---|---|---|---|---:|---:|---:|---:|---:|---|
+| BTC/USDT | 1d | 2020-08-11 00:00 | 2026-10-06 00:00 | 2,248 | 0 | 100.00% | 0.0h | 0 | OK |
+| ETH/USDT | 1d | 2020-08-11 00:00 | 2026-10-06 00:00 | 2,248 | 0 | 100.00% | 0.0h | 0 | OK |
+| SOL/USDT | 1d | 2020-08-11 00:00 | 2026-10-06 00:00 | 2,248 | 0 | 100.00% | 0.0h | 0 | OK |
+| BNB/USDT | 1d | 2020-08-11 00:00 | 2026-10-06 00:00 | 2,248 | 0 | 100.00% | 0.0h | 0 | OK |
+| XRP/USDT | 1d | 2020-08-11 00:00 | 2026-10-06 00:00 | 2,248 | 0 | 100.00% | 0.0h | 0 | OK |
+
+**Result: PASS**

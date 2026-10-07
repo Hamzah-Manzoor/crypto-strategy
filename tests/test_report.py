@@ -249,15 +249,19 @@ class DocsMatchRulesTest(unittest.TestCase):
 
 
 class PeriodTest(unittest.TestCase):
-    def test_out_of_sample_detection(self):
-        self.assertFalse(lab.touches_oos("20231001-20251001"))  # IS end date is exclusive
-        self.assertFalse(lab.touches_oos("20240404-20240703"))
-        self.assertTrue(lab.touches_oos("20231001-20251002"))
-        self.assertTrue(lab.touches_oos("20251001-20261001"))
-        self.assertTrue(lab.touches_oos("20231001-"))
+    def test_protected_holdout_detection(self):
+        self.assertEqual(lab.touches_protected("20231001-20261001"), [])        # dev data
+        self.assertEqual(lab.touches_protected("20251001-20261001"), [])        # retired Round 1 OOS year
+        self.assertEqual(lab.touches_protected("20210101-20231001"), ["holdout"])
+        self.assertEqual(lab.touches_protected("20200801-20210102"), ["holdout"])  # one day in
+        self.assertEqual(lab.touches_protected("20200801-20210101"), [])        # end date is exclusive
+        self.assertEqual(lab.touches_protected("20231001-"), [])
+        self.assertEqual(lab.touches_protected("20220101-"), ["holdout"])
 
     def test_resolve_period(self):
         self.assertEqual(lab.resolve_period("is"), ("is", "20231001-20251001"))
+        self.assertEqual(lab.resolve_period("dev"), ("dev", "20231001-20261001"))
+        self.assertEqual(lab.resolve_period("holdout"), ("holdout", "20210101-20231001"))
         self.assertEqual(lab.resolve_period("full"), ("full", "20231001-20261001"))
         self.assertEqual(lab.resolve_period("20240101-20240201"), ("custom", "20240101-20240201"))
         regimes = json.loads((REPO / "results" / "regimes.json").read_text())["windows"]

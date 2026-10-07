@@ -46,6 +46,31 @@ class EquityMetricsTest(unittest.TestCase):
         self.assertGreater(m["sortino"], m["sharpe"])  # losses are smaller than gains here
 
 
+class QuarterlyReturnsTest(unittest.TestCase):
+    def test_quarters_follow_the_wallet(self):
+        start, end = pd.Timestamp("2021-01-01", tz="UTC"), pd.Timestamp("2021-07-01", tz="UTC")
+        idx = pd.date_range("2021-01-01 01:00", "2021-06-30 23:00", freq="1h", tz="UTC")
+        equity = pd.Series(1000.0, index=idx)
+        equity[idx >= "2021-02-01"] = 1100.0   # +10% in Q1
+        equity[idx >= "2021-05-01"] = 990.0    # -10% in Q2
+        q = metrics.quarterly_returns(equity, 1000.0, start, end)
+        self.assertEqual([x["quarter"] for x in q], ["2021Q1", "2021Q2"])
+        self.assertAlmostEqual(q[0]["ret_pct"], 10.0)
+        self.assertAlmostEqual(q[1]["ret_pct"], -10.0)
+        self.assertEqual([x["partial"] for x in q], [False, False])
+
+    def test_partial_quarters_are_marked(self):
+        start, end = pd.Timestamp("2021-02-15", tz="UTC"), pd.Timestamp("2021-05-10", tz="UTC")
+        equity = pd.Series(1000.0, index=pd.date_range(start, end, freq="1h", tz="UTC", inclusive="left"))
+        q = metrics.quarterly_returns(equity, 1000.0, start, end)
+        self.assertEqual([(x["quarter"], x["partial"]) for x in q], [("2021Q1", True), ("2021Q2", True)])
+
+    def test_never_traded_gives_flat_quarters(self):
+        start, end = pd.Timestamp("2021-01-01", tz="UTC"), pd.Timestamp("2021-10-01", tz="UTC")
+        q = metrics.quarterly_returns(pd.Series(dtype=float), 1000.0, start, end)
+        self.assertEqual([(x["quarter"], x["ret_pct"]) for x in q], [("2021Q1", 0.0), ("2021Q2", 0.0), ("2021Q3", 0.0)])
+
+
 class WalletTest(unittest.TestCase):
     def wallet(self):
         rows = []

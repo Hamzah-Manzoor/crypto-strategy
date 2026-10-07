@@ -1,0 +1,586 @@
+{
+ "run_id": "20261007-085401_dev_1h",
+ "period": "dev",
+ "timerange": "20231001-20261001",
+ "timeframe": "1h",
+ "timeframe_detail": null,
+ "fee": 0.001,
+ "notes": "Round 2 dev: first versions of ideas A/B/C vs their Round 1 ancestors",
+ "zip": "user_data/backtest_results/20261007-085401_dev_1h/backtest-result-2026-10-07_08-54-15.zip",
+ "strategies": {
+  "BuyHoldV1": {
+   "strategy": "BuyHoldV1",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20231001-20261001",
+   "start": "2023-10-01 00:00:00",
+   "end": "2026-10-01 00:00:00",
+   "days": 1096.0,
+   "trades": 5,
+   "win_rate_pct": 100.0,
+   "profit_factor": null,
+   "avg_hold_hours": 26303.0,
+   "market_change_pct": 234.1618,
+   "final_balance": 3313.7054,
+   "stoploss": -0.99,
+   "minimal_roi": {
+    "0": 1000.0
+   },
+   "trailing_stop": false,
+   "code_sha": "b2e985c30b60",
+   "ft_trade_max_dd_pct": 0.0,
+   "ft_wallet_max_dd_pct": 64.9056,
+   "profit_pct": 231.3705,
+   "cagr_pct": 49.0321,
+   "max_dd_pct": 64.9056,
+   "sharpe": 0.9408,
+   "sortino": 1.3967,
+   "calmar": 0.7554,
+   "exposure_pct": 99.6347,
+   "quarters": [
+    {
+     "quarter": "2023Q4",
+     "ret_pct": 104.3251,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q1",
+     "ret_pct": 77.2261,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q2",
+     "ret_pct": -18.0949,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q3",
+     "ret_pct": 0.4618,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q4",
+     "ret_pct": 44.6047,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q1",
+     "ret_pct": -22.1955,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q2",
+     "ret_pct": 19.4153,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q3",
+     "ret_pct": 31.9294,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q4",
+     "ret_pct": -30.5574,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q1",
+     "ret_pct": -28.9063,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q2",
+     "ret_pct": -15.2987,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q3",
+     "ret_pct": 50.2666,
+     "partial": false
+    }
+   ],
+   "quarters_total": 12,
+   "quarters_profitable": 7,
+   "worst_quarter_pct": -30.5574
+  },
+  "TrendPullbackV3": {
+   "strategy": "TrendPullbackV3",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20231001-20261001",
+   "start": "2023-10-01 00:00:00",
+   "end": "2026-10-01 00:00:00",
+   "days": 1096.0,
+   "trades": 271,
+   "win_rate_pct": 64.5756,
+   "profit_factor": 0.9069,
+   "avg_hold_hours": 20.2667,
+   "market_change_pct": 234.1618,
+   "final_balance": 922.7392,
+   "stoploss": -0.08,
+   "minimal_roi": {
+    "0": 0.1,
+    "1440": 0.03,
+    "4320": 0.0
+   },
+   "trailing_stop": false,
+   "code_sha": "9966eef3a997",
+   "ft_trade_max_dd_pct": 21.5355,
+   "ft_wallet_max_dd_pct": 22.6131,
+   "profit_pct": -7.7261,
+   "cagr_pct": -2.6423,
+   "max_dd_pct": 22.6131,
+   "sharpe": -0.2297,
+   "sortino": -0.2769,
+   "calmar": -0.1168,
+   "exposure_pct": 4.1166,
+   "quarters": [
+    {
+     "quarter": "2023Q4",
+     "ret_pct": 9.8791,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q1",
+     "ret_pct": -0.3738,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q2",
+     "ret_pct": -2.9053,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q3",
+     "ret_pct": -2.9065,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q4",
+     "ret_pct": -2.2266,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q1",
+     "ret_pct": -0.5093,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q2",
+     "ret_pct": -1.2789,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q3",
+     "ret_pct": -1.343,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q4",
+     "ret_pct": -4.0993,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q1",
+     "ret_pct": -4.8846,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q2",
+     "ret_pct": -0.0764,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q3",
+     "ret_pct": 3.5437,
+     "partial": false
+    }
+   ],
+   "quarters_total": 12,
+   "quarters_profitable": 2,
+   "worst_quarter_pct": -4.8846
+  },
+  "EmaTrendV3": {
+   "strategy": "EmaTrendV3",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20231001-20261001",
+   "start": "2023-10-01 00:00:00",
+   "end": "2026-10-01 00:00:00",
+   "days": 1096.0,
+   "trades": 122,
+   "win_rate_pct": 38.5246,
+   "profit_factor": 1.1909,
+   "avg_hold_hours": 140.5,
+   "market_change_pct": 234.1618,
+   "final_balance": 1147.9536,
+   "stoploss": -0.1,
+   "minimal_roi": {
+    "0": 0.5
+   },
+   "trailing_stop": true,
+   "code_sha": "f9a650e73aac",
+   "ft_trade_max_dd_pct": 22.5969,
+   "ft_wallet_max_dd_pct": 25.0243,
+   "profit_pct": 14.7954,
+   "cagr_pct": 4.7024,
+   "max_dd_pct": 25.0243,
+   "sharpe": 0.3986,
+   "sortino": 0.5963,
+   "calmar": 0.1879,
+   "exposure_pct": 12.9986,
+   "quarters": [
+    {
+     "quarter": "2023Q4",
+     "ret_pct": 1.0411,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q1",
+     "ret_pct": 11.9219,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q2",
+     "ret_pct": -14.564,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q3",
+     "ret_pct": -3.1288,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q4",
+     "ret_pct": 4.2541,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q1",
+     "ret_pct": -8.1736,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q2",
+     "ret_pct": -2.3315,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q3",
+     "ret_pct": 22.0344,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q4",
+     "ret_pct": 3.114,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q1",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q2",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q3",
+     "ret_pct": 4.3486,
+     "partial": false
+    }
+   ],
+   "quarters_total": 12,
+   "quarters_profitable": 6,
+   "worst_quarter_pct": -14.564
+  },
+  "MomentumRotationV1": {
+   "strategy": "MomentumRotationV1",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20231001-20261001",
+   "start": "2023-10-01 00:00:00",
+   "end": "2026-10-01 00:00:00",
+   "days": 1096.0,
+   "trades": 56,
+   "win_rate_pct": 53.5714,
+   "profit_factor": 2.1332,
+   "avg_hold_hours": 470.0167,
+   "market_change_pct": 234.1618,
+   "final_balance": 4553.9584,
+   "stoploss": -0.2,
+   "minimal_roi": {
+    "0": 100.0
+   },
+   "trailing_stop": false,
+   "code_sha": "22fd060f6216",
+   "ft_trade_max_dd_pct": 32.2003,
+   "ft_wallet_max_dd_pct": 43.3802,
+   "profit_pct": 355.3958,
+   "cagr_pct": 65.6772,
+   "max_dd_pct": 43.3802,
+   "sharpe": 1.3036,
+   "sortino": 2.0868,
+   "calmar": 1.514,
+   "exposure_pct": 48.5677,
+   "quarters": [
+    {
+     "quarter": "2023Q4",
+     "ret_pct": 135.7296,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q1",
+     "ret_pct": 16.3006,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q2",
+     "ret_pct": -23.6707,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q3",
+     "ret_pct": -5.98,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q4",
+     "ret_pct": 55.311,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q1",
+     "ret_pct": -9.2079,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q2",
+     "ret_pct": -0.2363,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q3",
+     "ret_pct": 67.5794,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q4",
+     "ret_pct": -3.4692,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q1",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q2",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q3",
+     "ret_pct": 1.9185,
+     "partial": false
+    }
+   ],
+   "quarters_total": 12,
+   "quarters_profitable": 5,
+   "worst_quarter_pct": -23.6707
+  },
+  "EmaTrendV2": {
+   "strategy": "EmaTrendV2",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20231001-20261001",
+   "start": "2023-10-01 00:00:00",
+   "end": "2026-10-01 00:00:00",
+   "days": 1096.0,
+   "trades": 165,
+   "win_rate_pct": 40.6061,
+   "profit_factor": 1.3323,
+   "avg_hold_hours": 151.3,
+   "market_change_pct": 234.1618,
+   "final_balance": 1360.3111,
+   "stoploss": -0.1,
+   "minimal_roi": {
+    "0": 0.5
+   },
+   "trailing_stop": true,
+   "code_sha": "bbd251f1928e",
+   "ft_trade_max_dd_pct": 18.7537,
+   "ft_wallet_max_dd_pct": 20.5275,
+   "profit_pct": 36.0311,
+   "cagr_pct": 10.7912,
+   "max_dd_pct": 20.5275,
+   "sharpe": 0.7075,
+   "sortino": 1.0994,
+   "calmar": 0.5257,
+   "exposure_pct": 18.9426,
+   "quarters": [
+    {
+     "quarter": "2023Q4",
+     "ret_pct": 8.8325,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q1",
+     "ret_pct": 11.4327,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q2",
+     "ret_pct": -14.5726,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q3",
+     "ret_pct": 0.4103,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q4",
+     "ret_pct": 8.6417,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q1",
+     "ret_pct": -9.7359,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q2",
+     "ret_pct": -2.4871,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q3",
+     "ret_pct": 22.0377,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q4",
+     "ret_pct": 1.0436,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q1",
+     "ret_pct": -0.6302,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q2",
+     "ret_pct": -0.1774,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q3",
+     "ret_pct": 11.9068,
+     "partial": false
+    }
+   ],
+   "quarters_total": 12,
+   "quarters_profitable": 7,
+   "worst_quarter_pct": -14.5726
+  },
+  "TrendPullbackV1": {
+   "strategy": "TrendPullbackV1",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20231001-20261001",
+   "start": "2023-10-01 00:00:00",
+   "end": "2026-10-01 00:00:00",
+   "days": 1096.0,
+   "trades": 2714,
+   "win_rate_pct": 57.4797,
+   "profit_factor": 0.7971,
+   "avg_hold_hours": 4.5667,
+   "market_change_pct": 234.1618,
+   "final_balance": 566.0491,
+   "stoploss": -0.08,
+   "minimal_roi": {
+    "0": 0.05,
+    "720": 0.025,
+    "2880": 0.0
+   },
+   "trailing_stop": false,
+   "code_sha": "e434f1ce27c0",
+   "ft_trade_max_dd_pct": 50.5255,
+   "ft_wallet_max_dd_pct": 50.776,
+   "profit_pct": -43.3951,
+   "cagr_pct": -17.2643,
+   "max_dd_pct": 50.776,
+   "sharpe": -1.6649,
+   "sortino": -1.8895,
+   "calmar": -0.34,
+   "exposure_pct": 9.2831,
+   "quarters": [
+    {
+     "quarter": "2023Q4",
+     "ret_pct": 6.7452,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q1",
+     "ret_pct": 4.1023,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q2",
+     "ret_pct": -7.8042,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q3",
+     "ret_pct": -6.2701,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q4",
+     "ret_pct": 2.363,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q1",
+     "ret_pct": -12.7373,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q2",
+     "ret_pct": -0.2127,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q3",
+     "ret_pct": -9.7102,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q4",
+     "ret_pct": -10.056,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q1",
+     "ret_pct": -8.5651,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q2",
+     "ret_pct": -6.3727,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q3",
+     "ret_pct": -4.8773,
+     "partial": false
+    }
+   ],
+   "quarters_total": 12,
+   "quarters_profitable": 3,
+   "worst_quarter_pct": -12.7373
+  }
+ }
+}

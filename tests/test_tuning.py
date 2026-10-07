@@ -115,3 +115,53 @@ class Stage2RulesTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Round2RulesTest(unittest.TestCase):
+    def m(self, name, **over):
+        base = {"strategy": name, "trades": 80, "profit_pct": 30.0, "profit_factor": 1.4, "max_dd_pct": 15.0,
+                "calmar": 1.5, "quarters_profitable": 7, "quarters_total": 11, "worst_quarter_pct": -6.0}
+        base.update(over)
+        return base
+
+    BH = {"strategy": "BuyHoldV1", "max_dd_pct": 80.0, "calmar": 1.0}
+
+    def test_exam_pass_and_each_failure(self):
+        ok = self.m("EmaTrendV3")
+        self.assertEqual(rules.exam(ok, self.m("x", profit_pct=20.0), self.BH, True)[0], "PASS")
+        cases = {
+            "X1": dict(trades=20), "X2": dict(profit_factor=1.1), "X4": dict(max_dd_pct=31.0),
+            "X5": dict(calmar=0.9), "X6": dict(quarters_profitable=5),
+        }
+        for rule, over in cases.items():
+            with self.subTest(rule):
+                status, checks = rules.exam(self.m("EmaTrendV3", **over), self.m("x"), self.BH, True)
+                self.assertEqual(status, "FAIL")
+                self.assertTrue(any(t.startswith(rule) for ok_, t in checks if not ok_), checks)
+        self.assertEqual(rules.exam(self.m("E", worst_quarter_pct=-12.0), self.m("x"), self.BH, True)[0], "FAIL")
+        self.assertEqual(rules.exam(ok, self.m("x", profit_pct=-1.0), self.BH, True)[0], "FAIL")   # X3
+        self.assertEqual(rules.exam(ok, self.m("x"), self.BH, None)[0], "FAIL")                    # X7
+
+    def test_dev_selection_takes_best_two_eligible_per_idea(self):
+        dev = {n: self.m(n, calmar=c) for n, c in
+               (("EmaTrendV3", 1.0), ("EmaTrendV3b", 2.0), ("EmaTrendV3c", 1.5), ("MomentumRotationV1", 0.8))}
+        dev["MomentumRotationV1"]["profit_factor"] = 1.05      # not eligible
+        bias = {n: True for n in dev}
+        selected, lines = rules.select_for_exam(dev, bias)
+        self.assertEqual(selected, ["EmaTrendV3b", "EmaTrendV3c"])
+        self.assertTrue(any("MomentumRotationV1` not eligible" in line for line in lines))
+
+    def test_more_than_three_versions_is_refused(self):
+        dev = {f"TrendPullbackV3{s}": self.m(f"TrendPullbackV3{s}") for s in ("", "b", "c", "d")}
+        with self.assertRaises(SystemExit):
+            rules.select_for_exam(dev, {n: True for n in dev})
+
+    def test_preregistration_states_the_same_numbers(self):
+        doc = (REPO / "docs" / "research" / "round2-preregistration.md").read_text()
+        e, d = rules.EXAM, rules.DEV_SELECT
+        for text in (f"≥ {e['min_trades']}", f"profit factor ≥ {e['min_profit_factor']:g}",
+                     f"max drawdown ≤ {e['max_dd_pct']:g}%", f"≥ {e['min_profitable_quarters']} of the {e['quarters']} quarters",
+                     f"worse than **−{abs(e['worst_quarter_pct']):g}%**", f"dev profit factor ≥ {d['min_profit_factor']:g}",
+                     f"at least {d['min_trades']} dev trades", f"best {d['per_idea']} per idea",
+                     f"At most {d['max_versions_per_idea']} versions per idea"):
+            self.assertIn(text, doc)

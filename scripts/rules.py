@@ -120,3 +120,95 @@ def stage2(wf: dict | None, regime_dd: dict[str, float]) -> tuple[str, list[tupl
     checks.append((bool(regime_dd) and worst[1] <= r["max_dd_regime_pct"],
                    f"worst regime drawdown {worst[1]:.1f}% in {worst[0]} (<= {r['max_dd_regime_pct']:g}%)"))
     return ("PASS" if all(ok for ok, _ in checks) else "FAIL"), checks
+
+
+# --------------------------------------------------------------------------- Round 2
+# Pre-registered in docs/research/round2-preregistration.md (2026-10-07). A test keeps
+# that document and these numbers in sync.
+
+ROUND2_IDEAS = {  # class-name prefix -> idea
+    "TrendPullbackV3": "A: fee-aware pullback",
+    "EmaTrendV3": "B: EmaTrendV2 + market filter",
+    "MomentumRotation": "C: momentum rotation",
+}
+
+DEV_SELECT = {
+    "min_profit_factor": 1.1,
+    "min_trades": 30,
+    "per_idea": 2,              # best N per idea by dev Calmar go to the exam
+    "max_versions_per_idea": 3,
+}
+
+EXAM = {
+    "min_trades": 30,
+    "min_profit_factor": 1.2,
+    "max_dd_pct": 30.0,
+    "min_profitable_quarters": 6,
+    "quarters": 11,
+    "worst_quarter_pct": -10.0,
+}
+
+
+def round2_idea(strategy: str) -> str | None:
+    return next((idea for prefix, idea in ROUND2_IDEAS.items() if strategy.startswith(prefix)), None)
+
+
+def select_for_exam(dev_strategies: dict[str, dict], bias: dict[str, bool]) -> tuple[list[str], list[str]]:
+    """Apply the pre-registered dev rule. Returns (selected, explanation lines)."""
+    r, lines, selected = DEV_SELECT, [], []
+    by_idea: dict[str, list[dict]] = {}
+    for name, m in dev_strategies.items():
+        idea = round2_idea(name)
+        if idea:
+            by_idea.setdefault(idea, []).append(m)
+    for idea, versions in sorted(by_idea.items()):
+        if len(versions) > r["max_versions_per_idea"]:
+            raise SystemExit(f"{idea}: {len(versions)} versions tried, the limit is {r['max_versions_per_idea']}")
+        eligible = []
+        for m in sorted(versions, key=lambda m: m["calmar"], reverse=True):
+            pf = m.get("profit_factor")
+            reasons = []
+            if m["profit_pct"] <= 0:
+                reasons.append(f"profit {m['profit_pct']:+.1f}% <= 0")
+            if pf is None or pf < r["min_profit_factor"]:
+                reasons.append(f"profit factor {pf if pf is None else round(pf, 2)} < {r['min_profit_factor']}")
+            if m["trades"] < r["min_trades"]:
+                reasons.append(f"{m['trades']} trades < {r['min_trades']}")
+            if bias.get(m["strategy"]) is not True:
+                reasons.append("bias checks not passed")
+            if reasons:
+                lines.append(f"- {idea}: `{m['strategy']}` not eligible ({'; '.join(reasons)})")
+            else:
+                eligible.append(m)
+        for i, m in enumerate(eligible):
+            if i < r["per_idea"]:
+                selected.append(m["strategy"])
+                lines.append(f"- {idea}: `{m['strategy']}` **selected** (dev Calmar {m['calmar']:.2f}, "
+                             f"profit {m['profit_pct']:+.1f}%, PF {m['profit_factor']:.2f}, {m['trades']} trades)")
+            else:
+                lines.append(f"- {idea}: `{m['strategy']}` eligible but not in the best {r['per_idea']} by dev Calmar")
+    return selected, lines
+
+
+def exam(m: dict, stress_m: dict | None, bh: dict, bias_ok: bool | None) -> tuple[str, list[tuple[bool, str]]]:
+    """Round 2 exam verdict on the holdout: PASS only if every rule holds."""
+    r = EXAM
+    pf = m.get("profit_factor")
+    q_ok, q_total, worst = m.get("quarters_profitable", 0), m.get("quarters_total", 0), m.get("worst_quarter_pct")
+    checks = [
+        (m["trades"] >= r["min_trades"], f"X1 trades {m['trades']} (>= {r['min_trades']})"),
+        (m["profit_pct"] > 0 and pf is not None and pf >= r["min_profit_factor"],
+         f"X2 profit {m['profit_pct']:+.1f}% (> 0), profit factor {pf if pf is None else round(pf, 2)} "
+         f"(>= {r['min_profit_factor']:g})"),
+        (stress_m is not None and stress_m["profit_pct"] > 0,
+         "X3 profit at 0.15% fee " + ("not run" if stress_m is None else f"{stress_m['profit_pct']:+.1f}% (> 0)")),
+        (m["max_dd_pct"] <= r["max_dd_pct"] and m["max_dd_pct"] < bh["max_dd_pct"],
+         f"X4 max drawdown {m['max_dd_pct']:.1f}% (<= {r['max_dd_pct']:g}% and < buy & hold {bh['max_dd_pct']:.1f}%)"),
+        (m["calmar"] > bh["calmar"], f"X5 Calmar {m['calmar']:.2f} > buy & hold {bh['calmar']:.2f}"),
+        (q_total == r["quarters"] and q_ok >= r["min_profitable_quarters"]
+         and worst is not None and worst >= r["worst_quarter_pct"],
+         f"X6 profitable in {q_ok} of {q_total} quarters (>= {r['min_profitable_quarters']} of {r['quarters']}), "
+         f"worst quarter {'n/a' if worst is None else f'{worst:+.1f}%'} (>= {r['worst_quarter_pct']:g}%)"),
+        (bias_ok is True, "X7 bias checks " + {True: "passed", False: "FAILED", None: "not run"}[bias_ok]),
+    ]
+    return ("PASS" if all(ok for ok, _ in checks) else "FAIL"), checks

@@ -223,3 +223,8 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - `MomentumRotationV1`: weekly top-2 by 30-day return.
 - **Limits:** at most 3 versions per idea, and at most 2 per idea go to the exam, chosen by a fixed dev rule.
 - **Exam rules:** see `docs/research/round2-preregistration.md`. X6 (≥ 6 of 11 quarters profitable, no quarter below −10%) replaces Round 1's 60% rule, *before* testing, because the exam holds a full crash year in which cash is the intended behaviour.
+
+**2026-10-07: Round 2 exam candidates frozen before the exam.**
+- **Candidates:** EmaTrendV3, EmaTrendV3b, MomentumRotationV1, MomentumRotationV1b, chosen by the pre-registered dev rule (`results/leaderboards/round2_selection.md`).
+- **Idea A (fee-aware pullback) is dropped at the development stage:** its best profit factor was 1.01, below the 1.1 needed.
+- **MomentumRotationV1 now uses a fixed 5-coin universe.** The earlier version ranked against `current_whitelist()`, and Freqtrade's lookahead check (which re-runs with only one pair) flagged that as bias. The root cause was confirmed in `freqtrade/optimize/analysis/lookahead.py`.

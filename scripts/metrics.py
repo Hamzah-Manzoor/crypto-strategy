@@ -66,6 +66,29 @@ def equity_metrics(equity: pd.Series, start_balance: float, final_balance: float
     }
 
 
+def quarterly_returns(equity: pd.Series, start_balance: float, start: pd.Timestamp, end: pd.Timestamp) -> list[dict]:
+    """Wallet return per calendar quarter (mark-to-market). A quarter only partly inside the
+    test is marked partial; rules count full quarters only."""
+    if equity.empty:  # never traded: the wallet stayed flat the whole time
+        equity = pd.Series(start_balance, index=pd.date_range(start, end, freq="D", inclusive="left"))
+    curve = pd.concat([pd.Series([start_balance], index=[start]), equity])
+    out, previous = [], start_balance
+    first_q = pd.Timestamp(year=start.year, month=3 * ((start.month - 1) // 3) + 1, day=1, tz="UTC")
+    for q_start in pd.date_range(first_q, end, freq="QS", inclusive="left"):
+        q_end = q_start + pd.offsets.QuarterBegin(startingMonth=1)
+        inside = curve[(curve.index >= q_start) & (curve.index < q_end)]
+        if inside.empty:
+            continue
+        last = float(inside.iloc[-1])
+        out.append({
+            "quarter": f"{q_start.year}Q{(q_start.month - 1) // 3 + 1}",
+            "ret_pct": round(100 * (last / previous - 1), 4),
+            "partial": bool(start > q_start or end < q_end),
+        })
+        previous = last
+    return out
+
+
 def exposure_pct(wallet: pd.DataFrame, stake_currency: str) -> float:
     total = wallet.groupby("date")["total_quote"].sum()
     cash = wallet[wallet["currency"] == stake_currency].groupby("date")["total_quote"].sum()
@@ -102,12 +125,22 @@ def summarize_strategy(name: str, stats: dict, wallet: pd.DataFrame | None, code
         "ft_trade_max_dd_pct": 100 * float(stats.get("max_relative_drawdown", 0.0)),
         "ft_wallet_max_dd_pct": 100 * float((stats.get("wallet_stats") or {}).get("max_relative_drawdown", math.nan)),
     }
+    t_start = pd.Timestamp(stats["backtest_start_ts"], unit="ms", tz="UTC")
+    t_end = pd.Timestamp(stats["backtest_end_ts"], unit="ms", tz="UTC")
     if wallet is not None and len(wallet):
-        out.update(equity_metrics(equity_curve(wallet), start, final, days))
+        curve = equity_curve(wallet)
+        out.update(equity_metrics(curve, start, final, days))
         out["exposure_pct"] = exposure_pct(wallet, stats.get("stake_currency", "USDT"))
+        quarters = quarterly_returns(curve, start, t_start, t_end)
     else:  # no wallet file (no trades at all): flat line
         out.update(profit_pct=100 * (final / start - 1), cagr_pct=0.0, max_dd_pct=0.0,
                    sharpe=0.0, sortino=0.0, calmar=0.0, exposure_pct=0.0)
+        quarters = quarterly_returns(pd.Series(dtype=float), start, t_start, t_end)
+    full = [q for q in quarters if not q["partial"]]
+    out["quarters"] = quarters
+    out["quarters_total"] = len(full)
+    out["quarters_profitable"] = sum(q["ret_pct"] > 0 for q in full)
+    out["worst_quarter_pct"] = min((q["ret_pct"] for q in full), default=None)
     return {k: (round(v, 4) if isinstance(v, float) and math.isfinite(v) else v) for k, v in out.items()}
 
 

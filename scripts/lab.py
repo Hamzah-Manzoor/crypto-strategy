@@ -45,11 +45,17 @@ DATA_START = "20230501"                  # 5 months of warm-up before the in-sam
                                          # 600 startup candles on 4h = 100 days must fit
 REGIME_DATA_START = "20220101"           # extra BTC daily history so a 200-day average exists from day one
 
-# Test periods (see docs/TESTING_METHODOLOGY.md). Tune on "is" only; "oos" is for checking.
+# Test periods (see docs/TESTING_METHODOLOGY.md and docs/research/).
+# Round 1: build on "is", check on "oos". The "oos" year was looked at 9 times and is now
+# retired as a test: Round 2 builds on "dev" (= is + oos) and examines once on "holdout".
 PERIODS = {
     "is": ("20231001", "20251001"),
     "oos": ("20251001", "20261001"),
+    "dev": ("20231001", "20261001"),
+    "holdout": ("20210101", "20231001"),
 }
+# Data no test may touch without --allow-holdout, and tuning may never touch. Every look is logged.
+PROTECTED = {"holdout": PERIODS["holdout"]}
 STANDARD_FEE = 0.001  # 0.1% per side (Binance spot)
 STRESS_FEE = 0.0015   # stands in for slippage in the stage-1 stress run
 
@@ -488,20 +494,23 @@ def resolve_period(period: str) -> tuple[str, str]:
     die(f"unknown period '{period}'. Use: {', '.join([*PERIODS, 'full', *windows])} or yyyymmdd-yyyymmdd")
 
 
-def touches_oos(timerange: str) -> bool:
-    """True if any candle in the timerange is out-of-sample (IS end date is exclusive)."""
+def touches_protected(timerange: str) -> list[str]:
+    """Names of protected periods the timerange overlaps (end dates are exclusive)."""
     start, _, end = timerange.partition("-")
-    return not end or end > PERIODS["is"][1]
+    return [name for name, (p_start, p_end) in PROTECTED.items()
+            if (not start or start < p_end) and (not end or end > p_start)]
 
 
 def backtest_run(period: str, timeframe: str, fee: float, detail: str | None, strategies: list[str],
-                 notes: str, allow_oos: bool) -> dict:
+                 notes: str, allow_protected: bool) -> dict:
     """Backtest strategies in ONE Freqtrade run, summarise, log and report. Returns the run summary."""
     label, timerange = resolve_period(period)
-    oos = touches_oos(timerange)
-    if oos and not allow_oos:
-        die(f"period '{period}' ({timerange}) includes out-of-sample data. Tuning and iterating must use "
-            "in-sample only. If this is a deliberate check, add --allow-oos (every OOS look is logged).")
+    protected = touches_protected(timerange)
+    oos = bool(protected)
+    if protected and not allow_protected:
+        die(f"period '{period}' ({timerange}) touches protected test data ({', '.join(protected)}: "
+            f"{'-'.join(PROTECTED[protected[0]])}). Build and iterate on 'dev'. If this is the "
+            "pre-registered exam, add --allow-holdout (every look is logged).")
     if BASELINE not in strategies:
         strategies = [BASELINE, *strategies]  # always compare against buy & hold
 
@@ -519,7 +528,7 @@ def backtest_run(period: str, timeframe: str, fee: float, detail: str | None, st
     ft_args = [
         "backtesting", *config_args(*exchange_configs(data_exchange()), "backtest.json"),
         "--strategy-list", *strategies, "--timeframe", timeframe, "--timerange", timerange,
-        "--fee", str(fee), "--cache", "none", "--export", "trades",
+        "--fee", str(fee), "--cache", "none", "--export", "trades", "--enable-protections",
         "--backtest-directory", str(run_dir.relative_to(ROOT)),
     ]
     if detail:
@@ -547,7 +556,7 @@ def backtest_run(period: str, timeframe: str, fee: float, detail: str | None, st
 def cmd_backtest(args: argparse.Namespace) -> None:
     """Backtest all strategies in one run, then build the leaderboard and log the experiment."""
     backtest_run(args.period, args.timeframe, args.fee, args.detail,
-                 args.strategies or discover_strategies(), args.notes, args.allow_oos)
+                 args.strategies or discover_strategies(), args.notes, args.allow_holdout)
 
 
 def cmd_report(args: argparse.Namespace) -> None:
@@ -624,8 +633,8 @@ def cmd_hyperopt(args: argparse.Namespace) -> None:
     """Tune a strategy on IN-SAMPLE data, save a tuned `…T` version, compare both."""
     timerange = "-".join(PERIODS["is"])
     if args.timerange:
-        if touches_oos(args.timerange):
-            die("hyperopt never runs on out-of-sample data (that would make the OOS check meaningless)")
+        if touches_protected(args.timerange):
+            die("hyperopt never runs on protected test data (that would make the exam meaningless)")
         timerange = args.timerange
     parent_file = tuning.find_strategy_file(args.strategy)
     name, file_name = tuning.tuned_names(args.strategy, parent_file)
@@ -666,7 +675,7 @@ def cmd_hyperopt(args: argparse.Namespace) -> None:
     say(f"Best settings: {json.dumps(best['params'])}")
     say(f"Wrote {target.relative_to(ROOT)}; comparing {args.strategy} and {name} on in-sample")
     backtest_run("is", args.timeframe, STANDARD_FEE, None, [args.strategy, name],
-                 f"hyperopt check: {args.strategy} vs tuned {name}", allow_oos=False)
+                 f"hyperopt check: {args.strategy} vs tuned {name}", allow_protected=False)
     experiments.render()
 
 
@@ -692,7 +701,7 @@ def wf_backtest(strategies: list[str], timerange: str, timeframe: str, run_dir: 
     ft_args = [
         "backtesting", *config_args(*exchange_configs(data_exchange()), "backtest.json"),
         "--strategy-list", BASELINE, *strategies, "--timeframe", timeframe, "--timerange", timerange,
-        "--fee", str(STANDARD_FEE), "--cache", "none", "--export", "trades",
+        "--fee", str(STANDARD_FEE), "--cache", "none", "--export", "trades", "--enable-protections",
         "--backtest-directory", str(run_dir.relative_to(ROOT)),
     ]
     if strategy_path:
@@ -712,6 +721,9 @@ def cmd_walkforward(args: argparse.Namespace) -> None:
     windows = tuning.walkforward_windows(first, last, args.train_months, args.test_months, args.test_months)
     if not windows:
         die(f"no complete {args.train_months}+{args.test_months}-month window fits in {first}-{last}")
+    if touches_protected(f"{first}-{last}") and not args.allow_holdout:
+        die(f"{first}-{last} touches protected test data; walk-forward tunes on its windows. "
+            "Only a pre-registered test may do this: add --allow-holdout.")
     custom = (first, last) != (PERIODS["is"][0], PERIODS["oos"][1])
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     # A custom range gets its dates in the id, so stage 2 (which reads the standard runs) never picks it up.
@@ -785,7 +797,7 @@ def cmd_walkforward(args: argparse.Namespace) -> None:
         "kind": "walkforward", "run_id": wf_id, "strategy": strategy, "period": f"walk-forward ({mode})",
         "timerange": f"{windows[0]['test'].split('-')[0]}-{windows[-1]['test'].split('-')[1]}",
         "timeframe": args.timeframe, "fee": STANDARD_FEE,
-        "oos_look": touches_oos(f"{windows[0]['test'].split('-')[0]}-{windows[-1]['test'].split('-')[1]}"),
+        "oos_look": bool(touches_protected(f"{windows[0]['train'].split('-')[0]}-{windows[-1]['test'].split('-')[1]}")),
         "settings": {"mode": mode, "epochs": record["epochs"]},
         "metrics": {"profit_pct": summ["stitched_profit_pct"], "max_dd_pct": summ["worst_window_dd_pct"],
                     "trades": summ["total_test_trades"], "profitable_windows_pct": summ["profitable_windows_pct"],
@@ -922,6 +934,35 @@ def cmd_bots(args: argparse.Namespace) -> None:
         run([*bots_compose(), "logs", "--tail", str(args.tail), *services])
 
 
+def cmd_select(args: argparse.Namespace) -> None:
+    """Round 2: apply the pre-registered dev rule to the latest dev run -> exam candidates."""
+    run_summary = report.latest(report.all_runs(), "dev", "1h")
+    if run_summary is None:
+        die("no dev run yet: python3 scripts/lab.py backtest --period dev")
+    md, selected = report.write_round2_selection(run_summary)
+    print(md.read_text())
+
+
+def cmd_exam(args: argparse.Namespace) -> None:
+    """Round 2 exam on the protected holdout: normal fee, stress fee, 5m fills -> verdicts. Run ONCE."""
+    saved = ROOT / "results" / "leaderboards" / "round2_selection.json"
+    if not saved.exists():
+        die("run lab.py select first and commit the candidate list before the exam")
+    candidates = json.loads(saved.read_text())["selected"]
+    if not candidates:
+        die("no exam candidates were selected")
+    if args.strategies and sorted(args.strategies) != sorted(candidates):
+        die(f"--strategies must match the frozen candidate list {candidates}")
+    say(f"Round 2 EXAM on protected data ({'-'.join(PERIODS['holdout'])}) for {', '.join(candidates)}")
+    exam_run = backtest_run("holdout", "1h", STANDARD_FEE, None, candidates, "round 2 exam", True)
+    stress = backtest_run("holdout", "1h", STRESS_FEE, None, candidates, "round 2 exam: fee stress 0.15%", True)
+    detail = backtest_run("holdout", "1h", STANDARD_FEE, "5m", candidates, "round 2 exam: 5m fills", True) \
+        if args.detail else None
+    md, _ = report.write_exam(exam_run, stress, detail)
+    report.update_results_doc()
+    print("\n" + md.read_text())
+
+
 def cmd_ft(args: argparse.Namespace) -> None:
     """Run any raw Freqtrade command in the container (safety check first)."""
     if not args.ft_args:
@@ -974,7 +1015,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--fee", type=float, default=STANDARD_FEE, help="per side, default 0.001 (0.1%%)")
     p.add_argument("--detail", choices=["5m"], help="simulate fills inside each candle with 5m data")
     p.add_argument("--notes", default="", help="free text stored with the result and the experiment log")
-    p.add_argument("--allow-oos", action="store_true", help="allow periods that include out-of-sample data")
+    p.add_argument("--allow-holdout", action="store_true",
+                   help="allow periods that touch protected test data (the pre-registered exam only)")
+    p.add_argument("--allow-oos", dest="allow_holdout", action="store_true", help=argparse.SUPPRESS)
     p = add("report", cmd_report)
     p.add_argument("--recompute", action="store_true", help="re-read the raw result zips (needs Docker)")
     p = add("exp", cmd_exp)
@@ -1006,8 +1049,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--timeframe", default="1h", choices=["15m", "1h", "4h"])
     p.add_argument("--from", dest="from_date", help="first training day yyyymmdd (default: in-sample start)")
     p.add_argument("--to", dest="to_date", help="last test day yyyymmdd, exclusive (default: out-of-sample end)")
+    p.add_argument("--allow-holdout", action="store_true", help="allow ranges that touch protected test data")
     p = add("stage2", cmd_stage2)
     p.add_argument("--strategies", nargs="+", help="default: everything that passed stage 1")
+    p = add("select", cmd_select)
+    p = add("exam", cmd_exam)
+    p.add_argument("--strategies", nargs="+", help="optional; must equal the frozen candidate list")
+    p.add_argument("--detail", action="store_true",
+                   help="also run 5m intra-candle fills (needs 5m data for the holdout period)")
     p = add("bots", cmd_bots)
     p.add_argument("action", choices=["generate", "up", "down", "status", "logs"])
     p.add_argument("names", nargs="*", help="bot names from bots.json (default: all)")

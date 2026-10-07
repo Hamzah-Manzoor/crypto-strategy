@@ -80,3 +80,25 @@ Information only (not rules): 5m intra-candle fills, the buy & hold quarter-by-q
 ## 6. Results
 
 _To be filled in after the exam, without editing anything above this line._
+
+### 6a. Development outcome and frozen exam list (2026-10-07, BEFORE the exam)
+
+Dev run `20261007-085621_dev_1h` (2023-10-01 → 2026-10-01, 1h, 0.1% fee). 6 Round 2 versions were tried, 2 per idea, under the limit of 3. All passed `check-bias`.
+
+| Idea | Version | Dev profit | Max DD | Calmar | PF | Trades | Rule result |
+|---|---|---:|---:|---:|---:|---:|---|
+| C | `MomentumRotationV1b` (top 3) | +363.1% | 39.6% | 1.68 | 2.70 | 64 | **exam** |
+| C | `MomentumRotationV1` (top 2) | +355.4% | 43.4% | 1.51 | 2.13 | 56 | **exam** |
+| B | `EmaTrendV3` (BTC filter + pause) | +14.8% | 25.0% | 0.19 | 1.19 | 122 | **exam** |
+| B | `EmaTrendV3b` (BTC filter only) | +14.2% | 25.0% | 0.18 | 1.18 | 123 | **exam** |
+| A | `TrendPullbackV3b` | +1.1% | 15.3% | 0.02 | 1.01 | 239 | not eligible (PF < 1.1) |
+| A | `TrendPullbackV3` | −7.7% | 22.6% | −0.12 | 0.91 | 271 | not eligible |
+
+Buy & hold on dev: +231.4%, max DD 64.9%, Calmar 0.76.
+
+Notes recorded before the exam:
+- **`MomentumRotationV1` was inspected as "too good to be true".** The mechanics are correct: all entries are at the Monday 00:00 UTC rebalance, there are never more than 2 positions, and the big winners match real moves (SOL Oct 2023 → Jan 2024, XRP Nov 2024). But **80% of its dev profit came from 3 trades**; without them it's +70% over 3 years.
+- **Its first bias check was a false alarm,** caused by Freqtrade's one-pair re-check combined with a pairlist-dependent ranking. It was fixed by giving the strategy a fixed 5-coin `UNIVERSE`, and it then passed with 0 biased signals out of 18.
+- **Idea A is dropped at the development stage.** No third version was tried: with a profit factor near 1.0, more tries would be fishing.
+
+**Frozen exam list:** `EmaTrendV3`, `EmaTrendV3b`, `MomentumRotationV1`, `MomentumRotationV1b`. Command: `python3 scripts/lab.py exam --detail`.
