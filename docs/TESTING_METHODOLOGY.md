@@ -66,7 +66,7 @@ Leaderboards are **sorted by Calmar**. Ignoring risk, buy & hold wins almost eve
 
 | Check | What it catches | Pass rule |
 |---|---|---|
-| Lookahead analysis | Signals or indicators that use future candles | `has_bias` exactly False, over 30 signals × 5 pairs (Jan–Jun 2024) |
+| Lookahead analysis | Signals or indicators that use future candles | `has_bias` exactly False, over 30 signals × 5 pairs (Jan–Jun 2024; from 2026-10-07 the window ends 3 Jul 2024, see DECISIONS) |
 | Recursive analysis | Indicators that need more warm-up history than the strategy asks for | Worst indicator error ≤ 0.05% at the strategy's own `startup_candle_count` (BTC/USDT, 2024) |
 
 - The lookahead check was shown to work: a deliberately cheating strategy was flagged.

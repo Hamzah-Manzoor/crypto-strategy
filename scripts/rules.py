@@ -286,19 +286,18 @@ def variants_verdict(original: dict, variants: list[dict], all_profitable: bool 
         f"(need >= {r['min_median_calmar_ratio']:.0%})")
 
 
-def concentration_verdict(trade_profits_abs: list[float]) -> tuple[str, str]:
+def concentration_verdict(total_profit_abs: float, best_trades_abs: list[float]) -> tuple[str, str]:
     """R4: total profit (USDT) without the best N trades must stay > 0."""
     n = ROBUSTNESS["drop_top_trades"]
-    if not trade_profits_abs:
+    if not best_trades_abs:
         return "SKIPPED", "no trades"
-    total = sum(trade_profits_abs)
-    if total <= 0:
-        return "N/A", f"original not profitable ({total:+.0f} USDT) - nothing to protect"
-    best = sorted(trade_profits_abs, reverse=True)[:n]
-    rest = total - sum(best)
+    if total_profit_abs <= 0:
+        return "N/A", f"original not profitable ({total_profit_abs:+.0f} USDT) - nothing to protect"
+    best = sorted(best_trades_abs, reverse=True)[:n]
+    rest = total_profit_abs - sum(best)
     return ("PASS" if rest > 0 else "FAIL"), (
-        f"profit {total:+.0f} USDT; without the best {n} trades ({sum(best):+.0f} USDT, "
-        f"{sum(best) / total:.0%} of it): {rest:+.0f} USDT (need > 0)")
+        f"profit {total_profit_abs:+.0f} USDT; without the best {n} trades ({sum(best):+.0f} USDT, "
+        f"{sum(best) / total_profit_abs:.0%} of it): {rest:+.0f} USDT (need > 0)")
 
 
 def robustness_overall(verdicts: dict[str, str]) -> str:

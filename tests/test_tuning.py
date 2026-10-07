@@ -221,9 +221,63 @@ class RobustnessRulesTest(unittest.TestCase):
         self.assertEqual(rules.variants_verdict({"profit_pct": -3.0, "calmar": -0.1}, [self.v(1, 0.1)])[0], "N/A")
 
     def test_concentration(self):
-        self.assertEqual(rules.concentration_verdict([500, 300, 200, 50, 40, -20])[0], "PASS")   # 70 left
-        self.assertEqual(rules.concentration_verdict([900, 50, 40, -30, -20, -10])[0], "FAIL")   # -60 left
-        self.assertEqual(rules.concentration_verdict([])[0], "SKIPPED")
+        self.assertEqual(rules.concentration_verdict(1070, [500, 300, 200])[0], "PASS")   # 70 left
+        self.assertEqual(rules.concentration_verdict(930, [900, 50, 40])[0], "FAIL")      # -60 left
+        self.assertEqual(rules.concentration_verdict(0, [])[0], "SKIPPED")
+        self.assertEqual(rules.concentration_verdict(-50, [10, 5, 1])[0], "N/A")
+
+
+class RobustnessVariantsTest(unittest.TestCase):
+    WEEKLY = {"strategy": "MomentumRotationV1b", "module": "momentum_rotation_v1b", "weekly": True,
+              "rebalance": [6, 23], "universe": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT"],
+              "settings": {"LOOKBACK_DAYS": {"kind": "const", "default": 30, "values": [20, 25, 35, 40]},
+                           "TOP_N": {"kind": "const", "default": 3, "values": [2, 4]}}, "skip": []}
+    SIGNAL = {"strategy": "EmaTrendV2", "module": "ema_trend_v2", "weekly": False, "rebalance": None,
+              "universe": None, "skip": [],
+              "settings": {"fast_period": {"kind": "param", "space": "buy", "default": 21, "values": [16, 26]}}}
+
+    def test_weekly_timing_slots(self):
+        import robustness
+        slots = robustness.timing_slots((6, 23), 6)
+        self.assertEqual(len(slots), 28)
+        self.assertIn((6, 23), slots)                     # the original slot is one of them
+        self.assertEqual({h for _, h in slots}, {5, 11, 17, 23})
+        variants = robustness.timing_variants(self.WEEKLY)
+        self.assertEqual(len(variants), 28)
+        for src in variants.values():
+            ast.parse(src)
+
+    def test_signal_delay_variants_shift_only_into_the_past(self):
+        import robustness
+        variants = robustness.timing_variants(self.SIGNAL)
+        self.assertEqual(sorted(variants), ["EmaTrendV2_R1_late1", "EmaTrendV2_R1_late2", "EmaTrendV2_R1_late3"])
+        src = variants["EmaTrendV2_R1_late2"]
+        ast.parse(src)
+        self.assertIn(".shift(2)", src)
+        self.assertNotIn("shift(-", src)                  # never pulls future signals
+
+    def test_setting_variants(self):
+        import robustness
+        weekly = robustness.setting_variants(self.WEEKLY)
+        self.assertEqual(len(weekly), 6)
+        self.assertIn("LOOKBACK_DAYS = 20", weekly["MomentumRotationV1b_R2_LOOKBACK_DAYS_20"])
+        sig = robustness.setting_variants(self.SIGNAL)
+        self.assertIn("buy_params = {'fast_period': 16}", sig["EmaTrendV2_R2_fast_period_16"])
+        for src in [*weekly.values(), *sig.values()]:
+            ast.parse(src)
+
+    def test_leave_one_coin_out(self):
+        import robustness
+        pairs = self.WEEKLY["universe"]
+        runs = robustness.coin_variants(self.WEEKLY, pairs)
+        self.assertEqual([r["left_out"] for r in runs], pairs)
+        sol = next(r for r in runs if r["left_out"] == "SOL/USDT")
+        self.assertNotIn("SOL/USDT", sol["pairs"])
+        self.assertNotIn("SOL/USDT", sol["source"].split("UNIVERSE = ")[1].split("\n")[0])
+        self.assertIn("if metadata['pair'] not in self.UNIVERSE", sol["source"])   # left-out coin never trades
+        ast.parse(sol["source"])
+        no_universe = robustness.coin_variants(self.SIGNAL, pairs)
+        self.assertIsNone(no_universe[0]["class"])        # uses --pairs with the original class
 
     def test_overall(self):
         self.assertEqual(rules.robustness_overall({"R1": "PASS", "R2": "SKIPPED", "R3": "PASS", "R4": "PASS"}), "ROBUST")

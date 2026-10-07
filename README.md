@@ -26,7 +26,8 @@ All 8 build phases are done. See [ROADMAP](docs/ROADMAP.md).
   3. **The hand-designed `EmaTrendV2`** (trend following on 4h candles) passed the out-of-sample check: +5.1% while buy & hold lost 35%. It then failed the consistency check, making money in only 3 of 8 quarters.
   4. **Re-tuning it every quarter looked promising** on familiar data, then **failed a pre-registered test** on never-used 2021–23 data. See [docs/research/](docs/research/quarterly-retune-preregistration.md).
   5. **Round 2** tried 3 new ideas with a fresh exam on 2021–23. **Momentum rotation** (hold the strongest coins weekly) beat buy & hold on unseen data (+453% vs +398%), but its 41% drawdown failed the 30% safety rule. Nothing passed. See [Round 2](docs/research/round2-preregistration.md).
-  6. **Round 3** added drawdown controls to momentum rotation. They made drawdowns *worse*, and moving the weekly rebalance by 12 hours alone nearly halved its profit, so its edge is fragile. Dropped. See [Round 3](docs/research/momentum-drawdown-preregistration.md).
+  6. **Round 3** added drawdown controls to momentum rotation. They made drawdowns *worse*, so it was dropped. See [Round 3](docs/research/momentum-drawdown-preregistration.md).
+  7. **A robustness check** now pokes every strategy (other rebalance times, nearby settings, one coin left out, best trades removed). Momentum rotation survives all of it, so its edge looks real. Its ~40% drawdowns are what still keep it out. See [the plan and results](docs/research/robustness-check-plan.md).
 - **Paper trading now:** `EmaTrendV2` (watch list) and a buy & hold baseline run as dry-run bots, with dashboards at http://127.0.0.1:8081 and :8082.
 
 ## Quick start (macOS)
@@ -76,6 +77,7 @@ python3 scripts/lab.py backtest   # all strategies on the in-sample period -> yo
 | `hyperopt <Strategy> [--epochs 300]` | Tunes on in-sample only (seed 42, 6 workers), writes a `…T` version, compares both |
 | **Validation** | |
 | `validate [--strategies …]` | Stage 1: in-sample vs out-of-sample, 0.15% fee stress, 5m fills → `results/leaderboards/stage1_1h.md` |
+| `robustness <Strategy> [--checks R1 R2 R3 R4]` | Dev-data robustness gate: timing shifts, nearby settings, leave one coin out, profit without the 3 best trades → `results/robustness/` |
 | `walkforward <Strategy> [--fixed]` | 8 rolling 3-month test windows, re-tuned before each or with fixed settings → `results/walkforward/` |
 | `stage2 [--strategies …]` | Stage 2: walk-forward + all 6 regime windows → `results/leaderboards/stage2_1h.md` |
 | **Results** | |

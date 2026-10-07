@@ -32,6 +32,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import bots  # noqa: E402
 import experiments  # noqa: E402
 import report  # noqa: E402
+import robustness  # noqa: E402
+import rules  # noqa: E402
 import safety_check  # noqa: E402
 import tuning  # noqa: E402
 from rules import BASELINE  # noqa: E402
@@ -69,7 +71,8 @@ HYPEROPT_JOBS = 6  # parallel workers; 11 ran Docker's 8 GB out of memory (worke
 
 # Bias checks (lab.py check-bias): all inside the in-sample period.
 BIAS_TIMEFRAME = "1h"
-LOOKAHEAD_TIMERANGE = "20240101-20240701"   # 6 months, all pairs
+LOOKAHEAD_TIMERANGE = "20240101-20240703"   # ~6 months, all pairs. Ends on a Wednesday: a window ending
+                                            # Monday 00:00 crashed Freqtrade 2026.9 on weekly trades closing on its last candle
 RECURSIVE_TIMERANGE = "20240101-20250101"   # >= 5000 candles, as the Freqtrade docs recommend
 RECURSIVE_PAIR = "BTC/USDT"
 RECURSIVE_STARTUPS = ["100", "200", "400", "600", "1000"]
@@ -348,10 +351,15 @@ def pct(cell: str) -> float:
         return math.nan
 
 
-def recursive_check(strategy: str) -> tuple[str, list[str]]:
+def strategy_path_args(strategy_path: Path | None) -> list[str]:
+    return ["--strategy-path", str(strategy_path.relative_to(ROOT))] if strategy_path else []
+
+
+def recursive_check(strategy: str, strategy_path: Path | None = None) -> tuple[str, list[str]]:
     """Run recursive-analysis for one strategy; return (verdict, markdown lines)."""
     result = freqtrade([
         "recursive-analysis", *config_args("backtest.json"), "--strategy", strategy,
+        *strategy_path_args(strategy_path),
         "-i", BIAS_TIMEFRAME, "-p", RECURSIVE_PAIR, "--timerange", RECURSIVE_TIMERANGE,
         "--startup-candle", *RECURSIVE_STARTUPS,
     ], check=False, tee=True)
@@ -378,9 +386,10 @@ def recursive_check(strategy: str) -> tuple[str, list[str]]:
                               f"(limit {RECURSIVE_MAX_PCT}%) → **{verdict}**", ""]
 
 
-def cmd_check_bias(args: argparse.Namespace) -> None:
-    """Lookahead + recursive analysis on strategies; writes results/checks/bias_check.md."""
-    strategies = args.strategies or discover_strategies()
+def run_bias_checks(strategies: list[str], skip_lookahead: bool = False, skip_recursive: bool = False,
+                    strategy_path: Path | None = None, save_lookahead_csv: bool = True):
+    """Lookahead + recursive analysis. Returns (status per strategy, markdown lines, failures).
+    strategy_path: extra folder with (generated) strategy classes, e.g. robustness variants."""
     report = [
         "# Bias checks", "",
         f"Freqtrade 2026.9, timeframe {BIAS_TIMEFRAME}. Strategies: {', '.join(strategies)}.", "",
@@ -388,7 +397,7 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
     failed = []
     status = {name: {"lookahead": "not run", "recursive": "not run"} for name in strategies}
 
-    if not args.skip_lookahead:
+    if not skip_lookahead:
         report += [
             "## Lookahead analysis - does any signal use future candles?", "",
             f"Timerange `{LOOKAHEAD_TIMERANGE}`, all 5 pairs, one strategy per run (with "
@@ -411,7 +420,7 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
             tmp_csv.unlink(missing_ok=True)
             result = freqtrade([
                 "lookahead-analysis", *config_args("backtest.json"), "--strategy", name,
-                "-i", BIAS_TIMEFRAME, "--timerange", LOOKAHEAD_TIMERANGE,
+                *strategy_path_args(strategy_path), "-i", BIAS_TIMEFRAME, "--timerange", LOOKAHEAD_TIMERANGE,
                 "--minimum-trade-amount", "10", "--targeted-trade-amount", "30",
                 "--lookahead-analysis-exportfilename", str(tmp_csv.relative_to(ROOT)),
             ], check=False, tee=True)
@@ -432,14 +441,14 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
                 f"| {name} | {shown} | {row.get('total_signals', '')} | {row.get('biased_entry_signals', '')} | "
                 f"{row.get('biased_exit_signals', '')} | {row.get('biased_indicators', '') or '-'} |"
             )
-        if rows_out:
+        if rows_out and save_lookahead_csv:
             with (ROOT / "results" / "checks" / "lookahead.csv").open("w", newline="") as fh:
                 writer = csv.DictWriter(fh, fieldnames=list(rows_out[0]))
                 writer.writeheader()
                 writer.writerows(rows_out)
         report.append("")
 
-    if not args.skip_recursive:
+    if not skip_recursive:
         report += [
             "## Recursive analysis - is `startup_candle_count` enough?", "",
             f"{RECURSIVE_PAIR}, timerange `{RECURSIVE_TIMERANGE}`. Each column shows how far an indicator's "
@@ -453,12 +462,19 @@ def cmd_check_bias(args: argparse.Namespace) -> None:
                 status[name]["recursive"] = "skipped"
                 continue
             say(f"Recursive analysis: {name}")
-            verdict, md = recursive_check(name)
+            verdict, md = recursive_check(name, strategy_path)
             report += md
             status[name]["recursive"] = "pass" if verdict == "PASS" else "fail"
             if verdict != "PASS":
                 failed.append(f"{name} (recursive)")
 
+    return status, report, failed
+
+
+def cmd_check_bias(args: argparse.Namespace) -> None:
+    """Lookahead + recursive analysis on strategies; writes results/checks/bias_check.md."""
+    strategies = args.strategies or discover_strategies()
+    status, report, failed = run_bias_checks(strategies, args.skip_lookahead, args.skip_recursive)
     report += ["## Result", "", "**PASS** - no bias found." if not failed
                else "**FAIL**: " + ", ".join(failed), ""]
     out = ROOT / "results" / "checks" / "bias_check.md"
@@ -963,6 +979,120 @@ def cmd_exam(args: argparse.Namespace) -> None:
     print("\n" + md.read_text())
 
 
+def robust_backtest(strategies: list[str], timerange: str, run_dir: Path, run_id: str,
+                    strategy_path: Path, pairs: list[str] | None = None) -> dict:
+    """One robustness backtest (dev data, 0.1% fee) -> run summary, kept in the throwaway folder."""
+    run_dir.mkdir(parents=True, exist_ok=True)
+    ft_args = [
+        "backtesting", *config_args(*exchange_configs(data_exchange()), "backtest.json"),
+        "--strategy-list", *strategies, *strategy_path_args(strategy_path),
+        "--timeframe", "1h", "--timerange", timerange, "--fee", str(STANDARD_FEE), "--cache", "none",
+        "--export", "trades", "--enable-protections", "--backtest-directory", str(run_dir.relative_to(ROOT)),
+    ]
+    if pairs:
+        ft_args += ["--pairs", *pairs]
+    freqtrade(ft_args)
+    summary = run_dir.with_suffix(".json")
+    container_python("metrics.py", ["--zip", str(next(run_dir.glob("*.zip")).relative_to(ROOT)), "--out",
+                                    str(summary.relative_to(ROOT)), "--run-id", run_id, "--period", "dev"])
+    return report.load_run(summary)
+
+
+def cmd_robustness(args: argparse.Namespace) -> None:
+    """Robustness check on dev data: timing, nearby settings, leave-one-coin-out, lucky trades."""
+    name = args.strategy
+    _, timerange = resolve_period("dev")
+    safety_gate()
+    out = run([*COMPOSE, "run", "--rm", "--entrypoint", "python", "freqtrade",
+               "scripts/inspect_strategy.py", name], quiet=True)
+    json_line = next((line for line in reversed(out.stdout.splitlines()) if line.startswith("{")), None)
+    if out.returncode != 0 or json_line is None:
+        die(f"could not inspect {name}:\n{out.stdout}\n{out.stderr}")
+    info = json.loads(json_line)
+    wanted, skip = set(args.checks), set(info["skip"])
+    pairs = json.loads((ROOT / CONFIGS / "base.json").read_text())["exchange"]["pair_whitelist"]
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    rid = f"{stamp}_{name}"
+    folder = ROOT / "user_data" / "walkforward" / f"robust_{rid}"
+    folder.mkdir(parents=True, exist_ok=True)
+    r1 = robustness.timing_variants(info) if "R1" in wanted and "R1" not in skip else {}
+    r2 = robustness.setting_variants(info) if "R2" in wanted and "R2" not in skip else {}
+    r3 = robustness.coin_variants(info, pairs) if "R3" in wanted and "R3" not in skip else []
+    sources = {**r1, **r2, **{r["class"]: r["source"] for r in r3 if r["class"]}}
+    for cls, src in sources.items():
+        (folder / f"{cls.lower()}.py").write_text(src)
+    say(f"Robustness {name}: {len(r1)} timing, {len(r2)} settings, {len(r3)} leave-one-coin-out variants "
+        f"on dev {timerange}")
+
+    bias_failed = []
+    if sources and not args.skip_bias:
+        say(f"Bias-checking the {len(sources)} generated variants")
+        _, _, bias_failed = run_bias_checks(list(sources), strategy_path=folder, save_lookahead_csv=False)
+
+    main = robust_backtest([name, *r1, *r2], timerange, folder / "main", f"{rid}_main", folder)
+    original = main["strategies"][name]
+    day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+    def label(cls: str) -> str:
+        tail = cls.split("_R", 1)[1][2:]
+        if tail.startswith("d") and "h" in tail:
+            day, hour = tail[1:].split("h")
+            return f"{day_names[int(day)]} {hour}:00 candle" + (" (original)" if [int(day), int(hour)] == info["rebalance"] else "")
+        if tail.startswith("late"):
+            return f"signals {tail[4:]} candle(s) late"
+        key, _, value = tail.rpartition("_")
+        return f"{key} = {value.replace('p', '.').replace('m', '-')}"
+
+    def row(m: dict, text: str) -> dict:
+        return {"label": text, **{k: m[k] for k in ("profit_pct", "max_dd_pct", "calmar", "trades")}}
+
+    rows = {"R1": [row(main["strategies"][c], label(c)) for c in r1],
+            "R2": [row(main["strategies"][c], label(c)) for c in r2], "R3": []}
+    for run_ in r3:
+        coin = run_["left_out"].split("/")[0]
+        summary = robust_backtest([run_["class"] or name], timerange, folder / f"no_{coin}", f"{rid}_no_{coin}",
+                                  folder, pairs=run_["pairs"])
+        rows["R3"].append(row(summary["strategies"][run_["class"] or name], f"without {coin}"))
+
+    checks = {}
+    for check, all_profitable in (("R1", False), ("R2", False), ("R3", True)):
+        if check not in wanted:
+            continue
+        if check in skip:
+            checks[check] = {"verdict": "SKIPPED", "detail": "does not apply to this strategy (declared skip)"}
+        else:
+            verdict, detail = rules.variants_verdict(original, rows[check], all_profitable)
+            checks[check] = {"verdict": verdict, "detail": detail}
+    if "R4" in wanted:
+        verdict, detail = rules.concentration_verdict(original["profit_abs_total"], original["best_trades_profit_abs"])
+        checks["R4"] = {"verdict": verdict, "detail": detail}
+    if bias_failed:  # a generated variant peeks ahead: the check itself is broken, never trust it
+        for c in checks.values():
+            if c["verdict"] == "PASS":
+                c.update(verdict="FAIL", detail=c["detail"] + " - but generated variants failed the bias check")
+    overall = rules.robustness_overall({k: v["verdict"] for k, v in checks.items()})
+
+    record = {"id": rid, "strategy": name, "timerange": timerange, "info": info, "overall": overall,
+              "original": {k: original[k] for k in ("profit_pct", "max_dd_pct", "calmar", "trades",
+                                                    "profit_abs_total", "best_trades_profit_abs")},
+              "checks": checks, "variants": rows,
+              "bias": {"checked": 0 if args.skip_bias else len(sources), "failed": bias_failed}}
+    out_dir = ROOT / "results" / "robustness"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / f"{rid}.json").write_text(json.dumps(record, indent=1) + "\n")
+    md = out_dir / f"{rid}.md"
+    md.write_text(robustness.render_report(record))
+    experiments.log_entry({
+        "kind": "robustness", "run_id": rid, "strategy": name, "period": "dev", "timerange": timerange,
+        "timeframe": "1h", "fee": STANDARD_FEE, "settings": {"checks": sorted(wanted)},
+        "metrics": {k: original[k] for k in ("profit_pct", "max_dd_pct", "calmar", "trades")},
+        "notes": f"robustness {overall}: " + ", ".join(f"{k} {v['verdict']}" for k, v in checks.items()),
+    })
+    experiments.render()
+    print("\n" + md.read_text())
+
+
 def cmd_ft(args: argparse.Namespace) -> None:
     """Run any raw Freqtrade command in the container (safety check first)."""
     if not args.ft_args:
@@ -1052,6 +1182,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--allow-holdout", action="store_true", help="allow ranges that touch protected test data")
     p = add("stage2", cmd_stage2)
     p.add_argument("--strategies", nargs="+", help="default: everything that passed stage 1")
+    p = add("robustness", cmd_robustness)
+    p.add_argument("strategy")
+    p.add_argument("--checks", nargs="+", default=["R1", "R2", "R3", "R4"], choices=["R1", "R2", "R3", "R4"])
+    p.add_argument("--skip-bias", action="store_true", help="skip bias checks of generated variants (not for real use)")
     p = add("select", cmd_select)
     p = add("exam", cmd_exam)
     p.add_argument("--strategies", nargs="+", help="optional; must equal the frozen candidate list")

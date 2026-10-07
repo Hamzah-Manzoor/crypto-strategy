@@ -1,0 +1,358 @@
+{
+ "id": "20261007-124125_MomentumRotationV1b",
+ "strategy": "MomentumRotationV1b",
+ "timerange": "20231001-20261001",
+ "info": {
+  "strategy": "MomentumRotationV1b",
+  "module": "momentum_rotation_v1b",
+  "weekly": true,
+  "rebalance": [
+   6,
+   23
+  ],
+  "universe": [
+   "BTC/USDT",
+   "ETH/USDT",
+   "SOL/USDT",
+   "BNB/USDT",
+   "XRP/USDT"
+  ],
+  "settings": {
+   "LOOKBACK_DAYS": {
+    "kind": "const",
+    "default": 30,
+    "values": [
+     20,
+     25,
+     35,
+     40
+    ]
+   },
+   "TOP_N": {
+    "kind": "const",
+    "default": 3,
+    "values": [
+     2,
+     4
+    ]
+   }
+  },
+  "skip": []
+ },
+ "overall": "ROBUST",
+ "original": {
+  "profit_pct": 363.1411,
+  "max_dd_pct": 39.611,
+  "calmar": 1.6816,
+  "trades": 64,
+  "profit_abs_total": 3631.4111,
+  "best_trades_profit_abs": [
+   849.60868308,
+   702.8729103,
+   696.05998751
+  ]
+ },
+ "checks": {
+  "R1": {
+   "verdict": "PASS",
+   "detail": "28 of 28 variants profitable (need >= 80%); median Calmar 1.43 = 85% of the original's 1.68 (need >= 50%)"
+  },
+  "R2": {
+   "verdict": "PASS",
+   "detail": "6 of 6 variants profitable (need >= 80%); median Calmar 1.31 = 78% of the original's 1.68 (need >= 50%)"
+  },
+  "R3": {
+   "verdict": "PASS",
+   "detail": "5 of 5 variants profitable (need all); median Calmar 1.49 = 89% of the original's 1.68 (need >= 50%)"
+  },
+  "R4": {
+   "verdict": "PASS",
+   "detail": "profit +3631 USDT; without the best 3 trades (+2249 USDT, 62% of it): +1383 USDT (need > 0)"
+  }
+ },
+ "variants": {
+  "R1": [
+   {
+    "label": "Mon 05:00 candle",
+    "profit_pct": 215.2353,
+    "max_dd_pct": 51.9185,
+    "calmar": 0.8971,
+    "trades": 65
+   },
+   {
+    "label": "Mon 11:00 candle",
+    "profit_pct": 206.731,
+    "max_dd_pct": 49.9016,
+    "calmar": 0.9067,
+    "trades": 65
+   },
+   {
+    "label": "Mon 17:00 candle",
+    "profit_pct": 240.117,
+    "max_dd_pct": 47.1707,
+    "calmar": 1.067,
+    "trades": 64
+   },
+   {
+    "label": "Mon 23:00 candle",
+    "profit_pct": 312.0658,
+    "max_dd_pct": 38.3589,
+    "calmar": 1.5707,
+    "trades": 59
+   },
+   {
+    "label": "Tue 05:00 candle",
+    "profit_pct": 288.8057,
+    "max_dd_pct": 41.1969,
+    "calmar": 1.388,
+    "trades": 59
+   },
+   {
+    "label": "Tue 11:00 candle",
+    "profit_pct": 259.2913,
+    "max_dd_pct": 42.183,
+    "calmar": 1.2588,
+    "trades": 59
+   },
+   {
+    "label": "Tue 17:00 candle",
+    "profit_pct": 242.015,
+    "max_dd_pct": 43.2056,
+    "calmar": 1.1714,
+    "trades": 59
+   },
+   {
+    "label": "Tue 23:00 candle",
+    "profit_pct": 270.0851,
+    "max_dd_pct": 52.0401,
+    "calmar": 1.0495,
+    "trades": 66
+   },
+   {
+    "label": "Wed 05:00 candle",
+    "profit_pct": 277.3166,
+    "max_dd_pct": 53.0754,
+    "calmar": 1.0479,
+    "trades": 67
+   },
+   {
+    "label": "Wed 11:00 candle",
+    "profit_pct": 287.0761,
+    "max_dd_pct": 52.4434,
+    "calmar": 1.0859,
+    "trades": 66
+   },
+   {
+    "label": "Wed 17:00 candle",
+    "profit_pct": 312.6447,
+    "max_dd_pct": 52.0984,
+    "calmar": 1.1579,
+    "trades": 66
+   },
+   {
+    "label": "Wed 23:00 candle",
+    "profit_pct": 520.2601,
+    "max_dd_pct": 42.7869,
+    "calmar": 1.9546,
+    "trades": 61
+   },
+   {
+    "label": "Thu 05:00 candle",
+    "profit_pct": 479.8456,
+    "max_dd_pct": 43.3627,
+    "calmar": 1.8347,
+    "trades": 61
+   },
+   {
+    "label": "Thu 11:00 candle",
+    "profit_pct": 446.5229,
+    "max_dd_pct": 42.7447,
+    "calmar": 1.7793,
+    "trades": 61
+   },
+   {
+    "label": "Thu 17:00 candle",
+    "profit_pct": 432.4788,
+    "max_dd_pct": 41.3379,
+    "calmar": 1.803,
+    "trades": 61
+   },
+   {
+    "label": "Thu 23:00 candle",
+    "profit_pct": 356.0949,
+    "max_dd_pct": 41.1321,
+    "calmar": 1.5988,
+    "trades": 76
+   },
+   {
+    "label": "Fri 05:00 candle",
+    "profit_pct": 297.47,
+    "max_dd_pct": 42.3783,
+    "calmar": 1.3766,
+    "trades": 77
+   },
+   {
+    "label": "Fri 11:00 candle",
+    "profit_pct": 323.9643,
+    "max_dd_pct": 43.1209,
+    "calmar": 1.4327,
+    "trades": 76
+   },
+   {
+    "label": "Fri 17:00 candle",
+    "profit_pct": 303.5265,
+    "max_dd_pct": 45.7609,
+    "calmar": 1.2923,
+    "trades": 76
+   },
+   {
+    "label": "Fri 23:00 candle",
+    "profit_pct": 360.1993,
+    "max_dd_pct": 46.5682,
+    "calmar": 1.4228,
+    "trades": 62
+   },
+   {
+    "label": "Sat 05:00 candle",
+    "profit_pct": 366.4354,
+    "max_dd_pct": 46.417,
+    "calmar": 1.4435,
+    "trades": 62
+   },
+   {
+    "label": "Sat 11:00 candle",
+    "profit_pct": 368.4452,
+    "max_dd_pct": 45.6984,
+    "calmar": 1.4715,
+    "trades": 62
+   },
+   {
+    "label": "Sat 17:00 candle",
+    "profit_pct": 334.2413,
+    "max_dd_pct": 46.6412,
+    "calmar": 1.3523,
+    "trades": 62
+   },
+   {
+    "label": "Sat 23:00 candle",
+    "profit_pct": 396.0466,
+    "max_dd_pct": 41.4432,
+    "calmar": 1.7002,
+    "trades": 64
+   },
+   {
+    "label": "Sun 05:00 candle",
+    "profit_pct": 430.9679,
+    "max_dd_pct": 40.3784,
+    "calmar": 1.8418,
+    "trades": 64
+   },
+   {
+    "label": "Sun 11:00 candle",
+    "profit_pct": 387.1845,
+    "max_dd_pct": 41.4012,
+    "calmar": 1.6773,
+    "trades": 64
+   },
+   {
+    "label": "Sun 17:00 candle",
+    "profit_pct": 376.3891,
+    "max_dd_pct": 43.4615,
+    "calmar": 1.5688,
+    "trades": 64
+   },
+   {
+    "label": "Sun 23:00 candle (original)",
+    "profit_pct": 363.1411,
+    "max_dd_pct": 39.611,
+    "calmar": 1.6816,
+    "trades": 64
+   }
+  ],
+  "R2": [
+   {
+    "label": "LOOKBACK_DAYS = 20",
+    "profit_pct": 271.1761,
+    "max_dd_pct": 43.6081,
+    "calmar": 1.256,
+    "trades": 69
+   },
+   {
+    "label": "LOOKBACK_DAYS = 25",
+    "profit_pct": 301.8395,
+    "max_dd_pct": 42.9891,
+    "calmar": 1.3705,
+    "trades": 71
+   },
+   {
+    "label": "LOOKBACK_DAYS = 35",
+    "profit_pct": 274.7947,
+    "max_dd_pct": 46.637,
+    "calmar": 1.1851,
+    "trades": 62
+   },
+   {
+    "label": "LOOKBACK_DAYS = 40",
+    "profit_pct": 200.7514,
+    "max_dd_pct": 48.4171,
+    "calmar": 0.9149,
+    "trades": 62
+   },
+   {
+    "label": "TOP_N = 2",
+    "profit_pct": 355.3958,
+    "max_dd_pct": 43.3802,
+    "calmar": 1.514,
+    "trades": 56
+   },
+   {
+    "label": "TOP_N = 4",
+    "profit_pct": 309.3018,
+    "max_dd_pct": 36.1929,
+    "calmar": 1.6548,
+    "trades": 71
+   }
+  ],
+  "R3": [
+   {
+    "label": "without BTC",
+    "profit_pct": 352.6033,
+    "max_dd_pct": 39.1548,
+    "calmar": 1.6687,
+    "trades": 54
+   },
+   {
+    "label": "without ETH",
+    "profit_pct": 418.6155,
+    "max_dd_pct": 34.9232,
+    "calmar": 2.0905,
+    "trades": 54
+   },
+   {
+    "label": "without SOL",
+    "profit_pct": 235.6313,
+    "max_dd_pct": 36.1784,
+    "calmar": 1.3728,
+    "trades": 59
+   },
+   {
+    "label": "without BNB",
+    "profit_pct": 301.0681,
+    "max_dd_pct": 39.4189,
+    "calmar": 1.492,
+    "trades": 55
+   },
+   {
+    "label": "without XRP",
+    "profit_pct": 273.521,
+    "max_dd_pct": 40.169,
+    "calmar": 1.3716,
+    "trades": 57
+   }
+  ]
+ },
+ "bias": {
+  "checked": 39,
+  "failed": []
+ }
+}

@@ -12,12 +12,15 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**317 entries**, 60 of them out-of-sample looks (in 12 runs).
+**321 entries**, 60 of them out-of-sample looks (in 12 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
+| `BuyHoldV1` · robustness check | **keep** | ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | E0318 |
+| `EmaTrendV2` · robustness check | **keep** | ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | E0319 |
+| `MomentumRotationV1b` · robustness check | **keep** | ROBUST (calibration): profitable in all 28 rebalance slots (+207% to +520%) - timing changes the size, not the sign; still fails the drawdown rules (~40%) | E0321 |
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
@@ -55,6 +58,10 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0321 | 2026-10-07 | robustness | `MomentumRotationV1b` | dev | 1h | 0.10% | +363.1 | 39.6 | n/a | 1.68 | 64 | keep: ROBUST (calibration): profitable in all 28 rebalance slots (+207% to +520%) - timing changes the size, not the sign; still fails the drawdown rules (~40%) | robustness ROBUST: R1 PASS, R2 PASS, R3 PASS, R4 PASS | `6c9748d+dirty` |
+| E0320 | 2026-10-07 | robustness | `MomentumRotationV1b` | dev | 1h | 0.10% | +363.1 | 39.6 | n/a | 1.68 | 64 | drop: INVALID run: 8 generated variants' bias checks crashed (tooling: lookahead window ended on a Monday trade close; leave-one-out variants crashed on the left-out coin). Superseded by the re-run. | robustness FRAGILE: R1 FAIL, R2 FAIL, R3 FAIL, R4 FAIL | `6c9748d+dirty` |
+| E0319 | 2026-10-07 | robustness | `EmaTrendV2` | dev | 1h | 0.10% | +36.0 | 20.5 | n/a | 0.53 | 165 | keep: ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | robustness ROBUST: R1 PASS, R2 PASS, R3 PASS, R4 PASS | `6c9748d+dirty` |
+| E0318 | 2026-10-07 | robustness | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | n/a | 0.76 | 5 | keep: ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | robustness ROBUST: R1 SKIPPED, R2 SKIPPED, R3 PASS, R4 PASS | `6c9748d+dirty` |
 | E0317 | 2026-10-07 | backtest | `MomentumRotationV2c` | dev | 1h | 0.10% | +13.9 | 50.2 | 0.30 | 0.09 | 106 | drop: Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |
 | E0316 | 2026-10-07 | backtest | `MomentumRotationV2b` | dev | 1h | 0.10% | +165.1 | 48.9 | 1.02 | 0.79 | 72 | drop: Round 3 dev: DD 48.9% (> 30%) - faster BTC filter never switched off in the 2024 chop; idea dropped | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |
 | E0315 | 2026-10-07 | backtest | `MomentumRotationV2` | dev | 1h | 0.10% | +23.9 | 49.5 | 0.38 | 0.15 | 102 | drop: Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |

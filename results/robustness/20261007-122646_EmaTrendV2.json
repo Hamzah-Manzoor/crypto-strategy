@@ -1,0 +1,160 @@
+{
+ "id": "20261007-122646_EmaTrendV2",
+ "strategy": "EmaTrendV2",
+ "timerange": "20231001-20261001",
+ "info": {
+  "strategy": "EmaTrendV2",
+  "module": "ema_trend_v2",
+  "weekly": false,
+  "rebalance": null,
+  "universe": null,
+  "settings": {
+   "fast_period": {
+    "kind": "param",
+    "space": "buy",
+    "default": 21,
+    "values": [
+     16,
+     26
+    ]
+   },
+   "slow_period": {
+    "kind": "param",
+    "space": "buy",
+    "default": 55,
+    "values": [
+     50,
+     72
+    ]
+   }
+  },
+  "skip": []
+ },
+ "overall": "ROBUST",
+ "original": {
+  "profit_pct": 36.0311,
+  "max_dd_pct": 20.5275,
+  "calmar": 0.5257,
+  "trades": 165,
+  "profit_abs_total": 360.3111,
+  "best_trades_profit_abs": [
+   101.88050186,
+   68.29599462,
+   64.34273832
+  ]
+ },
+ "checks": {
+  "R1": {
+   "verdict": "PASS",
+   "detail": "3 of 3 variants profitable (need >= 80%); median Calmar 0.65 = 124% of the original's 0.53 (need >= 50%)"
+  },
+  "R2": {
+   "verdict": "PASS",
+   "detail": "4 of 4 variants profitable (need >= 80%); median Calmar 0.45 = 85% of the original's 0.53 (need >= 50%)"
+  },
+  "R3": {
+   "verdict": "PASS",
+   "detail": "5 of 5 variants profitable (need all); median Calmar 0.28 = 54% of the original's 0.53 (need >= 50%)"
+  },
+  "R4": {
+   "verdict": "PASS",
+   "detail": "profit +360 USDT; without the best 3 trades (+235 USDT, 65% of it): +126 USDT (need > 0)"
+  }
+ },
+ "variants": {
+  "R1": [
+   {
+    "label": "signals 1 candle(s) late",
+    "profit_pct": 37.1152,
+    "max_dd_pct": 21.4355,
+    "calmar": 0.5171,
+    "trades": 165
+   },
+   {
+    "label": "signals 2 candle(s) late",
+    "profit_pct": 51.3682,
+    "max_dd_pct": 19.605,
+    "calmar": 0.7551,
+    "trades": 165
+   },
+   {
+    "label": "signals 3 candle(s) late",
+    "profit_pct": 43.9232,
+    "max_dd_pct": 19.774,
+    "calmar": 0.652,
+    "trades": 165
+   }
+  ],
+  "R2": [
+   {
+    "label": "fast_period = 16",
+    "profit_pct": 20.4431,
+    "max_dd_pct": 21.0665,
+    "calmar": 0.3033,
+    "trades": 192
+   },
+   {
+    "label": "fast_period = 26",
+    "profit_pct": 47.7024,
+    "max_dd_pct": 18.3783,
+    "calmar": 0.7547,
+    "trades": 162
+   },
+   {
+    "label": "slow_period = 50",
+    "profit_pct": 30.3075,
+    "max_dd_pct": 24.8898,
+    "calmar": 0.3703,
+    "trades": 157
+   },
+   {
+    "label": "slow_period = 72",
+    "profit_pct": 32.8666,
+    "max_dd_pct": 18.9921,
+    "calmar": 0.5226,
+    "trades": 150
+   }
+  ],
+  "R3": [
+   {
+    "label": "without BTC",
+    "profit_pct": 16.091,
+    "max_dd_pct": 20.6597,
+    "calmar": 0.2466,
+    "trades": 136
+   },
+   {
+    "label": "without ETH",
+    "profit_pct": 45.8903,
+    "max_dd_pct": 16.5773,
+    "calmar": 0.8085,
+    "trades": 133
+   },
+   {
+    "label": "without SOL",
+    "profit_pct": 17.4946,
+    "max_dd_pct": 19.5206,
+    "calmar": 0.2826,
+    "trades": 134
+   },
+   {
+    "label": "without BNB",
+    "profit_pct": 18.9999,
+    "max_dd_pct": 22.2482,
+    "calmar": 0.2681,
+    "trades": 129
+   },
+   {
+    "label": "without XRP",
+    "profit_pct": 48.4816,
+    "max_dd_pct": 13.5894,
+    "calmar": 1.0354,
+    "trades": 128
+   }
+  ]
+ },
+ "bias": {
+  "checked": 7,
+  "failed": []
+ }
+}

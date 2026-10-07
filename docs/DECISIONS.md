@@ -245,3 +245,16 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - All 3 versions had dev drawdowns of 49–50%, above the 30% cap. The trailing stop and the faster BTC filter didn't help, because the 2024 drawdown was an 8-month whipsaw, not a crash.
 - **Moving the rebalance 12 hours alone cut dev profit from +363% to +207%**, with the same coins in 42 of 45 weeks. So momentum rotation's results are sensitive to execution timing, which tempers the Round 2 holdout result.
 - No forward test and no paper bot.
+
+**2026-10-07: Robustness check built. Neighbour settings for frozen strategies live in a registry.**
+- The plan said R2's neighbour values would be written into each strategy's class (`ROBUSTNESS_GRID`).
+- For strategies that already have logged results (frozen), editing their files would change their code hash and break the link to past results. So their grids are in `user_data/strategies/labkit/robustness_grids.py`, written before the check ran on them. New strategies declare `ROBUSTNESS_GRID` in their own class.
+- The bias check was refactored into `run_bias_checks(..., strategy_path=...)` so generated variants can be checked without overwriting the main bias report.
+
+**2026-10-07: Robustness calibration done; Round 3's timing claim corrected.**
+- BuyHoldV1, EmaTrendV2 and MomentumRotationV1b all came out ROBUST on dev data.
+- Momentum rotation is profitable at all 28 rebalance times. The Round 3 note that it was "timing-sensitive" over-generalised from 2 slots and is withdrawn; its blocker is drawdown size (~40%).
+- **Tooling fixes:**
+  - The lookahead window now ends 2024-07-03, because a Monday-00:00 end crashed Freqtrade on weekly trades closing on the last candle.
+  - Leave-one-coin-out variants never trade the left-out coin.
+- No threshold was changed after seeing the calibration.

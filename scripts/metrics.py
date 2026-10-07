@@ -136,6 +136,9 @@ def summarize_strategy(name: str, stats: dict, wallet: pd.DataFrame | None, code
         out.update(profit_pct=100 * (final / start - 1), cagr_pct=0.0, max_dd_pct=0.0,
                    sharpe=0.0, sortino=0.0, calmar=0.0, exposure_pct=0.0)
         quarters = quarterly_returns(pd.Series(dtype=float), start, t_start, t_end)
+    profits = sorted((float(tr["profit_abs"]) for tr in stats.get("trades", [])), reverse=True)
+    out["profit_abs_total"] = sum(profits)
+    out["best_trades_profit_abs"] = profits[:3]   # for the robustness check R4
     full = [q for q in quarters if not q["partial"]]
     out["quarters"] = quarters
     out["quarters_total"] = len(full)

@@ -75,3 +75,28 @@ On **dev data only**, run the full check on three existing strategies, with the 
 3. **Run the calibration (section 6),** commit the reports, and **stop to show you the results.**
 
 **Cost:** about 10–20 minutes per strategy on this Mac. The 28 timing variants run in one Freqtrade run.
+
+## 8. Calibration results (2026-10-07, dev data 2023-10 → 2026-10)
+
+Reports: `results/robustness/`. Thresholds were unchanged throughout.
+
+| Strategy | R1 Timing | R2 Settings | R3 Coins | R4 Best 3 trades removed | Verdict | Matched expectation? |
+|---|---|---|---|---|---|---|
+| `BuyHoldV1` | skipped | skipped (no settings) | ✅ 5/5 profitable, median Calmar 87% | ✅ +493 USDT left | **ROBUST** | ✅ as expected |
+| `EmaTrendV2` | ✅ 3/3 profitable when signals are 1–3h late, median 124% | ✅ 4/4, median 85% | ✅ 5/5, median 54% | ✅ +126 USDT left (65% from top 3) | **ROBUST** | first look |
+| `MomentumRotationV1b` | ✅ **28/28 slots profitable** (+207% … +520%), median Calmar 85% | ✅ 6/6, median 78% | ✅ 5/5 (still +236% without SOL), median 89% | ✅ +1,383 USDT left (62% from top 3) | **ROBUST** | ⚠️ partly. The spread *is* large (Calmar 0.90 … 1.95), but the rules don't call it fragile |
+
+**Tooling issues found and fixed during calibration** (not strategy problems):
+1. **Window end date.** The lookahead window ended on Monday 2024-07-01 00:00, exactly when weekly trades close, and Freqtrade 2026.9 crashed on that trade (`KeyError … not in index`). Proven with one change: the same variant passed with the window ending Wednesday 2024-07-03, which is the window used from now on.
+2. **Left-out coin crash.** Leave-one-coin-out variants crashed in the bias check on the coin they leave out, because the bias check runs all 5 coins. Now the left-out coin simply never trades.
+
+The first MomentumRotationV1b run (marked FRAGILE purely because of these crashes) was discarded and re-run; experiment E0320 is marked invalid.
+
+**What calibration taught us:**
+- **Momentum rotation isn't a timing fluke.** It's profitable at every one of the 28 rebalance times, in every nearby setting, without any single coin, and without its 3 best trades. Timing changes *how much* it makes, not *whether* it makes money.
+  - This **corrects the Round 3 write-up**, which over-generalised from two slots. Monday 12:00 happens to be the second-worst of 28.
+  - Its real blocker is unchanged: **~40% drawdowns** (Round 2 exam: 41%). The robustness check doesn't measure drawdown size, and isn't meant to.
+- **EmaTrendV2 is robust but small:** a stable edge of about +36% over 3 years after fees, with a 20% max drawdown. Its Stage 2 failure was about *consistency over time* (lumpy quarters), which is a different property.
+- **The check works as a gate** for what it measures: it would flag strategies that only work at one hour, one setting, with one coin, or from a few trades.
+  - **Its limit:** a median-based rule doesn't punish a wide spread as long as every variant stays profitable.
+  - **No change made.** Per the plan, any change to the rules would be a dated DECISIONS entry applied from the next round.

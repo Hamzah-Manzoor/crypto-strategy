@@ -175,6 +175,8 @@ def label(e: dict) -> str:
     not the strategy's fixed settings, so it gets its own row."""
     if e["kind"] == "walkforward" and (e.get("settings") or {}).get("mode") == "retuned":
         return f"`{e['strategy']}` + quarterly re-tuning"
+    if e["kind"] == "robustness":   # a property of the strategy, not a trading decision
+        return f"`{e['strategy']}` · robustness check"
     return f"`{e['strategy']}`"
 
 

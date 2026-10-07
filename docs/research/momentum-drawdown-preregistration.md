@@ -107,3 +107,10 @@ Buy & hold on dev: +231.4%, max DD 64.9%, Calmar 0.76.
 
 **Decision, as pre-registered:** the idea (momentum rotation + these drawdown controls) is **dropped**. No forward test and no paper bot start.
 
+
+### Correction (2026-10-07, after the robustness check)
+
+The point above that momentum rotation is "very sensitive to the exact rebalance hour" **over-generalised from two time slots.**
+- **What the full check showed** (`results/robustness/20261007-124125_MomentumRotationV1b.md`): `MomentumRotationV1b` is profitable at **all 28** rebalance times tested (+207% … +520% on dev), with a median Calmar of 85% of the original.
+- Monday 12:00 UTC is simply the second-worst slot. Timing changes the size of the result, not its sign.
+- **The Round 3 verdict stands:** the drawdown controls didn't get drawdowns under 30%. The timing caveat on Round 2's exam result is withdrawn.

@@ -51,6 +51,9 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 - **Tuning:**
   - `lab.py hyperopt X` writes a generated `XT` subclass. Never hand-edit it. Run `lab.py check-bias --strategies XT` right after.
   - Hyperopt uses exactly 6 workers: 11 ran out of memory, and results depend on the worker count.
+- **Robustness gate (from Round 4 on):**
+  - A candidate must be ROBUST in `lab.py robustness <Strategy>` (dev data) before it can be chosen for any exam or forward test. Rules: TESTING_METHODOLOGY section 11.
+  - Neighbour settings for R2 go in the strategy class (`ROBUSTNESS_GRID`), or for frozen strategies in `user_data/strategies/labkit/robustness_grids.py`. Write them **before** running the check.
 - **New research ideas get a pre-registration file** in `docs/research/` (process, data, pass rules, what happens on pass or fail). Commit and push it **before** running the test, then append the results below it without editing the rules.
 - **Round 2 split:**
   - **Development:** 2023-10 → 2026-10 (`--period dev`).
