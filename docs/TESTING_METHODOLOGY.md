@@ -171,3 +171,22 @@ Statuses:
 ---
 
 **How it went when these rules were applied (Phases 5–6):** 23 versions were tested, and 10 were pre-registered for Stage 1. 1 passed and 1 was flagged REVIEW; both then failed Stage 2, so none was promoted. The full story is in [RESULTS](RESULTS.md), and every run is in the [experiment log](EXPERIMENT_LOG.md).
+
+---
+
+## 11. Robustness check (added 2026-10-07)
+
+**Why:** Round 3 showed that moving momentum rotation's rebalance by 12 hours nearly halved its profit. A real edge must survive small, arbitrary changes. The full plan is in `docs/research/robustness-check-plan.md`.
+
+It runs on **dev data only** (`lab.py robustness <Strategy>`). From the next research round on, it's a **gate before any exam or forward test**.
+
+| Check | What gets varied | Passes if |
+|---|---|---|
+| R1 Timing | Weekly strategies: a rebalance slot every 6 hours (28 slots). Signal strategies: signals acted on 1, 2, 3 candles late | ≥ 80% of variants profitable **and** median variant Calmar ≥ 50% of the original's |
+| R2 Nearby settings | Each declared setting moved to its neighbours, one at a time | ≥ 80% of variants profitable **and** median variant Calmar ≥ 50% of the original's |
+| R3 Leave one coin out | 5 runs, each without one coin | all 5 profitable **and** median Calmar ≥ 50% of the original's |
+| R4 Concentration | Remove the 3 best trades from the original's trade list | profit still > 0 |
+
+- **Verdict:** ROBUST only if every applicable check passes, otherwise FRAGILE.
+- **Skipped:** checks that can't apply (e.g. no settings to vary).
+- **N/A:** the original isn't profitable.

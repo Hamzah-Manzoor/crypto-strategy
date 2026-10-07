@@ -195,3 +195,45 @@ class Round3RulesTest(unittest.TestCase):
                      f"≥ {f['min_profitable_quarters']} of the {f['quarters']} quarters profitable",
                      f"worse than −{abs(f['worst_quarter_pct']):g}%"):
             self.assertIn(text, doc)
+
+
+class RobustnessRulesTest(unittest.TestCase):
+    ORIG = {"profit_pct": 100.0, "calmar": 2.0}
+
+    def v(self, profit, calmar):
+        return {"profit_pct": profit, "calmar": calmar}
+
+    def test_share_and_median_rules(self):
+        good = [self.v(50, 1.5)] * 9 + [self.v(-5, -0.1)]          # 90% profitable, median 1.5 = 75%
+        self.assertEqual(rules.variants_verdict(self.ORIG, good)[0], "PASS")
+        spread = [self.v(10, 0.5)] * 10                              # all profitable but median 25%
+        self.assertEqual(rules.variants_verdict(self.ORIG, spread)[0], "FAIL")
+        losers = [self.v(50, 1.5)] * 7 + [self.v(-5, -0.1)] * 3     # 70% profitable
+        self.assertEqual(rules.variants_verdict(self.ORIG, losers)[0], "FAIL")
+
+    def test_leave_one_out_needs_all_profitable(self):
+        four_of_five = [self.v(50, 1.5)] * 4 + [self.v(-1, -0.05)]
+        self.assertEqual(rules.variants_verdict(self.ORIG, four_of_five, all_profitable=True)[0], "FAIL")
+        self.assertEqual(rules.variants_verdict(self.ORIG, [self.v(50, 1.5)] * 5, all_profitable=True)[0], "PASS")
+
+    def test_skipped_and_not_applicable(self):
+        self.assertEqual(rules.variants_verdict(self.ORIG, [])[0], "SKIPPED")
+        self.assertEqual(rules.variants_verdict({"profit_pct": -3.0, "calmar": -0.1}, [self.v(1, 0.1)])[0], "N/A")
+
+    def test_concentration(self):
+        self.assertEqual(rules.concentration_verdict([500, 300, 200, 50, 40, -20])[0], "PASS")   # 70 left
+        self.assertEqual(rules.concentration_verdict([900, 50, 40, -30, -20, -10])[0], "FAIL")   # -60 left
+        self.assertEqual(rules.concentration_verdict([])[0], "SKIPPED")
+
+    def test_overall(self):
+        self.assertEqual(rules.robustness_overall({"R1": "PASS", "R2": "SKIPPED", "R3": "PASS", "R4": "PASS"}), "ROBUST")
+        self.assertEqual(rules.robustness_overall({"R1": "FAIL", "R3": "PASS"}), "FRAGILE")
+        self.assertEqual(rules.robustness_overall({"R1": "N/A", "R2": "SKIPPED"}), "N/A")
+
+    def test_methodology_and_plan_state_the_same_numbers(self):
+        r = rules.ROBUSTNESS
+        for doc_name in ("TESTING_METHODOLOGY.md", "research/robustness-check-plan.md"):
+            doc = (REPO / "docs" / doc_name).read_text().replace("**", "")   # ignore bold markers
+            for text in (f"≥ {r['min_profitable_share']:.0%} of", f"≥ {r['min_median_calmar_ratio']:.0%} of the original",
+                         f"every {r['timing_step_hours']} hours", "1, 2", f"{r['drop_top_trades']} best trades"):
+                self.assertIn(text, doc, f"{doc_name} is missing: {text}")

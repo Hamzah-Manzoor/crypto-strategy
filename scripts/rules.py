@@ -251,3 +251,58 @@ def select_round3(dev_strategies: dict[str, dict], bias: dict[str, bool]) -> tup
             eligible.append(m)
     pick = max(eligible, key=lambda m: m["calmar"])["strategy"] if eligible else None
     return pick, lines
+
+
+# --------------------------------------------------------------------------- Robustness check
+# Plan: docs/research/robustness-check-plan.md (approved 2026-10-07, before any run).
+# Runs on dev data only. A test keeps docs/TESTING_METHODOLOGY.md in sync with these numbers.
+
+ROBUSTNESS = {
+    "timing_step_hours": 6,             # R1 weekly strategies: a rebalance slot every 6h -> 28 slots
+    "signal_delays": (1, 2, 3),         # R1 signal strategies: act on signals 1, 2, 3 candles late
+    "min_profitable_share": 0.80,       # R1, R2: share of variants that must be profitable
+    "min_median_calmar_ratio": 0.50,    # R1, R2, R3: median variant Calmar >= 50% of the original's
+    "drop_top_trades": 3,               # R4: profit must stay > 0 without the best 3 trades
+}
+
+
+def variants_verdict(original: dict, variants: list[dict], all_profitable: bool = False) -> tuple[str, str]:
+    """R1/R2 (share >= 80%) or R3 (all_profitable=True) verdict for one check."""
+    import statistics
+    r = ROBUSTNESS
+    if not variants:
+        return "SKIPPED", "no variants apply to this strategy"
+    if original["profit_pct"] <= 0 or original["calmar"] <= 0:
+        return "N/A", f"original not profitable (profit {original['profit_pct']:+.1f}%) - nothing to protect"
+    profitable = sum(v["profit_pct"] > 0 for v in variants)
+    need = len(variants) if all_profitable else r["min_profitable_share"] * len(variants)
+    median_calmar = statistics.median(v["calmar"] for v in variants)
+    ratio = median_calmar / original["calmar"]
+    ok = profitable >= need and ratio >= r["min_median_calmar_ratio"]
+    need_txt = "all" if all_profitable else f">= {r['min_profitable_share']:.0%}"
+    return ("PASS" if ok else "FAIL"), (
+        f"{profitable} of {len(variants)} variants profitable (need {need_txt}); median Calmar "
+        f"{median_calmar:.2f} = {ratio:.0%} of the original's {original['calmar']:.2f} "
+        f"(need >= {r['min_median_calmar_ratio']:.0%})")
+
+
+def concentration_verdict(trade_profits_abs: list[float]) -> tuple[str, str]:
+    """R4: total profit (USDT) without the best N trades must stay > 0."""
+    n = ROBUSTNESS["drop_top_trades"]
+    if not trade_profits_abs:
+        return "SKIPPED", "no trades"
+    total = sum(trade_profits_abs)
+    if total <= 0:
+        return "N/A", f"original not profitable ({total:+.0f} USDT) - nothing to protect"
+    best = sorted(trade_profits_abs, reverse=True)[:n]
+    rest = total - sum(best)
+    return ("PASS" if rest > 0 else "FAIL"), (
+        f"profit {total:+.0f} USDT; without the best {n} trades ({sum(best):+.0f} USDT, "
+        f"{sum(best) / total:.0%} of it): {rest:+.0f} USDT (need > 0)")
+
+
+def robustness_overall(verdicts: dict[str, str]) -> str:
+    applied = [v for v in verdicts.values() if v in ("PASS", "FAIL")]
+    if not applied:
+        return "N/A"
+    return "ROBUST" if all(v == "PASS" for v in applied) else "FRAGILE"
