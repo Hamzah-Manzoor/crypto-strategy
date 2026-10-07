@@ -12,16 +12,12 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**296 entries**, 45 of them out-of-sample looks (in 9 runs).
+**311 entries**, 60 of them out-of-sample looks (in 12 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
-| `EmaTrendV3` | **keep** | Round 2 dev: selected for the exam by the pre-registered rule | E0291 |
-| `EmaTrendV3b` | **keep** | Round 2 dev: selected for the exam by the pre-registered rule | E0292 |
-| `MomentumRotationV1` | **keep** | Round 2 dev: selected for the exam by the pre-registered rule | E0293 |
-| `MomentumRotationV1b` | **keep** | Round 2 dev: selected for the exam by the pre-registered rule | E0294 |
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
@@ -31,10 +27,14 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `EmaTrendV1` | **drop** | EmaTrendV1T IS +15.8% but PF 1.09 < 1.1; not a candidate | E0065 |
 | `EmaTrendV2T` | **drop** | stage 1 FAIL | E0205 |
 | `EmaTrendV2` + quarterly re-tuning | **drop** | pre-registered fresh-data test FAILED: 2 of 7 quarters profitable, efficiency -0.84, -12.3% (buy & hold -65.3%) - process dropped, no retry on same data | E0281 |
+| `EmaTrendV3` | **drop** | Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | E0308 |
+| `EmaTrendV3b` | **drop** | Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | E0309 |
 | `MacdVolumeV1T` | **drop** | stage 1 FAIL | E0207 |
 | `MacdVolumeV1` | **drop** | MacdVolumeV1 untuned: OOS -0.7%, Sharpe gone (stage 1 FAIL) | E0209 |
 | `MacdVolumeV2T` | **drop** | stage 1 FAIL | E0211 |
 | `MacdVolumeV2` | **drop** | MacdVolumeV2T: only 18 OOS trades and -2.0% (stage 1 FAIL) | E0097 |
+| `MomentumRotationV1` | **drop** | Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | E0311 |
+| `MomentumRotationV1b` | **drop** | Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | E0310 |
 | `RsiBbReversionV1` | **drop** | RsiBbReversionV1T breaks even in-sample (-0.1%); idea does not work here | E0081 |
 | `SqueezeBreakoutV1T` | **drop** | SqueezeBreakoutV1T: stage 1 REVIEW, stage 2 FAIL; +1.2% a year is too small to matter | E0214 |
 | `SqueezeBreakoutV1` | **drop** | SqueezeBreakoutV1T: passed stage 1 (REVIEW, ~1% exposure) but failed stage 2 (38% windows, efficiency n/a) | E0073 |
@@ -51,6 +51,21 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0311 | 2026-10-07 | backtest | `MomentumRotationV1` | holdout 👁 | 1h+5m | 0.10% | +361.8 | 60.5 | 1.14 | 1.23 | 50 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: 5m fills | `52c6808` |
+| E0310 | 2026-10-07 | backtest | `MomentumRotationV1b` | holdout 👁 | 1h+5m | 0.10% | +452.9 | 41.4 | 1.36 | 2.08 | 53 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: 5m fills | `52c6808` |
+| E0309 | 2026-10-07 | backtest | `EmaTrendV3b` | holdout 👁 | 1h+5m | 0.10% | +8.4 | 22.5 | 0.30 | 0.13 | 96 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: 5m fills | `52c6808` |
+| E0308 | 2026-10-07 | backtest | `EmaTrendV3` | holdout 👁 | 1h+5m | 0.10% | +9.0 | 22.1 | 0.32 | 0.14 | 94 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: 5m fills | `52c6808` |
+| E0307 | 2026-10-07 | backtest | `BuyHoldV1` | holdout 👁 | 1h+5m | 0.10% | +397.6 | 92.1 | 1.07 | 0.86 | 5 | baseline | round 2 exam: 5m fills | `52c6808` |
+| E0306 | 2026-10-07 | backtest | `MomentumRotationV1` | holdout 👁 | 1h | 0.15% | +351.4 | 60.8 | 1.13 | 1.20 | 50 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: fee stress 0.15% | `52c6808` |
+| E0305 | 2026-10-07 | backtest | `MomentumRotationV1b` | holdout 👁 | 1h | 0.15% | +444.5 | 41.7 | 1.35 | 2.05 | 53 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: fee stress 0.15% | `52c6808` |
+| E0304 | 2026-10-07 | backtest | `EmaTrendV3b` | holdout 👁 | 1h | 0.15% | +0.5 | 23.3 | 0.07 | 0.01 | 96 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: fee stress 0.15% | `52c6808` |
+| E0303 | 2026-10-07 | backtest | `EmaTrendV3` | holdout 👁 | 1h | 0.15% | +1.1 | 22.9 | 0.09 | 0.02 | 94 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: fee stress 0.15% | `52c6808` |
+| E0302 | 2026-10-07 | backtest | `BuyHoldV1` | holdout 👁 | 1h | 0.15% | +397.3 | 92.1 | 1.07 | 0.86 | 5 | baseline | round 2 exam: fee stress 0.15% | `52c6808` |
+| E0301 | 2026-10-07 | backtest | `MomentumRotationV1` | holdout 👁 | 1h | 0.10% | +361.8 | 60.5 | 1.14 | 1.23 | 50 | drop: Round 2 exam FAIL: drawdown 60.5%, worst quarter -37.6% (+361.8%) | round 2 exam | `52c6808` |
+| E0300 | 2026-10-07 | backtest | `MomentumRotationV1b` | holdout 👁 | 1h | 0.10% | +452.9 | 41.4 | 1.36 | 2.08 | 53 | drop: Round 2 exam FAIL on drawdown (41.4% > 30%) and consistency (5/11, worst -11.4%) - but +452.9% vs buy & hold +397.6%, Calmar 2.08 vs 0.86: best unseen-data result so far | round 2 exam | `52c6808` |
+| E0299 | 2026-10-07 | backtest | `EmaTrendV3b` | holdout 👁 | 1h | 0.10% | +2.4 | 22.5 | 0.13 | 0.04 | 96 | drop: Round 2 exam FAIL: +2.4%, PF 1.04, 2 of 11 quarters profitable | round 2 exam | `52c6808` |
+| E0298 | 2026-10-07 | backtest | `EmaTrendV3` | holdout 👁 | 1h | 0.10% | +2.9 | 22.1 | 0.15 | 0.05 | 94 | drop: Round 2 exam FAIL: +2.9%, PF 1.04, 2 of 11 quarters profitable | round 2 exam | `52c6808` |
+| E0297 | 2026-10-07 | backtest | `BuyHoldV1` | holdout 👁 | 1h | 0.10% | +397.6 | 92.1 | 1.07 | 0.86 | 5 | baseline | round 2 exam | `52c6808` |
 | E0296 | 2026-10-07 | backtest | `TrendPullbackV1` | dev | 1h | 0.10% | -43.4 | 50.8 | -1.66 | -0.34 | 2714 | pending | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
 | E0295 | 2026-10-07 | backtest | `EmaTrendV2` | dev | 1h | 0.10% | +36.0 | 20.5 | 0.71 | 0.53 | 165 | pending | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |
 | E0294 | 2026-10-07 | backtest | `MomentumRotationV1b` | dev | 1h | 0.10% | +363.1 | 39.6 | 1.48 | 1.68 | 64 | keep: Round 2 dev: selected for the exam by the pre-registered rule | Round 2 dev: all 6 versions (2 per idea) + Round 1 ancestors | `bc0e5cd+dirty` |

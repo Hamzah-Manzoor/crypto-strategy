@@ -228,3 +228,9 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - **Candidates:** EmaTrendV3, EmaTrendV3b, MomentumRotationV1, MomentumRotationV1b, chosen by the pre-registered dev rule (`results/leaderboards/round2_selection.md`).
 - **Idea A (fee-aware pullback) is dropped at the development stage:** its best profit factor was 1.01, below the 1.1 needed.
 - **MomentumRotationV1 now uses a fixed 5-coin universe.** The earlier version ranked against `current_whitelist()`, and Freqtrade's lookahead check (which re-runs with only one pair) flagged that as bias. The root cause was confirmed in `freqtrade/optimize/analysis/lookahead.py`.
+
+**2026-10-07: Round 2 exam: all 4 candidates failed, so ideas A, B and C are dropped for this round.**
+- **Momentum rotation (top 3):** +452.9% on the 2021–23 holdout vs buy & hold +397.6%, Calmar 2.08 vs 0.86. But max drawdown 41.4% (cap 30%), and 5 of 11 profitable quarters with a −11.4% quarter (needed ≥ 6 and ≥ −10%).
+- **EmaTrendV3 / V3b:** +2–3%, profit factor 1.04, 2 of 11 quarters profitable.
+- **Thresholds are not relaxed after the fact.**
+- **Lesson:** momentum rotation is the first idea whose return edge carried over to unseen data; its risk at market turns is the open problem.

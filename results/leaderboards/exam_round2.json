@@ -1,0 +1,11 @@
+{
+ "exam_run": "20261007-102524_holdout_1h",
+ "stress_run": "20261007-102538_holdout_1h_fee0.15pct",
+ "detail_run": "20261007-102551_holdout_1h_detail5m",
+ "results": {
+  "MomentumRotationV1b": "FAIL",
+  "MomentumRotationV1": "FAIL",
+  "EmaTrendV3": "FAIL",
+  "EmaTrendV3b": "FAIL"
+ }
+}

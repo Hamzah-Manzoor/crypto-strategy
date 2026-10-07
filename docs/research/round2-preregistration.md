@@ -81,6 +81,36 @@ Information only (not rules): 5m intra-candle fills, the buy & hold quarter-by-q
 
 _To be filled in after the exam, without editing anything above this line._
 
+### Exam: run 2026-10-07 → **all 4 candidates FAIL**
+
+Exam run `20261007-102524_holdout_1h` (2021-01-01 → 2023-10-01, 1,003 days, 11 quarters). Fee stress `…_fee0.15pct`, 5m fills `…_detail5m`. Full report: `results/leaderboards/exam_round2.md`.
+
+Buy & hold over the exam: **+397.6%**, but with a **92.1% max drawdown**: SOL rose about 170× and then fell about 96%. Calmar 0.86.
+
+| Strategy | Profit | PF | Trades | Max DD | Calmar | @0.15% | Quarters + | Worst quarter | Failed rules |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `MomentumRotationV1b` | **+452.9%** | 2.02 | 53 | 41.4% | **2.08** | +444.5% | 5 / 11 | −11.4% | X4 drawdown, X6 consistency |
+| `MomentumRotationV1` | +361.8% | 1.49 | 50 | 60.5% | 1.23 | +351.4% | 5 / 11 | −37.6% | X4, X6 |
+| `EmaTrendV3` | +2.9% | 1.04 | 94 | 22.1% | 0.05 | +1.1% | 2 / 11 | −7.5% | X2, X5, X6 |
+| `EmaTrendV3b` | +2.4% | 1.04 | 96 | 22.5% | 0.04 | +0.5% | 2 / 11 | −7.9% | X2, X5, X6 |
+
+**What it means, in plain words:**
+- **Momentum rotation (idea C) is the first edge in this lab that held up on unseen data on the *return* side.**
+  - On data it had never seen, the top-3 version beat buy & hold on profit (+453% vs +398%) and on risk-adjusted return (Calmar 2.08 vs 0.86).
+  - The Bitcoin filter kept it in cash for nearly all of the 2022 crash: 2022 Q2–Q4 were exactly 0.0%.
+  - It survives higher fees (+444%) and 5m fills (identical result).
+- **It still fails our safety rules,** and they stand:
+  - Its worst drawdown was **41%**, and the rule caps it at 30%.
+  - It was profitable in only 5 of 11 quarters (needed 6), and one quarter lost 11.4% (cap −10%).
+  - The losses came at the turns: late 2021, when the market topped while the strategy still held last month's winners, and mid-2023.
+  - **The top-2 version is riskier still:** 60% drawdown, and −37.6% in one quarter.
+- **EmaTrendV2 + Bitcoin filter (idea B) has no edge here:** +2–3% over almost 3 years, profitable in only 2 of 11 quarters. The filter protected capital in 2022 (all 0.0%) but found almost nothing to earn otherwise.
+
+**Decision, as pre-registered:**
+- **Ideas A, B and C are dropped for this round.** No candidate gets a paper bot, and none will be re-examined on this holdout in changed form.
+- **The only honest route left for momentum rotation** is a *new*, separately pre-registered idea aimed at its known weakness (drawdown at market turns), judged on **fresh data**: live paper trading, or a future holdout.
+
+
 ### 6a. Development outcome and frozen exam list (2026-10-07, BEFORE the exam)
 
 Dev run `20261007-085621_dev_1h` (2023-10-01 → 2026-10-01, 1h, 0.1% fee). 6 Round 2 versions were tried, 2 per idea, under the limit of 3. All passed `check-bias`.

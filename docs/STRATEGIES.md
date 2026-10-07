@@ -209,6 +209,27 @@ Each v2 subclasses its v1 (`class EmaTrendV2(EmaTrendV1)`) and overrides only wh
 
 ---
 
+## Round 2 strategies (2026-10-07)
+
+Rules, data split and full results: [research/round2-preregistration.md](research/round2-preregistration.md). No hyperopt was used; the settings are fixed class constants.
+
+| Strategy | Idea | Status |
+|---|---|---|
+| `TrendPullbackV3` | Fee-aware dips on 4h: buy only if the gap to the 4h EMA20 is ≥ 2% (10× the round-trip fee) | dropped at dev stage (dev −7.7%, PF 0.91) |
+| `TrendPullbackV3b` | v3 + 4h EMA50 > EMA200 + BTC above its 200-day average | dropped at dev stage (dev +1.1%, PF 1.01) |
+| `EmaTrendV3` | EmaTrendV2 + BTC 200-day market filter + losing-streak pause (Freqtrade protections) | **exam FAIL** (+2.9%, 2 of 11 quarters) |
+| `EmaTrendV3b` | EmaTrendV3 without the pause | **exam FAIL** (+2.4%, 2 of 11 quarters) |
+| `MomentumRotationV1` | Weekly: hold the top 2 of the 5 coins by 30-day return (if positive), only while BTC > 200-day average | **exam FAIL** (+361.8%, DD 60.5%) |
+| `MomentumRotationV1b` | Same, top 3 | **exam FAIL**, the closest call: +452.9% vs buy & hold +397.6%, but DD 41.4% (cap 30%) and 5 of 11 quarters profitable (needed 6) |
+
+- **Momentum rotation details:**
+  - It rebalances on the 1h candle Sunday 23:00 UTC, using the daily candle that just closed, so trades happen at Monday 00:00 UTC.
+  - The ranked coins are a fixed `UNIVERSE` inside the strategy, not the loaded pairlist. Freqtrade's lookahead check re-runs with only one pair, which wrongly flagged the first version.
+  - Each position is sized with `custom_stake_amount` to 1/N of the wallet.
+- **EmaTrendV3's pause only works in backtests with `--enable-protections`,** which `lab.py` now always passes.
+
+---
+
 ## Bias checks (Phase 4, `lab.py check-bias`)
 
 Two automatic checks guard against strategies that look great only because they cheat:

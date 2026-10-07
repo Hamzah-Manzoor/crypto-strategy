@@ -1,0 +1,462 @@
+{
+ "run_id": "20261007-102524_holdout_1h",
+ "period": "holdout",
+ "timerange": "20210101-20231001",
+ "timeframe": "1h",
+ "timeframe_detail": null,
+ "fee": 0.001,
+ "notes": "round 2 exam",
+ "zip": "user_data/backtest_results/20261007-102524_holdout_1h/backtest-result-2026-10-07_10-25-35.zip",
+ "strategies": {
+  "BuyHoldV1": {
+   "strategy": "BuyHoldV1",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20210101-20231001",
+   "start": "2021-01-01 00:00:00",
+   "end": "2023-10-01 00:00:00",
+   "days": 1003.0,
+   "trades": 5,
+   "win_rate_pct": 80.0,
+   "profit_factor": 280.1163,
+   "avg_hold_hours": 24071.0,
+   "market_change_pct": 401.8791,
+   "final_balance": 4975.6456,
+   "stoploss": -0.99,
+   "minimal_roi": {
+    "0": 1000.0
+   },
+   "trailing_stop": false,
+   "code_sha": "b2e985c30b60",
+   "ft_trade_max_dd_pct": 1.4244,
+   "ft_wallet_max_dd_pct": 92.0549,
+   "profit_pct": 397.5646,
+   "cagr_pct": 79.3037,
+   "max_dd_pct": 92.0549,
+   "sharpe": 1.073,
+   "sortino": 1.5682,
+   "calmar": 0.8615,
+   "exposure_pct": 99.8316,
+   "quarters": [
+    {
+     "quarter": "2021Q1",
+     "ret_pct": 451.585,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q2",
+     "ret_pct": 37.951,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q3",
+     "ret_pct": 189.8983,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q4",
+     "ret_pct": 20.5355,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q1",
+     "ret_pct": -23.8637,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q2",
+     "ret_pct": -70.355,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q3",
+     "ret_pct": 10.4232,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q4",
+     "ret_pct": -49.7414,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q1",
+     "ret_pct": 68.188,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q2",
+     "ret_pct": -12.6092,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q3",
+     "ret_pct": 2.0322,
+     "partial": false
+    }
+   ],
+   "quarters_total": 11,
+   "quarters_profitable": 7,
+   "worst_quarter_pct": -70.355
+  },
+  "EmaTrendV3": {
+   "strategy": "EmaTrendV3",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20210101-20231001",
+   "start": "2021-01-01 00:00:00",
+   "end": "2023-10-01 00:00:00",
+   "days": 1003.0,
+   "trades": 94,
+   "win_rate_pct": 41.4894,
+   "profit_factor": 1.0448,
+   "avg_hold_hours": 94.2333,
+   "market_change_pct": 401.8791,
+   "final_balance": 1029.4448,
+   "stoploss": -0.1,
+   "minimal_roi": {
+    "0": 0.5
+   },
+   "trailing_stop": true,
+   "code_sha": "f9a650e73aac",
+   "ft_trade_max_dd_pct": 21.2115,
+   "ft_wallet_max_dd_pct": 22.124,
+   "profit_pct": 2.9445,
+   "cagr_pct": 1.0616,
+   "max_dd_pct": 22.124,
+   "sharpe": 0.15,
+   "sortino": 0.2258,
+   "calmar": 0.048,
+   "exposure_pct": 7.3161,
+   "quarters": [
+    {
+     "quarter": "2021Q1",
+     "ret_pct": 16.0153,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q2",
+     "ret_pct": 8.203,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q3",
+     "ret_pct": -3.1954,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q4",
+     "ret_pct": -7.4698,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q1",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q2",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q3",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q4",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q1",
+     "ret_pct": -1.9858,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q2",
+     "ret_pct": -5.8315,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q3",
+     "ret_pct": -0.8085,
+     "partial": false
+    }
+   ],
+   "quarters_total": 11,
+   "quarters_profitable": 2,
+   "worst_quarter_pct": -7.4698
+  },
+  "EmaTrendV3b": {
+   "strategy": "EmaTrendV3b",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20210101-20231001",
+   "start": "2021-01-01 00:00:00",
+   "end": "2023-10-01 00:00:00",
+   "days": 1003.0,
+   "trades": 96,
+   "win_rate_pct": 40.625,
+   "profit_factor": 1.036,
+   "avg_hold_hours": 92.35,
+   "market_change_pct": 401.8791,
+   "final_balance": 1023.8328,
+   "stoploss": -0.1,
+   "minimal_roi": {
+    "0": 0.5
+   },
+   "trailing_stop": true,
+   "code_sha": "a8dc0ecd4095",
+   "ft_trade_max_dd_pct": 21.5788,
+   "ft_wallet_max_dd_pct": 22.487,
+   "profit_pct": 2.3833,
+   "cagr_pct": 0.8608,
+   "max_dd_pct": 22.487,
+   "sharpe": 0.1322,
+   "sortino": 0.1991,
+   "calmar": 0.0383,
+   "exposure_pct": 7.3233,
+   "quarters": [
+    {
+     "quarter": "2021Q1",
+     "ret_pct": 16.0153,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q2",
+     "ret_pct": 8.203,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q3",
+     "ret_pct": -3.1954,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q4",
+     "ret_pct": -7.903,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q1",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q2",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q3",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q4",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q1",
+     "ret_pct": -1.9854,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q2",
+     "ret_pct": -5.8297,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q3",
+     "ret_pct": -0.8875,
+     "partial": false
+    }
+   ],
+   "quarters_total": 11,
+   "quarters_profitable": 2,
+   "worst_quarter_pct": -7.903
+  },
+  "MomentumRotationV1b": {
+   "strategy": "MomentumRotationV1b",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20210101-20231001",
+   "start": "2021-01-01 00:00:00",
+   "end": "2023-10-01 00:00:00",
+   "days": 1003.0,
+   "trades": 53,
+   "win_rate_pct": 41.5094,
+   "profit_factor": 2.0172,
+   "avg_hold_hours": 524.7667,
+   "market_change_pct": 401.8791,
+   "final_balance": 5528.6001,
+   "stoploss": -0.2,
+   "minimal_roi": {
+    "0": 100.0
+   },
+   "trailing_stop": false,
+   "code_sha": "bd8fa98cf72b",
+   "ft_trade_max_dd_pct": 21.2893,
+   "ft_wallet_max_dd_pct": 41.407,
+   "profit_pct": 452.86,
+   "cagr_pct": 86.3133,
+   "max_dd_pct": 41.407,
+   "sharpe": 1.3646,
+   "sortino": 2.2456,
+   "calmar": 2.0845,
+   "exposure_pct": 37.878,
+   "quarters": [
+    {
+     "quarter": "2021Q1",
+     "ret_pct": 185.3153,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q2",
+     "ret_pct": 57.6087,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q3",
+     "ret_pct": 29.2723,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q4",
+     "ret_pct": -9.427,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q1",
+     "ret_pct": 2.26,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q2",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q3",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q4",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q1",
+     "ret_pct": 19.3101,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q2",
+     "ret_pct": -11.3999,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q3",
+     "ret_pct": -2.8621,
+     "partial": false
+    }
+   ],
+   "quarters_total": 11,
+   "quarters_profitable": 5,
+   "worst_quarter_pct": -11.3999
+  },
+  "MomentumRotationV1": {
+   "strategy": "MomentumRotationV1",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20210101-20231001",
+   "start": "2021-01-01 00:00:00",
+   "end": "2023-10-01 00:00:00",
+   "days": 1003.0,
+   "trades": 50,
+   "win_rate_pct": 36.0,
+   "profit_factor": 1.4883,
+   "avg_hold_hours": 388.1,
+   "market_change_pct": 401.8791,
+   "final_balance": 4618.2568,
+   "stoploss": -0.2,
+   "minimal_roi": {
+    "0": 100.0
+   },
+   "trailing_stop": false,
+   "code_sha": "22fd060f6216",
+   "ft_trade_max_dd_pct": 36.5927,
+   "ft_wallet_max_dd_pct": 60.4639,
+   "profit_pct": 361.8257,
+   "cagr_pct": 74.5055,
+   "max_dd_pct": 60.4639,
+   "sharpe": 1.139,
+   "sortino": 1.9299,
+   "calmar": 1.2322,
+   "exposure_pct": 39.6411,
+   "quarters": [
+    {
+     "quarter": "2021Q1",
+     "ret_pct": 290.6715,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q2",
+     "ret_pct": 8.6083,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q3",
+     "ret_pct": 55.8217,
+     "partial": false
+    },
+    {
+     "quarter": "2021Q4",
+     "ret_pct": -37.5777,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q1",
+     "ret_pct": 3.5379,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q2",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q3",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2022Q4",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q1",
+     "ret_pct": 33.3955,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q2",
+     "ret_pct": -14.7944,
+     "partial": false
+    },
+    {
+     "quarter": "2023Q3",
+     "ret_pct": -4.9117,
+     "partial": false
+    }
+   ],
+   "quarters_total": 11,
+   "quarters_profitable": 5,
+   "worst_quarter_pct": -37.5777
+  }
+ }
+}

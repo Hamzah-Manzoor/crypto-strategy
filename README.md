@@ -15,13 +15,16 @@ A local lab for **testing many crypto trading strategies side by side** and impr
 
 All 8 build phases are done. See [ROADMAP](docs/ROADMAP.md).
 
-- **23 strategy versions tested.** 8 original ideas, 4 hand-designed v2s, and 11 auto-tuned (`…T`) versions.
+- **29 strategy versions tested.**
+  - Round 1: 8 original ideas, 4 hand-designed v2s, 11 auto-tuned (`…T`) versions.
+  - Round 2: 6 versions of 3 new ideas.
 - **None has passed both promotion stages yet,** so none is "promoted" to paper trading.
 - **What we learned** (details in [RESULTS](docs/RESULTS.md)):
   1. **Fees are the main enemy of busy strategies.** 5 of 7 original ideas made money before fees, but only 1 after.
   2. **Auto-tuning overfits.** The best tuned versions made +70% in-sample and then *lost* money out-of-sample.
   3. **The hand-designed `EmaTrendV2`** (trend following on 4h candles) passed the out-of-sample check: +5.1% while buy & hold lost 35%. It then failed the consistency check, making money in only 3 of 8 quarters.
   4. **Re-tuning it every quarter looked promising** on familiar data, then **failed a pre-registered test** on never-used 2021–23 data. See [docs/research/](docs/research/quarterly-retune-preregistration.md).
+  5. **Round 2** tried 3 new ideas with a fresh exam on 2021–23. **Momentum rotation** (hold the strongest coins weekly) beat buy & hold on unseen data (+453% vs +398%), but its 41% drawdown failed the 30% safety rule. Nothing passed. See [Round 2](docs/research/round2-preregistration.md).
 - **Paper trading now:** `EmaTrendV2` (watch list) and a buy & hold baseline run as dry-run bots, with dashboards at http://127.0.0.1:8081 and :8082.
 
 ## Quick start (macOS)
