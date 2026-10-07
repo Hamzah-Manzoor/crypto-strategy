@@ -234,3 +234,9 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - **EmaTrendV3 / V3b:** +2–3%, profit factor 1.04, 2 of 11 quarters profitable.
 - **Thresholds are not relaxed after the fact.**
 - **Lesson:** momentum rotation is the first idea whose return edge carried over to unseen data; its risk at market turns is the open problem.
+
+**2026-10-07: Round 3 pre-registered: momentum rotation with drawdown control, judged on future data.**
+- **Versions:** V2 (15% trailing stop per coin), V2b (BTC 100-day filter), V2c (both). All rebalance on Monday 12:00 UTC so a paper bot on the Mac doesn't sleep through it.
+- **Selection on dev:** one version, chosen by rule: max drawdown ≤ 30%, PF ≥ 1.2, then the best Calmar. If none qualifies, the idea is dropped.
+- **Exam:** a 12-month forward backtest, with a paper bot as a reality check. The 2021–23 holdout is not used.
+- Details: `docs/research/momentum-drawdown-preregistration.md`.
