@@ -213,3 +213,13 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - The Phase 6 near-miss came from over-used data.
   - EmaTrendV2's trend filter limits losses in crashes (−12% vs buy & hold −65%), but that's not an edge.
 - Details: `docs/research/quarterly-retune-preregistration.md`.
+
+**2026-10-07: Round 2 pre-registered: new data split, three ideas, no auto-tuning.**
+- **Development:** 2023-10 → 2026-10. Round 1's out-of-sample year was looked at 9 times, so it's retired as a test and becomes building data.
+- **Exam (protected holdout):** 2021-01 → 2023-10, run once.
+- **Ideas:**
+  - `TrendPullbackV3`: fee-aware dip buying.
+  - `EmaTrendV3`: BTC 200-day market filter plus a losing-streak pause.
+  - `MomentumRotationV1`: weekly top-2 by 30-day return.
+- **Limits:** at most 3 versions per idea, and at most 2 per idea go to the exam, chosen by a fixed dev rule.
+- **Exam rules:** see `docs/research/round2-preregistration.md`. X6 (≥ 6 of 11 quarters profitable, no quarter below −10%) replaces Round 1's 60% rule, *before* testing, because the exam holds a full crash year in which cash is the intended behaviour.
