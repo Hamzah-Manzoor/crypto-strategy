@@ -240,3 +240,8 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - **Selection on dev:** one version, chosen by rule: max drawdown ≤ 30%, PF ≥ 1.2, then the best Calmar. If none qualifies, the idea is dropped.
 - **Exam:** a 12-month forward backtest, with a paper bot as a reality check. The 2021–23 holdout is not used.
 - Details: `docs/research/momentum-drawdown-preregistration.md`.
+
+**2026-10-07: Round 3 (momentum rotation + drawdown control) dropped at dev selection.**
+- All 3 versions had dev drawdowns of 49–50%, above the 30% cap. The trailing stop and the faster BTC filter didn't help, because the 2024 drawdown was an 8-month whipsaw, not a crash.
+- **Moving the rebalance 12 hours alone cut dev profit from +363% to +207%**, with the same coins in 42 of 45 weeks. So momentum rotation's results are sensitive to execution timing, which tempers the Round 2 holdout result.
+- No forward test and no paper bot.

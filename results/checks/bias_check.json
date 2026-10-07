@@ -95,6 +95,26 @@
    "ok": true,
    "recursive": "pass"
   },
+  "MomentumRotationV1bMonday": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "MomentumRotationV2": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "MomentumRotationV2b": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "MomentumRotationV2c": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
   "RsiBbReversionV1": {
    "lookahead": "pass",
    "ok": true,
@@ -146,5 +166,5 @@
    "recursive": "pass"
   }
  },
- "updated": "2026-10-07 08:56"
+ "updated": "2026-10-07 10:49"
 }

@@ -230,6 +230,19 @@ Rules, data split and full results: [research/round2-preregistration.md](researc
 
 ---
 
+## Round 3 strategies (2026-10-07)
+
+Momentum rotation with drawdown control. Rules and results: [research/momentum-drawdown-preregistration.md](research/momentum-drawdown-preregistration.md). All rebalance on Monday 12:00 UTC (5 pm Pakistan time).
+
+| Strategy | Change vs `MomentumRotationV1b` | Status |
+|---|---|---|
+| `MomentumRotationV2` | 15% trailing stop per coin | dropped at dev (DD 49.5%, PF 1.12) |
+| `MomentumRotationV2b` | BTC filter on the 100-day average instead of 200 | dropped at dev (DD 48.9%) |
+| `MomentumRotationV2c` | both | dropped at dev (DD 50.2%, PF 1.07) |
+| `MomentumRotationV1bMonday` | only the rebalance time (diagnostic, never a candidate) | showed timing sensitivity: dev +207% vs +363% |
+
+---
+
 ## Bias checks (Phase 4, `lab.py check-bias`)
 
 Two automatic checks guard against strategies that look great only because they cheat:

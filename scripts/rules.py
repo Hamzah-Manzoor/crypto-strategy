@@ -212,3 +212,42 @@ def exam(m: dict, stress_m: dict | None, bh: dict, bias_ok: bool | None) -> tupl
         (bias_ok is True, "X7 bias checks " + {True: "passed", False: "FAILED", None: "not run"}[bias_ok]),
     ]
     return ("PASS" if all(ok for ok, _ in checks) else "FAIL"), checks
+
+
+# --------------------------------------------------------------------------- Round 3
+# Pre-registered in docs/research/momentum-drawdown-preregistration.md (2026-10-07).
+
+ROUND3_CANDIDATES = ("MomentumRotationV2", "MomentumRotationV2b", "MomentumRotationV2c")
+ROUND3_SELECT = {"max_dd_pct": 30.0, "min_profit_factor": 1.2, "min_trades": 30}
+FORWARD = {  # forward exam, 12 months
+    "min_trades": 20, "min_profit_factor": 1.2, "max_dd_pct": 30.0,
+    "min_profitable_quarters": 2, "quarters": 4, "worst_quarter_pct": -10.0,
+}
+
+
+def select_round3(dev_strategies: dict[str, dict], bias: dict[str, bool]) -> tuple[str | None, list[str]]:
+    """The single eligible Round 3 version with the highest dev Calmar (None = idea dropped)."""
+    r, lines, eligible = ROUND3_SELECT, [], []
+    for name in ROUND3_CANDIDATES:
+        m = dev_strategies.get(name)
+        if m is None:
+            lines.append(f"- `{name}`: not in the dev run")
+            continue
+        pf, reasons = m.get("profit_factor"), []
+        if m["max_dd_pct"] > r["max_dd_pct"]:
+            reasons.append(f"max drawdown {m['max_dd_pct']:.1f}% > {r['max_dd_pct']:g}%")
+        if m["profit_pct"] <= 0:
+            reasons.append(f"profit {m['profit_pct']:+.1f}% <= 0")
+        if pf is None or pf < r["min_profit_factor"]:
+            reasons.append(f"profit factor {pf if pf is None else round(pf, 2)} < {r['min_profit_factor']:g}")
+        if m["trades"] < r["min_trades"]:
+            reasons.append(f"{m['trades']} trades < {r['min_trades']}")
+        if bias.get(name) is not True:
+            reasons.append("bias checks not passed")
+        status = "eligible" if not reasons else "not eligible (" + "; ".join(reasons) + ")"
+        lines.append(f"- `{name}`: {status} - dev profit {m['profit_pct']:+.1f}%, max DD {m['max_dd_pct']:.1f}%, "
+                     f"Calmar {m['calmar']:.2f}, PF {pf if pf is None else round(pf, 2)}, {m['trades']} trades")
+        if not reasons:
+            eligible.append(m)
+    pick = max(eligible, key=lambda m: m["calmar"])["strategy"] if eligible else None
+    return pick, lines

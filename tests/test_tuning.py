@@ -165,3 +165,33 @@ class Round2RulesTest(unittest.TestCase):
                      f"at least {d['min_trades']} dev trades", f"best {d['per_idea']} per idea",
                      f"At most {d['max_versions_per_idea']} versions per idea"):
             self.assertIn(text, doc)
+
+
+class Round3RulesTest(unittest.TestCase):
+    def m(self, name, **over):
+        base = {"strategy": name, "trades": 60, "profit_pct": 150.0, "profit_factor": 2.0,
+                "max_dd_pct": 25.0, "calmar": 1.5}
+        base.update(over)
+        return base
+
+    def test_picks_best_calmar_among_eligible(self):
+        dev = {"MomentumRotationV2": self.m("MomentumRotationV2", calmar=1.2),
+               "MomentumRotationV2b": self.m("MomentumRotationV2b", calmar=2.0, max_dd_pct=35.0),  # DD too big
+               "MomentumRotationV2c": self.m("MomentumRotationV2c", calmar=1.4)}
+        pick, lines = rules.select_round3(dev, {n: True for n in dev})
+        self.assertEqual(pick, "MomentumRotationV2c")
+        self.assertTrue(any("V2b`: not eligible (max drawdown 35.0% > 30%" in line for line in lines))
+
+    def test_none_eligible_drops_the_idea(self):
+        dev = {n: self.m(n, max_dd_pct=40.0) for n in rules.ROUND3_CANDIDATES}
+        self.assertIsNone(rules.select_round3(dev, {n: True for n in dev})[0])
+
+    def test_preregistration_states_the_same_numbers(self):
+        doc = (REPO / "docs" / "research" / "momentum-drawdown-preregistration.md").read_text()
+        s, f = rules.ROUND3_SELECT, rules.FORWARD
+        for text in (f"dev max drawdown **≤ {s['max_dd_pct']:g}%**", f"profit factor **≥ {s['min_profit_factor']:g}**",
+                     f"at least **{s['min_trades']}** trades", f"≥ {f['min_trades']} |",
+                     f"max drawdown **≤ {f['max_dd_pct']:g}%**",
+                     f"≥ {f['min_profitable_quarters']} of the {f['quarters']} quarters profitable",
+                     f"worse than −{abs(f['worst_quarter_pct']):g}%"):
+            self.assertIn(text, doc)

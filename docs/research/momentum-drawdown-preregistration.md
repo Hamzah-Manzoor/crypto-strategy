@@ -79,3 +79,31 @@ Pass rules at 12 months (all must hold):
 ## 6. Results
 
 _To be filled in at each stage, without editing anything above this line._
+
+### Dev selection: run 2026-10-07 → **no version eligible, so the idea is dropped (no forward test, no paper bot)**
+
+Dev run `20261007-105022_dev_1h` (2023-10-01 → 2026-10-01, 1h, 0.1% fee). All versions passed `check-bias`.
+
+| Version | Dev profit | Max DD | Calmar | PF | Trades | Eligible? |
+|---|---:|---:|---:|---:|---:|---|
+| `MomentumRotationV1b` (Round 2, Monday 00:00 UTC, reference) | +363.1% | 39.6% | 1.68 | 2.70 | 64 | reference only |
+| `MomentumRotationV1bMonday` (diagnostic: only the time moved to Monday 12:00 UTC) | +206.7% | 49.9% | 0.91 | 1.93 | 65 | diagnostic only |
+| `MomentumRotationV2` (15% trailing stop) | +23.9% | 49.5% | 0.15 | 1.12 | 102 | ❌ DD > 30%, PF < 1.2 |
+| `MomentumRotationV2b` (BTC 100-day filter) | +165.1% | 48.9% | 0.79 | 1.56 | 72 | ❌ DD > 30% |
+| `MomentumRotationV2c` (both) | +13.9% | 50.2% | 0.09 | 1.07 | 106 | ❌ DD > 30%, PF < 1.2 |
+
+Buy & hold on dev: +231.4%, max DD 64.9%, Calmar 0.76.
+
+**Checked for bugs before accepting** (the results were surprising):
+- **Timing:** V1b entered at Monday 00:00 UTC and the Monday-12:00 versions at 12:00, as designed. Both bought **the same coins in 42 of 45 weeks**.
+- **Trailing stop:** it works as designed. Stop exits are capped at −15.0%, and some locked in gains (best +58.5%).
+- **Drawdown period:** for every version the worst drawdown ran **2024-03 → 2024-11**. That was a slow, 8-month bleed in a choppy market while Bitcoin stayed above both its 100- and 200-day averages, not a sudden crash.
+
+**What it means, in plain words:**
+1. **The drawdown controls made things worse.** The drawdown came from months of whipsaw, not from one crash, so a per-coin stop added extra sell-and-rebuy losses (102 trades vs 64), and the market filter never switched off.
+2. **Momentum rotation is very sensitive to the exact rebalance hour.** Moving it 12 hours later, with nearly identical coin choices, cut dev profit from +363% to +207% and raised the drawdown from 40% to 50%.
+   - A real, robust edge shouldn't depend on which hour of Monday you trade.
+   - This weakens confidence in Round 2's strong holdout result for `MomentumRotationV1b`. Part of it may have been timing luck.
+
+**Decision, as pre-registered:** the idea (momentum rotation + these drawdown controls) is **dropped**. No forward test and no paper bot start.
+

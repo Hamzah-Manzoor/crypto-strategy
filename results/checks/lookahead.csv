@@ -1,4 +1,5 @@
 filename,strategy,has_bias,total_signals,biased_entry_signals,biased_exit_signals,biased_indicators
-trend_pullback_v3b.py,TrendPullbackV3b,False,30,0,0,
-ema_trend_v3b.py,EmaTrendV3b,False,30,0,0,
-momentum_rotation_v1b.py,MomentumRotationV1b,False,18,0,0,
+momentum_rotation_v2.py,MomentumRotationV2,False,28,0,0,
+momentum_rotation_v2b.py,MomentumRotationV2b,False,20,0,0,
+momentum_rotation_v2c.py,MomentumRotationV2c,False,27,0,0,
+momentum_rotation_v1b_monday.py,MomentumRotationV1bMonday,False,20,0,0,

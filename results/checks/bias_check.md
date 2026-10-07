@@ -1,6 +1,6 @@
 # Bias checks
 
-Freqtrade 2026.9, timeframe 1h. Strategies: TrendPullbackV3b, EmaTrendV3b, MomentumRotationV1b.
+Freqtrade 2026.9, timeframe 1h. Strategies: MomentumRotationV2, MomentumRotationV2b, MomentumRotationV2c, MomentumRotationV1bMonday.
 
 ## Lookahead analysis - does any signal use future candles?
 
@@ -8,37 +8,32 @@ Timerange `20240101-20240701`, all 5 pairs, one strategy per run (with `--strate
 
 | Strategy | Has bias | Signals checked | Biased entries | Biased exits | Biased indicators |
 |---|---|---:|---:|---:|---|
-| TrendPullbackV3b | no | 30 | 0 | 0 | - |
-| EmaTrendV3b | no | 30 | 0 | 0 | - |
-| MomentumRotationV1b | no | 18 | 0 | 0 | - |
+| MomentumRotationV2 | no | 28 | 0 | 0 | - |
+| MomentumRotationV2b | no | 20 | 0 | 0 | - |
+| MomentumRotationV2c | no | 27 | 0 | 0 | - |
+| MomentumRotationV1bMonday | no | 20 | 0 | 0 | - |
 
 ## Recursive analysis - is `startup_candle_count` enough?
 
 BTC/USDT, timerange `20240101-20250101`. Each column shows how far an indicator's last value is off when only that many warm-up candles are available, compared with using all history. Pass = worst error at the strategy's own startup count <= 0.05%.
 
-### TrendPullbackV3b (startup_candle_count = None)
+### MomentumRotationV2 (startup_candle_count = None)
 
-| Indicators | 100 | 200 | 400 | 600 (from strategy) | 1000 |
-|---|---|---|---|---|---|
-| ema20_4h | 0.000% | 0.000% | - | - | - |
-| ema50_4h | 0.266% | -0.001% | 0.000% | 0.000% | - |
-| ema200_4h | nan% | 2.457% | -0.341% | -0.003% | 0.001% |
-| btc_usdt_sma200_1d | nan% | 0.000% | 0.000% | 0.000% | 0.000% |
+| Indicators | 100 | 200 | 210 (from strategy) | 400 | 600 | 1000 |
+|---|---|---|---|---|---|---|
+| btc_ok_1d | nan% | - | - | - | - | - |
 
-Worst indicator error at None startup candles: **0.003%** (limit 0.05%) → **PASS**
+Worst indicator error at None startup candles: **0.000%** (limit 0.05%) → **PASS**
 
-### EmaTrendV3b (startup_candle_count = None)
+### MomentumRotationV2b (startup_candle_count = None)
 
-| Indicators | 100 | 200 | 400 | 600 (from strategy) | 1000 |
-|---|---|---|---|---|---|
-| ema_21_4h | 0.000% | 0.000% | - | - | - |
-| ema_55_4h | 0.391% | -0.001% | 0.000% | 0.000% | - |
-| ema_trend_4h | nan% | 2.457% | -0.341% | -0.003% | 0.001% |
-| btc_usdt_sma200_1d | nan% | 0.000% | 0.000% | 0.000% | 0.000% |
+No indicator changed with the number of warm-up candles (no recursive indicators).
 
-Worst indicator error at None startup candles: **0.003%** (limit 0.05%) → **PASS**
+### MomentumRotationV2c (startup_candle_count = None)
 
-### MomentumRotationV1b (startup_candle_count = None)
+No indicator changed with the number of warm-up candles (no recursive indicators).
+
+### MomentumRotationV1bMonday (startup_candle_count = None)
 
 | Indicators | 100 | 200 | 210 (from strategy) | 400 | 600 | 1000 |
 |---|---|---|---|---|---|---|

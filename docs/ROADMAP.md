@@ -72,9 +72,8 @@ Each phase ends with a review stop and one git commit.
 **Follow the leads the data gave us**
 - [x] **EmaTrendV2 with quarterly re-tuning:** pre-registered and tested on 7 never-used quarters (2021-12 → 2023-09) on 2026-10-07. **Failed** (2 of 7 quarters profitable, −12.3%), so it's dropped. See `docs/research/`.
 - [x] **Round 2 (2026-10-07):** fee-aware pullback, EmaTrendV2 + BTC filter, momentum rotation. Pre-registered dev/holdout split and a single exam. **All failed**; momentum rotation came closest (returns held up, drawdown too high). See `docs/research/round2-preregistration.md`.
-- [ ] **Momentum rotation with drawdown control** (the best lead now): e.g. leave a coin when it drops X% from its peak, or rebalance more often near market turns.
-  - Needs its own pre-registration.
-  - The 2021–23 holdout is now used for this family of ideas, so judge it on **live paper data** (start a watch-list bot once pre-registered) or a future holdout.
+- [x] **Momentum rotation with drawdown control (Round 3, 2026-10-07):** pre-registered; all 3 versions had ~50% dev drawdowns, so it was **dropped** before any forward test. It also showed that momentum rotation is sensitive to the exact rebalance hour.
+- [ ] **Robustness first, then ideas:** before trusting any weekly strategy, check that its result survives shifting the rebalance hour (e.g. run every hour of the week as a diagnostic). A real edge shouldn't depend on one hour.
 - [ ] **Narrower hyperopt spaces:** several tuned stops hit the edges of the allowed range. Try fewer, more meaningful parameters (or none) rather than wider ranges.
 - [ ] **Fee-aware design for the strategies with a real gross edge** (Trend Pullback: +66% before fees). Use higher timeframes, or require a minimum expected move per trade larger than the round-trip fee.
 

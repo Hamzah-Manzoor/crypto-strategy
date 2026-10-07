@@ -12,7 +12,7 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**311 entries**, 60 of them out-of-sample looks (in 12 runs).
+**317 entries**, 60 of them out-of-sample looks (in 12 runs).
 
 ## Current status per strategy version
 
@@ -34,7 +34,11 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `MacdVolumeV2T` | **drop** | stage 1 FAIL | E0211 |
 | `MacdVolumeV2` | **drop** | MacdVolumeV2T: only 18 OOS trades and -2.0% (stage 1 FAIL) | E0097 |
 | `MomentumRotationV1` | **drop** | Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | E0311 |
-| `MomentumRotationV1b` | **drop** | Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | E0310 |
+| `MomentumRotationV1bMonday` | **drop** | Round 3 diagnostic: moving the rebalance 12h cut dev profit +363% -> +207% (timing-sensitive) | E0314 |
+| `MomentumRotationV1b` | **drop** | Round 3 reference: Round 2 version; timing-sensitive (see V1bMonday) | E0313 |
+| `MomentumRotationV2` | **drop** | Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | E0315 |
+| `MomentumRotationV2b` | **drop** | Round 3 dev: DD 48.9% (> 30%) - faster BTC filter never switched off in the 2024 chop; idea dropped | E0316 |
+| `MomentumRotationV2c` | **drop** | Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | E0317 |
 | `RsiBbReversionV1` | **drop** | RsiBbReversionV1T breaks even in-sample (-0.1%); idea does not work here | E0081 |
 | `SqueezeBreakoutV1T` | **drop** | SqueezeBreakoutV1T: stage 1 REVIEW, stage 2 FAIL; +1.2% a year is too small to matter | E0214 |
 | `SqueezeBreakoutV1` | **drop** | SqueezeBreakoutV1T: passed stage 1 (REVIEW, ~1% exposure) but failed stage 2 (38% windows, efficiency n/a) | E0073 |
@@ -51,6 +55,12 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0317 | 2026-10-07 | backtest | `MomentumRotationV2c` | dev | 1h | 0.10% | +13.9 | 50.2 | 0.30 | 0.09 | 106 | drop: Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |
+| E0316 | 2026-10-07 | backtest | `MomentumRotationV2b` | dev | 1h | 0.10% | +165.1 | 48.9 | 1.02 | 0.79 | 72 | drop: Round 3 dev: DD 48.9% (> 30%) - faster BTC filter never switched off in the 2024 chop; idea dropped | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |
+| E0315 | 2026-10-07 | backtest | `MomentumRotationV2` | dev | 1h | 0.10% | +23.9 | 49.5 | 0.38 | 0.15 | 102 | drop: Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |
+| E0314 | 2026-10-07 | backtest | `MomentumRotationV1bMonday` | dev | 1h | 0.10% | +206.7 | 49.9 | 1.13 | 0.91 | 65 | drop: Round 3 diagnostic: moving the rebalance 12h cut dev profit +363% -> +207% (timing-sensitive) | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |
+| E0313 | 2026-10-07 | backtest | `MomentumRotationV1b` | dev | 1h | 0.10% | +363.1 | 39.6 | 1.48 | 1.68 | 64 | drop: Round 3 reference: Round 2 version; timing-sensitive (see V1bMonday) | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |
+| E0312 | 2026-10-07 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 3 dev: drawdown-control versions V2/V2b/V2c + V1b and the Monday-time diagnostic | `733ccea+dirty` |
 | E0311 | 2026-10-07 | backtest | `MomentumRotationV1` | holdout 👁 | 1h+5m | 0.10% | +361.8 | 60.5 | 1.14 | 1.23 | 50 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: 5m fills | `52c6808` |
 | E0310 | 2026-10-07 | backtest | `MomentumRotationV1b` | holdout 👁 | 1h+5m | 0.10% | +452.9 | 41.4 | 1.36 | 2.08 | 53 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: 5m fills | `52c6808` |
 | E0309 | 2026-10-07 | backtest | `EmaTrendV3b` | holdout 👁 | 1h+5m | 0.10% | +8.4 | 22.5 | 0.30 | 0.13 | 96 | drop: Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | round 2 exam: 5m fills | `52c6808` |
