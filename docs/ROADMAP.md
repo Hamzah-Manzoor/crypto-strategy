@@ -74,10 +74,10 @@ Each phase ends with a review stop and one git commit.
 - [x] **Round 2 (2026-10-07):** fee-aware pullback, EmaTrendV2 + BTC filter, momentum rotation. Pre-registered dev/holdout split and a single exam. **All failed**; momentum rotation came closest (returns held up, drawdown too high). See `docs/research/round2-preregistration.md`.
 - [x] **Momentum rotation with drawdown control (Round 3, 2026-10-07):** pre-registered; all 3 versions had ~50% dev drawdowns, so it was **dropped** before any forward test. It also showed that momentum rotation is sensitive to the exact rebalance hour.
 - [x] **Robustness check (2026-10-07):** `lab.py robustness` (timing, nearby settings, leave one coin out, best trades removed). Calibrated on 3 strategies; it's a gate from the next round on.
-- [ ] **Momentum rotation at lower exposure (Round 4, in progress):** pre-registered 2026-10-08.
+- [x] **Momentum rotation at lower exposure (Round 4):** pre-registered 2026-10-08. **Exam FAIL** (narrow): DD 24.4% vs buy & hold 74.9%, but Calmar 1.59 vs 1.65 and one quarter at −12.2%. Momentum rotation is closed for historical testing.
   - **Versions:** V3 (about 50% invested) and V3b (volatility-scaled positions).
   - **Path:** dev selection with the robustness gate, then one exam on 2019–2020 (4 coins, never touched before), then a forward test if it passes.
-  - **2026-10-08:** dev selection done. **V3 picked** (DD 29.7%, ROBUST); V3b dropped (DD 42.2%). The exam waits for review.
+  - **2026-10-08:** dev selection done. **V3 picked** (DD 29.7%, ROBUST); V3b dropped (DD 42.2%). The exam ran once the same day: FAIL.
   - See `docs/research/momentum-exposure-preregistration.md`.
 - [ ] **Narrower hyperopt spaces:** several tuned stops hit the edges of the allowed range. Try fewer, more meaningful parameters (or none) rather than wider ranges.
 - [ ] **Fee-aware design for the strategies with a real gross edge** (Trend Pullback: +66% before fees). Use higher timeframes, or require a minimum expected move per trade larger than the round-trip fee.

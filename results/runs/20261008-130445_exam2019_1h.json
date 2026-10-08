@@ -1,0 +1,174 @@
+{
+ "run_id": "20261008-130445_exam2019_1h",
+ "period": "exam2019",
+ "timerange": "20190101-20210101",
+ "timeframe": "1h",
+ "timeframe_detail": null,
+ "fee": 0.001,
+ "notes": "round 4 exam",
+ "zip": "user_data/backtest_results/20261008-130445_exam2019_1h/backtest-result-2026-10-08_13-04-52.zip",
+ "strategies": {
+  "BuyHoldV1": {
+   "strategy": "BuyHoldV1",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20190101-20210101",
+   "start": "2019-01-01 00:00:00",
+   "end": "2021-01-01 00:00:00",
+   "days": 731.0,
+   "trades": 4,
+   "win_rate_pct": 75.0,
+   "profit_factor": 44.3942,
+   "avg_hold_hours": 17543.0,
+   "market_change_pct": 405.6221,
+   "final_balance": 5007.1893,
+   "stoploss": -0.99,
+   "minimal_roi": {
+    "0": 1000.0
+   },
+   "trailing_stop": false,
+   "code_sha": "b2e985c30b60",
+   "ft_trade_max_dd_pct": 1.8108,
+   "ft_wallet_max_dd_pct": 74.9474,
+   "profit_pct": 400.7189,
+   "cagr_pct": 123.5211,
+   "max_dd_pct": 74.9474,
+   "sharpe": 1.4946,
+   "sortino": 2.1527,
+   "calmar": 1.6481,
+   "exposure_pct": 99.4609,
+   "profit_abs_total": 4007.1893,
+   "best_trades_profit_abs": [
+    1684.76111665,
+    1281.34491942,
+    1133.42721345
+   ],
+   "quarters": [
+    {
+     "quarter": "2019Q1",
+     "ret_pct": 48.7459,
+     "partial": false
+    },
+    {
+     "quarter": "2019Q2",
+     "ret_pct": 96.1157,
+     "partial": false
+    },
+    {
+     "quarter": "2019Q3",
+     "ret_pct": -41.2764,
+     "partial": false
+    },
+    {
+     "quarter": "2019Q4",
+     "ret_pct": -16.4253,
+     "partial": false
+    },
+    {
+     "quarter": "2020Q1",
+     "ret_pct": -6.9224,
+     "partial": false
+    },
+    {
+     "quarter": "2020Q2",
+     "ret_pct": 34.963,
+     "partial": false
+    },
+    {
+     "quarter": "2020Q3",
+     "ret_pct": 54.5108,
+     "partial": false
+    },
+    {
+     "quarter": "2020Q4",
+     "ret_pct": 80.9942,
+     "partial": false
+    }
+   ],
+   "quarters_total": 8,
+   "quarters_profitable": 5,
+   "worst_quarter_pct": -41.2764
+  },
+  "MomentumRotationV3_R3_noSOL": {
+   "strategy": "MomentumRotationV3_R3_noSOL",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20190101-20210101",
+   "start": "2019-01-01 00:00:00",
+   "end": "2021-01-01 00:00:00",
+   "days": 731.0,
+   "trades": 37,
+   "win_rate_pct": 51.3514,
+   "profit_factor": 4.2202,
+   "avg_hold_hours": 668.2167,
+   "market_change_pct": 405.6221,
+   "final_balance": 1922.8067,
+   "stoploss": -0.2,
+   "minimal_roi": {
+    "0": 100.0
+   },
+   "trailing_stop": false,
+   "code_sha": "bd465bf8f0c6",
+   "ft_trade_max_dd_pct": 14.1744,
+   "ft_wallet_max_dd_pct": 24.3538,
+   "profit_pct": 92.2807,
+   "cagr_pct": 38.6033,
+   "max_dd_pct": 24.3538,
+   "sharpe": 1.292,
+   "sortino": 1.9003,
+   "calmar": 1.5851,
+   "exposure_pct": 25.3925,
+   "profit_abs_total": 922.8067,
+   "best_trades_profit_abs": [
+    359.97799444,
+    171.35743593,
+    96.25951314
+   ],
+   "quarters": [
+    {
+     "quarter": "2019Q1",
+     "ret_pct": 0.0,
+     "partial": false
+    },
+    {
+     "quarter": "2019Q2",
+     "ret_pct": 29.3134,
+     "partial": false
+    },
+    {
+     "quarter": "2019Q3",
+     "ret_pct": -12.1623,
+     "partial": false
+    },
+    {
+     "quarter": "2019Q4",
+     "ret_pct": -3.064,
+     "partial": false
+    },
+    {
+     "quarter": "2020Q1",
+     "ret_pct": 2.9038,
+     "partial": false
+    },
+    {
+     "quarter": "2020Q2",
+     "ret_pct": 3.0978,
+     "partial": false
+    },
+    {
+     "quarter": "2020Q3",
+     "ret_pct": 16.1059,
+     "partial": false
+    },
+    {
+     "quarter": "2020Q4",
+     "ret_pct": 42.2507,
+     "partial": false
+    }
+   ],
+   "quarters_total": 8,
+   "quarters_profitable": 5,
+   "worst_quarter_pct": -12.1623
+  }
+ }
+}

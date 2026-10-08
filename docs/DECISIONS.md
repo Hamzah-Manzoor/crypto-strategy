@@ -282,3 +282,12 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - The recursive check's report shows inherited `startup_candle_count` values (the label used to say "None" for subclasses; the verdict was always right).
   - `scripts/round4_size_check.py` hand-checks position sizes.
 
+**2026-10-08: Round 4 exam failed; momentum rotation closed for historical testing.**
+- **Result:** `MomentumRotationV3` (4 coins) on 2019–2020 made +92.3% with max DD 24.4% (buy & hold: +400.7%, DD 74.9%).
+- **Failed:** H5 (Calmar 1.59 vs 1.65) and H6 (2019 Q3 at −12.2%, the limit is −10%). Both misses were narrow; the rules were fixed in advance, so it's a FAIL.
+- **Checked:** no bug found. Buy & hold's per-coin returns match real prices, and PF 4.2 comes from two big trades still open at the end (late-2020 rally).
+- **Consequences:**
+  - `exam2019` is now *used* for the momentum family.
+  - No paper bot and no forward test from this round.
+  - A new momentum idea could only be judged on future data.
+

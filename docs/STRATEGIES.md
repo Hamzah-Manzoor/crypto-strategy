@@ -247,7 +247,7 @@ Momentum rotation at lower exposure. Rules and results: [research/momentum-expos
 
 | Strategy | Size of each new position | Status |
 |---|---|---|
-| `MomentumRotationV3` | 1/6 of the wallet (`EXPOSURE = 0.5` × 1/3), so about half invested | **exam pick**: dev +95.6%, DD 29.7%, ROBUST; 2019–20 exam pending |
+| `MomentumRotationV3` | 1/6 of the wallet (`EXPOSURE = 0.5` × 1/3), so about half invested | **exam FAIL** (2019–20, 4 coins): +92.3%, DD 24.4% vs buy & hold 74.9%, but Calmar 1.59 vs 1.65 and one quarter −12.2% |
 | `MomentumRotationV3b` | 1/3 × min(1, 50% ÷ the coin's 30-day volatility) | dropped at dev (DD 42.2%): positions were rarely scaled down |
 
 ---

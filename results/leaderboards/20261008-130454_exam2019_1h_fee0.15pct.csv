@@ -1,0 +1,3 @@
+rank,strategy,profit_pct,cagr_pct,max_dd_pct,sharpe,sortino,calmar,profit_factor,win_rate_pct,trades,avg_hold_hours,exposure_pct,beats_bh,flags,timeframe,timerange,days,market_change_pct,code_sha
+1,BuyHoldV1,400.4193,123.4543,74.9474,1.4946,2.1527,1.6472,44.2673,75.0,4,17543.0,99.4609,baseline,,1h,20190101-20210101,731.0,405.6221,b2e985c30b60
+2,MomentumRotationV3_R3_noSOL,91.1573,38.1984,24.5032,1.2824,1.8852,1.5589,4.1513,51.3514,37,668.2167,25.3955,no,profit factor 4.2 > 3,1h,20190101-20210101,731.0,405.6221,bd465bf8f0c6

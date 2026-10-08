@@ -146,3 +146,48 @@ Buy & hold on dev: +231.4%, max DD 64.9%, Calmar 0.76.
 
 **Next:** Hamzah reviews this pick. Then `lab.py round4 exam` runs **once** on 2019-01-01 → 2021-01-01. The command refuses to run a second time.
 
+### Exam: run 2026-10-08 → **FAIL** (on H5 and H6, both narrowly)
+
+Hamzah reviewed the pick and said "run the exam". The exam ran once: `lab.py round4 exam`, run `20261008-130445_exam2019_1h` plus the fee stress run `20261008-130454_exam2019_1h_fee0.15pct`. Report: `results/leaderboards/exam_round4.md`.
+
+| 2019-01-01 → 2021-01-01, 4 coins | Profit | Max DD | Calmar | PF | Trades | In market |
+|---|---:|---:|---:|---:|---:|---:|
+| `MomentumRotationV3` without SOL | +92.3% | 24.4% | 1.59 | 4.22 | 37 | 25% |
+| Buy & hold, 25% in each coin | +400.7% | 74.9% | 1.65 | — | 4 | 99% |
+
+| # | Rule | Result |
+|---|---|---|
+| H1 | ≥ 20 trades | ✅ 37 |
+| H2 | profit > 0 and PF ≥ 1.2 | ✅ +92.3%, PF 4.22 |
+| H3 | profit > 0 at a 0.15% fee | ✅ +91.2% |
+| H4 | max DD ≤ 30% and below buy & hold's | ✅ 24.4% vs 74.9% |
+| H5 | Calmar > buy & hold's | ❌ **1.59 vs 1.65** |
+| H6 | ≥ 4 of 8 quarters profitable, none worse than −10% | ❌ 5 of 8 profitable, but **2019 Q3 was −12.2%** |
+| H7 | bias checks passed | ✅ |
+
+Quarter by quarter (profit %):
+
+| | 2019Q1 | 2019Q2 | 2019Q3 | 2019Q4 | 2020Q1 | 2020Q2 | 2020Q3 | 2020Q4 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Buy & hold | +48.7 | +96.1 | −41.3 | −16.4 | −6.9 | +35.0 | +54.5 | +81.0 |
+| V3 (4 coins) | 0.0 | +29.3 | −12.2 | −3.1 | +2.9 | +3.1 | +16.1 | +42.3 |
+
+**Checked for bugs before accepting** (PF 4.22 is above the "suspicious" level of 3):
+- **Buy & hold is right.** It had 247 USDT in each coin, and its per-coin results match the real 2019–20 price moves: BTC +680%, ETH +457%, BNB +517%, XRP −37%.
+- **V3 traded as designed.**
+  - It bought on Mondays at 12:00 UTC, 165 USDT per position at the start, only BTC/ETH/BNB/XRP.
+  - It sat in cash until April 2019, when BTC rose back above its 200-day average.
+- **Why the PF is high:** two positions still open at the end of the test made 44% of the profit (BTC Oct–Dec 2020 +171%, ETH +81%). The top 3 trades made 68%. So it's a lumpy result, not a bug.
+- **The −12.2% quarter** (Jul–Sep 2019) came from the −20% emergency stop firing three times: ETH and BNB on 14–15 July 2019, and ETH on 24 September.
+
+**What it means, in plain words:**
+- **The drawdown control worked.** V3 fell at most 24% while buy & hold fell 75%, and it made a small profit in the COVID-crash quarter.
+- **It didn't beat buy & hold on risk-adjusted terms,** by a hair (Calmar 1.59 vs 1.65). In a two-year period where buy & hold made +400%, holding only a quarter of the wallet on average gave up too much return.
+- **It also had one quarter just past the −10% limit.**
+- **The rules were fixed in advance, so this is a FAIL,** even though it was close on both counts.
+
+**Decision, as pre-registered:**
+- Momentum rotation is **closed for historical testing.** This lab has no unused history left for it.
+- **No paper bot and no forward test start from this round.**
+- Any new momentum idea could only be judged on future data, under its own pre-registration.
+

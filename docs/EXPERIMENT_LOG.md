@@ -12,12 +12,13 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**331 entries**, 60 of them out-of-sample looks (in 12 runs).
+**335 entries**, 64 of them out-of-sample looks (in 14 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
+| `BuyHoldV1` | **keep** | Round 4 exam baseline, fee stress | E0334 |
 | `BuyHoldV1` · robustness check | **keep** | ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | E0318 |
 | `EmaTrendV2` · robustness check | **keep** | ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | E0319 |
 | `MomentumRotationV1bMonday` | **keep** | Round 4 reference: full-size V1b at the Monday 12:00 UTC slot | E0325 |
@@ -28,7 +29,6 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
-| `BuyHoldV1` | **drop** | rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | E0330 |
 | `DonchianBreakoutV1` | **drop** | DonchianBreakoutV1T IS +19.0% but PF 1.08 < 1.1; not a candidate | E0069 |
 | `DonchianBreakoutV2T` | **drop** | stage 1 FAIL | E0206 |
 | `DonchianBreakoutV2` | **drop** | DonchianBreakoutV2 untuned: IS +52% but OOS -7.6% (stage 1 FAIL) | E0212 |
@@ -45,7 +45,7 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `MomentumRotationV2` | **drop** | Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | E0315 |
 | `MomentumRotationV2b` | **drop** | Round 3 dev: DD 48.9% (> 30%) - faster BTC filter never switched off in the 2024 chop; idea dropped | E0316 |
 | `MomentumRotationV2c` | **drop** | Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | E0317 |
-| `MomentumRotationV3_R3_noSOL` | **drop** | rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | E0331 |
+| `MomentumRotationV3_R3_noSOL` | **drop** | Round 4 exam fee stress: +91.2% (H3 passed); exam failed on H5/H6 | E0335 |
 | `MomentumRotationV3b` | **drop** | Round 4: not eligible - dev DD 42.2% > 30%; vol scaling rarely shrank positions (median 92% of a slot) | E0324 |
 | `RsiBbReversionV1` | **drop** | RsiBbReversionV1T breaks even in-sample (-0.1%); idea does not work here | E0081 |
 | `SqueezeBreakoutV1T` | **drop** | SqueezeBreakoutV1T: stage 1 REVIEW, stage 2 FAIL; +1.2% a year is too small to matter | E0214 |
@@ -63,6 +63,10 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0335 | 2026-10-08 | backtest | `MomentumRotationV3_R3_noSOL` | exam2019 👁 | 1h | 0.15% | +91.2 | 24.5 | 1.28 | 1.56 | 37 | drop: Round 4 exam fee stress: +91.2% (H3 passed); exam failed on H5/H6 | round 4 exam: fee stress 0.15% | `c4a888c` |
+| E0334 | 2026-10-08 | backtest | `BuyHoldV1` | exam2019 👁 | 1h | 0.15% | +400.4 | 74.9 | 1.49 | 1.65 | 4 | keep: Round 4 exam baseline, fee stress | round 4 exam: fee stress 0.15% | `c4a888c` |
+| E0333 | 2026-10-08 | backtest | `MomentumRotationV3_R3_noSOL` | exam2019 👁 | 1h | 0.10% | +92.3 | 24.4 | 1.29 | 1.59 | 37 | drop: Round 4 EXAM FAIL: H5 Calmar 1.59 vs buy & hold 1.65; H6 worst quarter -12.2% (2019Q3) < -10%. DD 24.4% vs 74.9% passed | round 4 exam | `c4a888c` |
+| E0332 | 2026-10-08 | backtest | `BuyHoldV1` | exam2019 👁 | 1h | 0.10% | +400.7 | 74.9 | 1.49 | 1.65 | 4 | keep: Round 4 exam baseline: 4 coins at 25% each | round 4 exam | `c4a888c` |
 | E0331 | 2026-10-08 | backtest | `MomentumRotationV3_R3_noSOL` | custom | 1h | 0.15% | +30.6 | 24.1 | 1.24 | 1.27 | 31 | drop: rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | round 4 exam rehearsal (dev data): fee stress 0.15% | `070195d+dirty` |
 | E0330 | 2026-10-08 | backtest | `BuyHoldV1` | custom | 1h | 0.15% | +130.0 | 36.5 | 1.87 | 3.55 | 4 | drop: rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | round 4 exam rehearsal (dev data): fee stress 0.15% | `070195d+dirty` |
 | E0329 | 2026-10-08 | backtest | `MomentumRotationV3_R3_noSOL` | custom | 1h | 0.10% | +31.2 | 23.8 | 1.26 | 1.31 | 31 | drop: rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | round 4 exam rehearsal (dev data) | `070195d+dirty` |

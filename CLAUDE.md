@@ -59,6 +59,9 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
   - **Development:** 2023-10 → 2026-10 (`--period dev`).
   - **Protected holdout:** 2021-01 → 2023-10 (`--period holdout`). `lab.py` refuses it without `--allow-holdout`, and tuning on it is refused.
   - **The Round 2 exam has used it** for ideas A, B and C (pullback, EmaTrend + BTC filter, momentum rotation). Treat it as *used* for those idea families; a new family may use it once with its own pre-registration.
+- **Round 4 exam period `exam2019` (2019-01 → 2021-01):**
+  - 1h and 1d data exist only for BTC, ETH, BNB and XRP (from 2018-05). SOL listed in Aug 2020.
+  - It's protected like the holdout, and it was **used once by the Round 4 momentum exam** (failed). Treat it as *used* for the momentum family.
 - **Data before 2023-10-01 (1h and 4h go back to 2020-08-11):** the 7 quarters 2021-12 → 2023-09 were used once, for the quarterly re-tuning test. Treat them as *used* for that idea. Any other idea testing on them needs its own pre-registration.
 - **Out-of-sample is precious:**
   - Choose candidates by a written in-sample rule first (log it in DECISIONS), then run `lab.py validate` **once**.
