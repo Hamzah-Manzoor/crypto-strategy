@@ -258,3 +258,16 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - The lookahead window now ends 2024-07-03, because a Monday-00:00 end crashed Freqtrade on weekly trades closing on the last candle.
   - Leave-one-coin-out variants never trade the left-out coin.
 - No threshold was changed after seeing the calibration.
+
+**2026-10-08: Round 4 pre-registered: momentum rotation at lower exposure, with a fresh exam on 2019–2020.**
+- **Why:** MomentumRotationV1b is robust, and its only blocker is ~40% drawdowns. This round shrinks position size instead of changing timing.
+- **Versions:**
+  - V3: each position is 1/6 of the wallet, about 50% invested in total.
+  - V3b: each position is 1/3, scaled down by the coin's 30-day volatility toward a 50% target.
+  - Both rebalance Monday 12:00 UTC.
+- **Selection on dev:** Round 3's rule plus **ROBUST** in the robustness check, then the best Calmar.
+- **Exam:** 2019-01-01 → 2021-01-01, never touched by any test in this lab. Only 4 of our coins existed then, so it's a 4-coin exam, with SOL removed as in robustness check R3. The rules are Round 3's forward rules over 8 quarters.
+- A pass leads to a forward test, not straight to promotion.
+- **New protected period** `exam2019`; `download` and `data-check` gained `--pairs`.
+- Details: `docs/research/momentum-exposure-preregistration.md`.
+

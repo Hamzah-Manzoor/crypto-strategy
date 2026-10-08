@@ -103,6 +103,13 @@ Picks a **bull**, a **bear** and a **sideways** 90-day window **inside each spli
 - **Report:** `results/checks/data_check_20200811_1h-4h.md`.
 - **Command:** `python3 scripts/lab.py download --start 20200811 --timeframes 1h 4h`.
 
+**Exam history (added 2026-10-08 for the Round 4 exam on 2019–2020):**
+- **What:** 1h and 1d for BTC, ETH, BNB and XRP now go back to **2018-05-01**. XRP starts on its Binance listing, 2018-05-04.
+- **Coverage:** 99.88%. The longest gap is 10h (short Binance outages). SOL has no data before 2020-08-11, so it isn't downloaded for this period.
+- **Report:** `results/checks/data_check_20180605_1h-1d_BTC-ETH-BNB-XRP.md`. The check starts at 2018-06-05: the 200-day Bitcoin average needs that much history before 2019-01-01.
+- **Command:** `python3 scripts/lab.py download --start 20180501 --timeframes 1h 1d --pairs BTC/USDT ETH/USDT BNB/USDT XRP/USDT`.
+- **2019–2020 is protected test data** (`exam2019`): don't backtest on it outside the pre-registered exam.
+
 - **All 5 pairs passed:** 100% coverage, no duplicates, no impossible candles and no zero-volume filler candles. Binance's candles needed no repairs.
 - **Data size:** 63 MB.
 - **Full report:** `results/checks/data_check.md`.

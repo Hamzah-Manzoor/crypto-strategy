@@ -253,6 +253,16 @@ def select_round3(dev_strategies: dict[str, dict], bias: dict[str, bool]) -> tup
     return pick, lines
 
 
+# --------------------------------------------------------------------------- Round 4
+# Pre-registered in docs/research/momentum-exposure-preregistration.md (2026-10-08), before any
+# version was built. Dev selection = Round 3's rule + the robustness gate. The exam runs once on
+# 2019-2020 (lab.py period "exam2019", 4 coins) with Round 3's forward rules over 8 quarters.
+
+ROUND4_CANDIDATES = ("MomentumRotationV3", "MomentumRotationV3b")
+ROUND4_SELECT = {**ROUND3_SELECT, "robustness": "ROBUST"}
+ROUND4_EXAM = {**FORWARD, "min_profitable_quarters": 4, "quarters": 8}
+
+
 # --------------------------------------------------------------------------- Robustness check
 # Plan: docs/research/robustness-check-plan.md (approved 2026-10-07, before any run).
 # Runs on dev data only. A test keeps docs/TESTING_METHODOLOGY.md in sync with these numbers.

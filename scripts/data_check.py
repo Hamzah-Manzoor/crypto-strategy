@@ -79,10 +79,11 @@ def main() -> int:
     parser.add_argument("--min-coverage", type=float, default=98.0, help="percent")
     parser.add_argument("--max-gap-hours", type=float, default=24.0)
     parser.add_argument("--out", type=Path, help="also write the markdown report here")
+    parser.add_argument("--pairs", nargs="+", help="default: the whitelist in base.json")
     args = parser.parse_args()
 
     config = json.loads(Path("user_data/configs/base.json").read_text())
-    pairs = config["exchange"]["pair_whitelist"]
+    pairs = args.pairs or config["exchange"]["pair_whitelist"]
     data_dir = Path("user_data/data") / args.exchange
     start = pd.Timestamp(datetime.strptime(args.start, "%Y%m%d"), tz="UTC")
     now = pd.Timestamp(datetime.now(timezone.utc))

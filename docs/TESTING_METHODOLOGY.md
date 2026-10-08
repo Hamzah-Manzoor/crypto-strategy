@@ -24,6 +24,16 @@ The rules below were written on **2026-10-06, before any out-of-sample result wa
   - Out-of-sample contains a **deep bear market** (basket −45%, Nov 2025 → Feb 2026), then a recovery.
   - A strategy tuned on in-sample has never seen a long bear market, so OOS is a hard but fair test.
 
+**Periods from Round 2 on** (`PERIODS` and `PROTECTED` in `scripts/lab.py`):
+
+| Period | Dates | Used for |
+|---|---|---|
+| **dev** | 2023-10-01 → 2026-10-01 | Building and choosing (= the old IS + OOS; the OOS year was retired after 9 looks) |
+| **holdout** (protected) | 2021-01-01 → 2023-10-01 | Round 2 exam. Spent for the strategies examined on it. |
+| **exam2019** (protected) | 2019-01-01 → 2021-01-01 | Round 4 exam. Only BTC, ETH, BNB and XRP existed then; SOL listed in Aug 2020. |
+
+- **Protected periods:** any backtest touching them needs `--allow-holdout` and is logged as a look. Hyperopt refuses them.
+
 ## 2. Costs and fill assumptions
 
 - **Fee 0.1% per side** (Binance spot standard) in every run, so a round trip costs 0.2%.

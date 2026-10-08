@@ -253,10 +253,13 @@ class PeriodTest(unittest.TestCase):
         self.assertEqual(lab.touches_protected("20231001-20261001"), [])        # dev data
         self.assertEqual(lab.touches_protected("20251001-20261001"), [])        # retired Round 1 OOS year
         self.assertEqual(lab.touches_protected("20210101-20231001"), ["holdout"])
-        self.assertEqual(lab.touches_protected("20200801-20210102"), ["holdout"])  # one day in
-        self.assertEqual(lab.touches_protected("20200801-20210101"), [])        # end date is exclusive
+        self.assertEqual(lab.touches_protected("20201231-20210102"), ["holdout", "exam2019"])  # spans both
+        self.assertEqual(lab.touches_protected("20200801-20210101"), ["exam2019"])  # Round 4 exam years
+        self.assertEqual(lab.touches_protected("20190101-20210101"), ["exam2019"])
+        self.assertEqual(lab.touches_protected("20180601-20190101"), [])        # end date is exclusive
         self.assertEqual(lab.touches_protected("20231001-"), [])
         self.assertEqual(lab.touches_protected("20220101-"), ["holdout"])
+        self.assertEqual(lab.touches_protected("20210101-20210102"), ["holdout"])  # one day in
 
     def test_resolve_period(self):
         self.assertEqual(lab.resolve_period("is"), ("is", "20231001-20251001"))

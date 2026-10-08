@@ -55,9 +55,10 @@ PERIODS = {
     "oos": ("20251001", "20261001"),
     "dev": ("20231001", "20261001"),
     "holdout": ("20210101", "20231001"),
+    "exam2019": ("20190101", "20210101"),  # Round 4 exam (4 coins: SOL listed Aug 2020)
 }
 # Data no test may touch without --allow-holdout, and tuning may never touch. Every look is logged.
-PROTECTED = {"holdout": PERIODS["holdout"]}
+PROTECTED = {"holdout": PERIODS["holdout"], "exam2019": PERIODS["exam2019"]}
 STANDARD_FEE = 0.001  # 0.1% per side (Binance spot)
 STRESS_FEE = 0.0015   # stands in for slippage in the stage-1 stress run
 
@@ -276,14 +277,15 @@ def cmd_download(args: argparse.Namespace) -> None:
     exchange = args.exchange
     start, timeframes = args.start or DATA_START, args.timeframes or TIMEFRAMES
     cfg = config_args(*exchange_configs(exchange))
+    pairs = ["--pairs", *args.pairs] if args.pairs else []  # default: the config's whitelist
 
     say(f"Downloading {', '.join(timeframes)} candles from {exchange}, starting {start}")
     # Pass 1 (--prepend) extends existing files back to `start`; pass 2 adds new candles.
     # On a fresh download pass 1 does all the work and pass 2 has nothing left to fetch.
-    grid = freqtrade(["download-data", *cfg, "--timeframes", *timeframes, "--prepend",
+    grid = freqtrade(["download-data", *cfg, *pairs, "--timeframes", *timeframes, "--prepend",
                       "--timerange", f"{start}-"], check=False)
     if grid.returncode == 0:
-        grid = freqtrade(["download-data", *cfg, "--timeframes", *timeframes,
+        grid = freqtrade(["download-data", *cfg, *pairs, "--timeframes", *timeframes,
                           "--timerange", f"{start}-"], check=False)
 
     say(f"Downloading BTC/USDT daily candles from {REGIME_DATA_START} (for market-regime labels)")
@@ -297,17 +299,21 @@ def cmd_download(args: argparse.Namespace) -> None:
             "See docs/SETUP.md > Troubleshooting.")
 
     say("Checking the downloaded data")
-    cmd_data_check(argparse.Namespace(exchange=exchange, start=args.start, timeframes=args.timeframes))
+    cmd_data_check(argparse.Namespace(exchange=exchange, start=args.start, timeframes=args.timeframes,
+                                      pairs=args.pairs))
 
 
 def cmd_data_check(args: argparse.Namespace) -> None:
     """Check coverage, gaps and bad candles; writes results/checks/data_check.md."""
     exchange = args.exchange or data_exchange()
     start, timeframes = args.start or DATA_START, args.timeframes or TIMEFRAMES
-    out = ("results/checks/data_check.md" if (start, timeframes) == (DATA_START, TIMEFRAMES)
-           else f"results/checks/data_check_{start}_{'-'.join(timeframes)}.md")
+    pairs = args.pairs or []
+    out = ("results/checks/data_check.md" if (start, timeframes, pairs) == (DATA_START, TIMEFRAMES, [])
+           else f"results/checks/data_check_{start}_{'-'.join(timeframes)}"
+                + (f"_{'-'.join(p.split('/')[0] for p in pairs)}" if pairs else "") + ".md")
     result = container_python("data_check.py", [
         "--exchange", exchange, "--start", start, "--timeframes", *timeframes, "--out", out,
+        *(["--pairs", *pairs] if pairs else []),
     ], check=False)
     if result.returncode:
         die("data check failed - see the Problems list above and docs/SETUP.md > Troubleshooting")
@@ -1127,10 +1133,12 @@ def build_parser() -> argparse.ArgumentParser:
                    help="data source (default: binance; fall back to bybit if it is blocked)")
     p.add_argument("--start", help=f"yyyymmdd (default {DATA_START}); earlier dates extend existing files")
     p.add_argument("--timeframes", nargs="+", help=f"default: {' '.join(TIMEFRAMES)}")
+    p.add_argument("--pairs", nargs="+", help="default: the whitelist in base.json")
     p = add("data-check", cmd_data_check)
     p.add_argument("--exchange", choices=EXCHANGES, help="default: the exchange we have data for")
     p.add_argument("--start", help=f"data must start by this date (default {DATA_START})")
     p.add_argument("--timeframes", nargs="+", help=f"default: {' '.join(TIMEFRAMES)}")
+    p.add_argument("--pairs", nargs="+", help="default: the whitelist in base.json")
     p = add("regimes", cmd_regimes)
     p.add_argument("--days", type=int, default=90, help="window length in days (default: 90)")
     p = add("check-bias", cmd_check_bias)

@@ -197,6 +197,27 @@ class Round3RulesTest(unittest.TestCase):
             self.assertIn(text, doc)
 
 
+class Round4RulesTest(unittest.TestCase):
+    def test_exam_is_round3_forward_rules_over_8_quarters(self):
+        e, f = rules.ROUND4_EXAM, rules.FORWARD
+        self.assertEqual({k: v for k, v in e.items() if k not in ("quarters", "min_profitable_quarters")},
+                         {k: v for k, v in f.items() if k not in ("quarters", "min_profitable_quarters")})
+        self.assertEqual((e["min_profitable_quarters"], e["quarters"]), (4, 8))
+        self.assertEqual(rules.ROUND4_SELECT["robustness"], "ROBUST")
+
+    def test_preregistration_states_the_same_numbers(self):
+        doc = (REPO / "docs" / "research" / "momentum-exposure-preregistration.md").read_text()
+        s, e = rules.ROUND4_SELECT, rules.ROUND4_EXAM
+        for text in (f"dev max drawdown **≤ {s['max_dd_pct']:g}%**", f"profit factor **≥ {s['min_profit_factor']:g}**",
+                     f"at least **{s['min_trades']}** trades", f"**{s['robustness']}** in `lab.py robustness`",
+                     f"| ≥ {e['min_trades']} |", f"profit factor ≥ {e['min_profit_factor']:g}",
+                     f"max drawdown ≤ {e['max_dd_pct']:g}%",
+                     f"≥ {e['min_profitable_quarters']} of the {e['quarters']} quarters profitable",
+                     f"worse than −{abs(e['worst_quarter_pct']):g}%", "2019-01-01 → 2021-01-01",
+                     *(f"`{c}`" for c in rules.ROUND4_CANDIDATES)):
+            self.assertIn(text, doc)
+
+
 class RobustnessRulesTest(unittest.TestCase):
     ORIG = {"profit_pct": 100.0, "calmar": 2.0}
 
