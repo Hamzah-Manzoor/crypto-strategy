@@ -115,6 +115,16 @@
    "ok": true,
    "recursive": "pass"
   },
+  "MomentumRotationV3": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
+  "MomentumRotationV3b": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
   "RsiBbReversionV1": {
    "lookahead": "pass",
    "ok": true,
@@ -166,5 +176,5 @@
    "recursive": "pass"
   }
  },
- "updated": "2026-10-07 10:49"
+ "updated": "2026-10-08 12:33"
 }

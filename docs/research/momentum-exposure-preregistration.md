@@ -106,3 +106,43 @@ A version is **eligible** only if all of these hold on dev (2023-10 → 2026-10,
 ## 7. Results
 
 _To be filled in at each stage, without editing anything above this line._
+
+### Dev selection: run 2026-10-08 → **pick: `MomentumRotationV3`** (frozen; exam not run yet)
+
+Dev run `20261008-123310_dev_1h` (2023-10-01 → 2026-10-01, 1h, 0.1% fee). Both versions passed `check-bias`. Selection: `results/leaderboards/round4_selection.md`.
+
+| Version | Dev profit | Max DD | Calmar | PF | Trades | In market | Eligible? |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `MomentumRotationV1b` (Round 2, Monday 00:00 UTC, full size) | +363.1% | 39.6% | 1.68 | 2.70 | 64 | 46% | reference only |
+| `MomentumRotationV1bMonday` (full size, Monday 12:00 UTC) | +206.7% | 49.9% | 0.91 | 1.93 | 65 | 46% | reference only |
+| `MomentumRotationV3` (half invested) | +95.6% | 29.7% | 0.84 | 2.17 | 65 | 25% | ✅ eligible and **ROBUST** → **pick** |
+| `MomentumRotationV3b` (volatility-scaled) | +183.3% | 42.2% | 0.98 | 2.21 | 65 | 39% | ❌ max DD 42.2% > 30% |
+
+Buy & hold on dev: +231.4%, max DD 64.9%, Calmar 0.76.
+
+**Robustness check of V3: ROBUST** (`results/robustness/20261008-123421_MomentumRotationV3.md`):
+- **R1 timing:** profitable at all 28 rebalance times (+95.6% … +201.2%, max DD 22.0–31.4%). Median Calmar 1.33, i.e. 157% of the original's. Monday 12:00 is again one of the weakest slots.
+- **R2 settings:** all 8 neighbours profitable, median Calmar 95% of the original's. At 60% exposure the drawdown would be 34.4%; at 40%, 24.7%.
+- **R3 coins:** all 5 leave-one-out runs profitable. **Without SOL: +73.9%, max DD 23.8%.** That's the closest dev picture of the 4-coin exam.
+- **R4:** still +219 USDT without the 3 best trades. Those 3 trades made 77% of the profit, so it's still concentrated.
+- V3b's robustness check wasn't run, because it was already ineligible.
+
+**Hand-check of position sizes** (`scripts/round4_size_check.py` on the dev run):
+- Every trade's stake matched the size expected from closed daily candles only: within 0.31% (median 0.03%), for all 65 trades of each version.
+- If V3b had used Monday's unfinished day, 23 of its 65 sizes would have been off by more than 0.5%. So the check can tell the difference.
+
+**What we learned:**
+- **Halving the money invested worked about as expected.** At the same Monday 12:00 slot:
+  - drawdown went from 49.9% to 29.7%;
+  - profit went from +207% to +96%;
+  - Calmar went from 0.91 to 0.84.
+- **Volatility scaling barely did anything.** In 2023–26 the coins' 30-day volatility was often under 50% a year, so the median position was 92% of a full slot, and 28 of 65 trades got a full slot. My assumption that crypto usually runs at 50–100% volatility was wrong for this period.
+- **Caution:** V3's dev drawdown of 29.7% is only just inside the 30% limit. The exam applies the same limit on data it has never seen.
+
+**Exam rehearsal** (`lab.py round4 exam --smoke`, on 2024 dev data; experiments E0328–E0331, marked as a pipeline test, not a result):
+- The whole exam pipeline ran end to end.
+- Buy & hold put 247 USDT in each of the 4 coins (99% invested). V3 put 165 USDT in each position.
+- Neither traded SOL.
+
+**Next:** Hamzah reviews this pick. Then `lab.py round4 exam` runs **once** on 2019-01-01 → 2021-01-01. The command refuses to run a second time.
+

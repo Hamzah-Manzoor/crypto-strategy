@@ -190,26 +190,26 @@ def select_for_exam(dev_strategies: dict[str, dict], bias: dict[str, bool]) -> t
     return selected, lines
 
 
-def exam(m: dict, stress_m: dict | None, bh: dict, bias_ok: bool | None) -> tuple[str, list[tuple[bool, str]]]:
-    """Round 2 exam verdict on the holdout: PASS only if every rule holds."""
-    r = EXAM
+def exam(m: dict, stress_m: dict | None, bh: dict, bias_ok: bool | None,
+         r: dict = EXAM, prefix: str = "X") -> tuple[str, list[tuple[bool, str]]]:
+    """Exam verdict on protected data: PASS only if every rule holds (Round 2: EXAM/X, Round 4: ROUND4_EXAM/H)."""
     pf = m.get("profit_factor")
     q_ok, q_total, worst = m.get("quarters_profitable", 0), m.get("quarters_total", 0), m.get("worst_quarter_pct")
     checks = [
-        (m["trades"] >= r["min_trades"], f"X1 trades {m['trades']} (>= {r['min_trades']})"),
+        (m["trades"] >= r["min_trades"], f"{prefix}1 trades {m['trades']} (>= {r['min_trades']})"),
         (m["profit_pct"] > 0 and pf is not None and pf >= r["min_profit_factor"],
-         f"X2 profit {m['profit_pct']:+.1f}% (> 0), profit factor {pf if pf is None else round(pf, 2)} "
+         f"{prefix}2 profit {m['profit_pct']:+.1f}% (> 0), profit factor {pf if pf is None else round(pf, 2)} "
          f"(>= {r['min_profit_factor']:g})"),
         (stress_m is not None and stress_m["profit_pct"] > 0,
-         "X3 profit at 0.15% fee " + ("not run" if stress_m is None else f"{stress_m['profit_pct']:+.1f}% (> 0)")),
+         f"{prefix}3 profit at 0.15% fee " + ("not run" if stress_m is None else f"{stress_m['profit_pct']:+.1f}% (> 0)")),
         (m["max_dd_pct"] <= r["max_dd_pct"] and m["max_dd_pct"] < bh["max_dd_pct"],
-         f"X4 max drawdown {m['max_dd_pct']:.1f}% (<= {r['max_dd_pct']:g}% and < buy & hold {bh['max_dd_pct']:.1f}%)"),
-        (m["calmar"] > bh["calmar"], f"X5 Calmar {m['calmar']:.2f} > buy & hold {bh['calmar']:.2f}"),
+         f"{prefix}4 max drawdown {m['max_dd_pct']:.1f}% (<= {r['max_dd_pct']:g}% and < buy & hold {bh['max_dd_pct']:.1f}%)"),
+        (m["calmar"] > bh["calmar"], f"{prefix}5 Calmar {m['calmar']:.2f} > buy & hold {bh['calmar']:.2f}"),
         (q_total == r["quarters"] and q_ok >= r["min_profitable_quarters"]
          and worst is not None and worst >= r["worst_quarter_pct"],
-         f"X6 profitable in {q_ok} of {q_total} quarters (>= {r['min_profitable_quarters']} of {r['quarters']}), "
+         f"{prefix}6 profitable in {q_ok} of {q_total} quarters (>= {r['min_profitable_quarters']} of {r['quarters']}), "
          f"worst quarter {'n/a' if worst is None else f'{worst:+.1f}%'} (>= {r['worst_quarter_pct']:g}%)"),
-        (bias_ok is True, "X7 bias checks " + {True: "passed", False: "FAILED", None: "not run"}[bias_ok]),
+        (bias_ok is True, f"{prefix}7 bias checks " + {True: "passed", False: "FAILED", None: "not run"}[bias_ok]),
     ]
     return ("PASS" if all(ok for ok, _ in checks) else "FAIL"), checks
 
@@ -227,8 +227,14 @@ FORWARD = {  # forward exam, 12 months
 
 def select_round3(dev_strategies: dict[str, dict], bias: dict[str, bool]) -> tuple[str | None, list[str]]:
     """The single eligible Round 3 version with the highest dev Calmar (None = idea dropped)."""
-    r, lines, eligible = ROUND3_SELECT, [], []
-    for name in ROUND3_CANDIDATES:
+    return select_one(ROUND3_CANDIDATES, ROUND3_SELECT, dev_strategies, bias)
+
+
+def select_one(candidates: tuple[str, ...], r: dict, dev_strategies: dict[str, dict], bias: dict[str, bool],
+               robust: dict[str, str | None] | None = None) -> tuple[str | None, list[str]]:
+    """Single-pick dev rule (Rounds 3 and 4): every candidate is checked; the best eligible dev Calmar wins."""
+    lines, eligible = [], []
+    for name in candidates:
         m = dev_strategies.get(name)
         if m is None:
             lines.append(f"- `{name}`: not in the dev run")
@@ -244,6 +250,8 @@ def select_round3(dev_strategies: dict[str, dict], bias: dict[str, bool]) -> tup
             reasons.append(f"{m['trades']} trades < {r['min_trades']}")
         if bias.get(name) is not True:
             reasons.append("bias checks not passed")
+        if "robustness" in r and (robust or {}).get(name) != r["robustness"]:
+            reasons.append(f"robustness check {(robust or {}).get(name) or 'not run'} (need {r['robustness']})")
         status = "eligible" if not reasons else "not eligible (" + "; ".join(reasons) + ")"
         lines.append(f"- `{name}`: {status} - dev profit {m['profit_pct']:+.1f}%, max DD {m['max_dd_pct']:.1f}%, "
                      f"Calmar {m['calmar']:.2f}, PF {pf if pf is None else round(pf, 2)}, {m['trades']} trades")
@@ -261,6 +269,12 @@ def select_round3(dev_strategies: dict[str, dict], bias: dict[str, bool]) -> tup
 ROUND4_CANDIDATES = ("MomentumRotationV3", "MomentumRotationV3b")
 ROUND4_SELECT = {**ROUND3_SELECT, "robustness": "ROBUST"}
 ROUND4_EXAM = {**FORWARD, "min_profitable_quarters": 4, "quarters": 8}
+
+
+def select_round4(dev_strategies: dict[str, dict], bias: dict[str, bool],
+                  robust: dict[str, str | None]) -> tuple[str | None, list[str]]:
+    """The single eligible Round 4 version (Round 3's rule + ROBUST) with the highest dev Calmar."""
+    return select_one(ROUND4_CANDIDATES, ROUND4_SELECT, dev_strategies, bias, robust)
 
 
 # --------------------------------------------------------------------------- Robustness check

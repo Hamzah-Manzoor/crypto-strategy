@@ -12,7 +12,7 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**321 entries**, 60 of them out-of-sample looks (in 12 runs).
+**331 entries**, 60 of them out-of-sample looks (in 12 runs).
 
 ## Current status per strategy version
 
@@ -20,10 +20,15 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 |---|---|---|---|
 | `BuyHoldV1` · robustness check | **keep** | ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | E0318 |
 | `EmaTrendV2` · robustness check | **keep** | ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | E0319 |
+| `MomentumRotationV1bMonday` | **keep** | Round 4 reference: full-size V1b at the Monday 12:00 UTC slot | E0325 |
+| `MomentumRotationV1b` | **keep** | Round 4 reference: V1b as examined in Round 2 | E0326 |
 | `MomentumRotationV1b` · robustness check | **keep** | ROBUST (calibration): profitable in all 28 rebalance slots (+207% to +520%) - timing changes the size, not the sign; still fails the drawdown rules (~40%) | E0321 |
+| `MomentumRotationV3` | **keep** | Round 4 exam pick: eligible (DD 29.7% <= 30%, PF 2.17, 65 trades), ROBUST, best eligible Calmar | E0323 |
+| `MomentumRotationV3` · robustness check | **keep** | ROBUST: 28/28 timings, 8/8 settings, 5/5 coins (+73.9% without SOL), +219 USDT without best 3 trades | E0327 |
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
+| `BuyHoldV1` | **drop** | rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | E0330 |
 | `DonchianBreakoutV1` | **drop** | DonchianBreakoutV1T IS +19.0% but PF 1.08 < 1.1; not a candidate | E0069 |
 | `DonchianBreakoutV2T` | **drop** | stage 1 FAIL | E0206 |
 | `DonchianBreakoutV2` | **drop** | DonchianBreakoutV2 untuned: IS +52% but OOS -7.6% (stage 1 FAIL) | E0212 |
@@ -37,11 +42,11 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `MacdVolumeV2T` | **drop** | stage 1 FAIL | E0211 |
 | `MacdVolumeV2` | **drop** | MacdVolumeV2T: only 18 OOS trades and -2.0% (stage 1 FAIL) | E0097 |
 | `MomentumRotationV1` | **drop** | Round 2 exam support run (stress fee / 5m fills); candidate failed the exam | E0311 |
-| `MomentumRotationV1bMonday` | **drop** | Round 3 diagnostic: moving the rebalance 12h cut dev profit +363% -> +207% (timing-sensitive) | E0314 |
-| `MomentumRotationV1b` | **drop** | Round 3 reference: Round 2 version; timing-sensitive (see V1bMonday) | E0313 |
 | `MomentumRotationV2` | **drop** | Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | E0315 |
 | `MomentumRotationV2b` | **drop** | Round 3 dev: DD 48.9% (> 30%) - faster BTC filter never switched off in the 2024 chop; idea dropped | E0316 |
 | `MomentumRotationV2c` | **drop** | Round 3 dev: DD ~50% (> 30%) and PF < 1.2 - trailing stop added whipsaw; idea dropped | E0317 |
+| `MomentumRotationV3_R3_noSOL` | **drop** | rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | E0331 |
+| `MomentumRotationV3b` | **drop** | Round 4: not eligible - dev DD 42.2% > 30%; vol scaling rarely shrank positions (median 92% of a slot) | E0324 |
 | `RsiBbReversionV1` | **drop** | RsiBbReversionV1T breaks even in-sample (-0.1%); idea does not work here | E0081 |
 | `SqueezeBreakoutV1T` | **drop** | SqueezeBreakoutV1T: stage 1 REVIEW, stage 2 FAIL; +1.2% a year is too small to matter | E0214 |
 | `SqueezeBreakoutV1` | **drop** | SqueezeBreakoutV1T: passed stage 1 (REVIEW, ~1% exposure) but failed stage 2 (38% windows, efficiency n/a) | E0073 |
@@ -58,6 +63,16 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0331 | 2026-10-08 | backtest | `MomentumRotationV3_R3_noSOL` | custom | 1h | 0.15% | +30.6 | 24.1 | 1.24 | 1.27 | 31 | drop: rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | round 4 exam rehearsal (dev data): fee stress 0.15% | `070195d+dirty` |
+| E0330 | 2026-10-08 | backtest | `BuyHoldV1` | custom | 1h | 0.15% | +130.0 | 36.5 | 1.87 | 3.55 | 4 | drop: rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | round 4 exam rehearsal (dev data): fee stress 0.15% | `070195d+dirty` |
+| E0329 | 2026-10-08 | backtest | `MomentumRotationV3_R3_noSOL` | custom | 1h | 0.10% | +31.2 | 23.8 | 1.26 | 1.31 | 31 | drop: rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | round 4 exam rehearsal (dev data) | `070195d+dirty` |
+| E0328 | 2026-10-08 | backtest | `BuyHoldV1` | custom | 1h | 0.10% | +130.1 | 36.5 | 1.87 | 3.55 | 4 | drop: rehearsal of the Round 4 exam command on 2024 dev data - pipeline test, not a result | round 4 exam rehearsal (dev data) | `070195d+dirty` |
+| E0327 | 2026-10-08 | robustness | `MomentumRotationV3` | dev | 1h | 0.10% | +95.6 | 29.7 | n/a | 0.84 | 65 | keep: ROBUST: 28/28 timings, 8/8 settings, 5/5 coins (+73.9% without SOL), +219 USDT without best 3 trades | robustness ROBUST: R1 PASS, R2 PASS, R3 PASS, R4 PASS | `070195d+dirty` |
+| E0326 | 2026-10-08 | backtest | `MomentumRotationV1b` | dev | 1h | 0.10% | +363.1 | 39.6 | 1.48 | 1.68 | 64 | keep: Round 4 reference: V1b as examined in Round 2 | round 4 dev selection | `070195d+dirty` |
+| E0325 | 2026-10-08 | backtest | `MomentumRotationV1bMonday` | dev | 1h | 0.10% | +206.7 | 49.9 | 1.13 | 0.91 | 65 | keep: Round 4 reference: full-size V1b at the Monday 12:00 UTC slot | round 4 dev selection | `070195d+dirty` |
+| E0324 | 2026-10-08 | backtest | `MomentumRotationV3b` | dev | 1h | 0.10% | +183.3 | 42.2 | 1.23 | 0.98 | 65 | drop: Round 4: not eligible - dev DD 42.2% > 30%; vol scaling rarely shrank positions (median 92% of a slot) | round 4 dev selection | `070195d+dirty` |
+| E0323 | 2026-10-08 | backtest | `MomentumRotationV3` | dev | 1h | 0.10% | +95.6 | 29.7 | 1.10 | 0.84 | 65 | keep: Round 4 exam pick: eligible (DD 29.7% <= 30%, PF 2.17, 65 trades), ROBUST, best eligible Calmar | round 4 dev selection | `070195d+dirty` |
+| E0322 | 2026-10-08 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | round 4 dev selection | `070195d+dirty` |
 | E0321 | 2026-10-07 | robustness | `MomentumRotationV1b` | dev | 1h | 0.10% | +363.1 | 39.6 | n/a | 1.68 | 64 | keep: ROBUST (calibration): profitable in all 28 rebalance slots (+207% to +520%) - timing changes the size, not the sign; still fails the drawdown rules (~40%) | robustness ROBUST: R1 PASS, R2 PASS, R3 PASS, R4 PASS | `6c9748d+dirty` |
 | E0320 | 2026-10-07 | robustness | `MomentumRotationV1b` | dev | 1h | 0.10% | +363.1 | 39.6 | n/a | 1.68 | 64 | drop: INVALID run: 8 generated variants' bias checks crashed (tooling: lookahead window ended on a Monday trade close; leave-one-out variants crashed on the left-out coin). Superseded by the re-run. | robustness FRAGILE: R1 FAIL, R2 FAIL, R3 FAIL, R4 FAIL | `6c9748d+dirty` |
 | E0319 | 2026-10-07 | robustness | `EmaTrendV2` | dev | 1h | 0.10% | +36.0 | 20.5 | n/a | 0.53 | 165 | keep: ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | robustness ROBUST: R1 PASS, R2 PASS, R3 PASS, R4 PASS | `6c9748d+dirty` |

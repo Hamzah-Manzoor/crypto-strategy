@@ -1,0 +1,8 @@
+{
+ "exam_run": "20261008-124547_custom_1h",
+ "stress_run": "20261008-124554_custom_1h_fee0.15pct",
+ "detail_run": null,
+ "results": {
+  "MomentumRotationV3_R3_noSOL": "FAIL"
+ }
+}

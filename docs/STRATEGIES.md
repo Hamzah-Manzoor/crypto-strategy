@@ -241,6 +241,15 @@ Momentum rotation with drawdown control. Rules and results: [research/momentum-d
 | `MomentumRotationV2c` | both | dropped at dev (DD 50.2%, PF 1.07) |
 | `MomentumRotationV1bMonday` | only the rebalance time (diagnostic, never a candidate) | showed timing sensitivity: dev +207% vs +363% |
 
+## Round 4 strategies (2026-10-08)
+
+Momentum rotation at lower exposure. Rules and results: [research/momentum-exposure-preregistration.md](research/momentum-exposure-preregistration.md). Both rebalance on Monday 12:00 UTC (5 pm Pakistan time) and hold the same coins as `MomentumRotationV1b`; only the position size changes.
+
+| Strategy | Size of each new position | Status |
+|---|---|---|
+| `MomentumRotationV3` | 1/6 of the wallet (`EXPOSURE = 0.5` × 1/3), so about half invested | **exam pick**: dev +95.6%, DD 29.7%, ROBUST; 2019–20 exam pending |
+| `MomentumRotationV3b` | 1/3 × min(1, 50% ÷ the coin's 30-day volatility) | dropped at dev (DD 42.2%): positions were rarely scaled down |
+
 ---
 
 ## Bias checks (Phase 4, `lab.py check-bias`)

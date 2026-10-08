@@ -369,9 +369,11 @@ def recursive_check(strategy: str, strategy_path: Path | None = None) -> tuple[s
         "-i", BIAS_TIMEFRAME, "-p", RECURSIVE_PAIR, "--timerange", RECURSIVE_TIMERANGE,
         "--startup-candle", *RECURSIVE_STARTUPS,
     ], check=False, tee=True)
-    startup = strategy_startup(strategy)
-    md = [f"### {strategy} (startup_candle_count = {startup})", ""]
     header, rows = parse_rich_table(result.stdout, "Recursive Analysis")
+    # Freqtrade labels the strategy's own (possibly inherited) value "<n> (from strategy)".
+    from_strategy = next((int(h.split()[0]) for h in header if "from strategy" in h), None)
+    startup = from_strategy if from_strategy is not None else strategy_startup(strategy)
+    md = [f"### {strategy} (startup_candle_count = {startup})", ""]
     if result.returncode != 0 or " - ERROR - " in result.stdout:
         return "FAIL", md + ["recursive-analysis reported an error - see console output.", ""]
     if not rows:
@@ -524,7 +526,8 @@ def touches_protected(timerange: str) -> list[str]:
 
 
 def backtest_run(period: str, timeframe: str, fee: float, detail: str | None, strategies: list[str],
-                 notes: str, allow_protected: bool) -> dict:
+                 notes: str, allow_protected: bool, pairs: list[str] | None = None,
+                 strategy_path: Path | None = None, max_open_trades: int | None = None) -> dict:
     """Backtest strategies in ONE Freqtrade run, summarise, log and report. Returns the run summary."""
     label, timerange = resolve_period(period)
     protected = touches_protected(timerange)
@@ -557,6 +560,11 @@ def backtest_run(period: str, timeframe: str, fee: float, detail: str | None, st
         ft_args += ["--timeframe-detail", detail]
     if notes:
         ft_args += ["--notes", notes]
+    if pairs:
+        ft_args += ["--pairs", *pairs]
+    if max_open_trades:
+        ft_args += ["--max-open-trades", str(max_open_trades)]
+    ft_args += strategy_path_args(strategy_path)
     freqtrade(ft_args)
 
     zips = sorted(run_dir.glob("*.zip"))
@@ -1004,17 +1012,22 @@ def robust_backtest(strategies: list[str], timerange: str, run_dir: Path, run_id
     return report.load_run(summary)
 
 
-def cmd_robustness(args: argparse.Namespace) -> None:
-    """Robustness check on dev data: timing, nearby settings, leave-one-coin-out, lucky trades."""
-    name = args.strategy
-    _, timerange = resolve_period("dev")
-    safety_gate()
+def inspect_strategy(name: str) -> dict:
+    """What the robustness check needs to know about a strategy (scripts/inspect_strategy.py)."""
     out = run([*COMPOSE, "run", "--rm", "--entrypoint", "python", "freqtrade",
                "scripts/inspect_strategy.py", name], quiet=True)
     json_line = next((line for line in reversed(out.stdout.splitlines()) if line.startswith("{")), None)
     if out.returncode != 0 or json_line is None:
         die(f"could not inspect {name}:\n{out.stdout}\n{out.stderr}")
-    info = json.loads(json_line)
+    return json.loads(json_line)
+
+
+def cmd_robustness(args: argparse.Namespace) -> None:
+    """Robustness check on dev data: timing, nearby settings, leave-one-coin-out, lucky trades."""
+    name = args.strategy
+    _, timerange = resolve_period("dev")
+    safety_gate()
+    info = inspect_strategy(name)
     wanted, skip = set(args.checks), set(info["skip"])
     pairs = json.loads((ROOT / CONFIGS / "base.json").read_text())["exchange"]["pair_whitelist"]
 
@@ -1096,6 +1109,72 @@ def cmd_robustness(args: argparse.Namespace) -> None:
         "notes": f"robustness {overall}: " + ", ".join(f"{k} {v['verdict']}" for k, v in checks.items()),
     })
     experiments.render()
+    print("\n" + md.read_text())
+
+
+def latest_robustness(name: str) -> dict | None:
+    files = sorted((ROOT / "results" / "robustness").glob(f"*_{name}.json"))
+    return json.loads(files[-1].read_text()) if files else None
+
+
+def cmd_round4(args: argparse.Namespace) -> None:
+    """Round 4 (momentum at lower exposure): pick one version on dev, then the one-time 2019-20 exam."""
+    boards = ROOT / "results" / "leaderboards"
+    saved = boards / "round4_selection.json"
+    if args.action == "select":
+        runs = [r for r in report.all_runs() if r["period"] == "dev" and r["timeframe"] == "1h"
+                and abs((r.get("fee") or 0) - STANDARD_FEE) < 1e-9 and not r.get("timeframe_detail")
+                and all(c in r["strategies"] for c in rules.ROUND4_CANDIDATES)]
+        if not runs:
+            die("no dev run with both Round 4 versions: lab.py backtest --period dev --strategies "
+                + " ".join(rules.ROUND4_CANDIDATES))
+        dev_run = max(runs, key=lambda r: r["run_id"])
+        robust = {c: latest_robustness(c) for c in rules.ROUND4_CANDIDATES}
+        pick, lines = rules.select_round4(dev_run["strategies"], report.load_bias(),
+                                          {c: (r or {}).get("overall") for c, r in robust.items()})
+        s = rules.ROUND4_SELECT
+        md = boards / "round4_selection.md"
+        md.write_text("\n".join([
+            "# Round 4 · dev selection (pre-registered rule)", "",
+            f"Dev run `{dev_run['run_id']}` ({dev_run['timerange']}, 1h, fee 0.10%). Rule: max drawdown <= "
+            f"{s['max_dd_pct']:g}%, profit > 0, profit factor >= {s['min_profit_factor']:g}, >= {s['min_trades']} "
+            f"trades, bias checks passed, robustness check {s['robustness']}; best dev Calmar wins.", "",
+            "Robustness reports: " + (", ".join(f"`{r['id']}` ({r['overall']})" for r in robust.values() if r)
+                                      or "none"), "",
+            *lines, "", f"**Exam pick:** {f'`{pick}`' if pick else 'none - the idea is dropped, no exam'}", "",
+        ]))
+        saved.write_text(json.dumps({"dev_run": dev_run["run_id"], "pick": pick,
+                                     "robustness": {c: (r or {}).get("id") for c, r in robust.items()}},
+                                    indent=1) + "\n")
+        print(md.read_text())
+        return
+
+    # exam: the frozen pick without SOL (as robustness check R3) + 4-coin buy & hold at 25% each
+    if not saved.exists() or not json.loads(saved.read_text())["pick"]:
+        die("no frozen pick: run lab.py round4 select and commit it before the exam")
+    pick = json.loads(saved.read_text())["pick"]
+    period, stem, title = "exam2019", "exam_round4", "Round 4 exam · 2019-01 → 2021-01 · 4 coins · 1h"
+    if args.smoke:  # rehearse the exact pipeline on dev data; nothing protected is touched
+        period, stem, title = "20240101-20250101", "exam_round4_smoke", "Round 4 exam REHEARSAL on dev data (2024)"
+    elif (boards / f"{stem}.json").exists():
+        die("the Round 4 exam has already run - it runs once (results/leaderboards/exam_round4.md)")
+    whitelist = json.loads((ROOT / CONFIGS / "base.json").read_text())["exchange"]["pair_whitelist"]
+    variant = next(v for v in robustness.coin_variants(inspect_strategy(pick), whitelist)
+                   if v["left_out"] == "SOL/USDT")
+    folder = ROOT / "user_data" / "walkforward" / f"{stem}_{datetime.now(timezone.utc):%Y%m%d-%H%M%S}"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"{variant['class'].lower()}.py").write_text(variant["source"])
+    say(f"Round 4 {'REHEARSAL' if args.smoke else 'EXAM'}: {pick} on {', '.join(variant['pairs'])} "
+        f"({resolve_period(period)[1]}), with buy & hold of the same coins")
+    common = dict(pairs=variant["pairs"], strategy_path=folder, max_open_trades=len(variant["pairs"]))
+    note = "round 4 exam" + (" rehearsal (dev data)" if args.smoke else "")
+    exam_run = backtest_run(period, "1h", STANDARD_FEE, None, [variant["class"]], note, True, **common)
+    stress = backtest_run(period, "1h", STRESS_FEE, None, [variant["class"]], note + ": fee stress 0.15%", True,
+                          **common)
+    md, _ = report.write_exam(exam_run, stress, None, title=title, stem=stem, exam_rules=rules.ROUND4_EXAM,
+                              prefix="H", rules_ref="docs/research/momentum-exposure-preregistration.md "
+                              "(numbers in scripts/rules.py → ROUND4_EXAM)",
+                              bias_names={variant["class"]: pick})
     print("\n" + md.read_text())
 
 
@@ -1199,6 +1278,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--strategies", nargs="+", help="optional; must equal the frozen candidate list")
     p.add_argument("--detail", action="store_true",
                    help="also run 5m intra-candle fills (needs 5m data for the holdout period)")
+    p = add("round4", cmd_round4)
+    p.add_argument("action", choices=["select", "exam"])
+    p.add_argument("--smoke", action="store_true",
+                   help="exam: rehearse the whole pipeline on 2024 dev data instead (touches nothing protected)")
     p = add("bots", cmd_bots)
     p.add_argument("action", choices=["generate", "up", "down", "status", "logs"])
     p.add_argument("names", nargs="*", help="bot names from bots.json (default: all)")

@@ -1,0 +1,8 @@
+{
+ "dev_run": "20261008-123310_dev_1h",
+ "pick": "MomentumRotationV3",
+ "robustness": {
+  "MomentumRotationV3": "20261008-123421_MomentumRotationV3",
+  "MomentumRotationV3b": null
+ }
+}

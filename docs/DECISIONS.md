@@ -271,3 +271,14 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - **New protected period** `exam2019`; `download` and `data-check` gained `--pairs`.
 - Details: `docs/research/momentum-exposure-preregistration.md`.
 
+**2026-10-08: Round 4 dev selection: `MomentumRotationV3` frozen as the exam pick.**
+- **V3:** dev +95.6%, max DD 29.7% (limit 30%), Calmar 0.84, PF 2.17, 65 trades, ROBUST.
+- **V3b:** max DD 42.2%, so not eligible.
+- **The exam (2019–20) waits for Hamzah's review.**
+- **Tooling:**
+  - `lab.py round4 select|exam`. `exam` refuses to run twice; `--smoke` rehearses it on 2024 dev data.
+  - `backtest_run` takes a coin list, an extra strategy folder and an open-trade limit.
+  - `rules.exam` and `report.write_exam` take a round's numbers and rule labels.
+  - The recursive check's report shows inherited `startup_candle_count` values (the label used to say "None" for subclasses; the verdict was always right).
+  - `scripts/round4_size_check.py` hand-checks position sizes.
+

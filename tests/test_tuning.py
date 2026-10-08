@@ -205,6 +205,37 @@ class Round4RulesTest(unittest.TestCase):
         self.assertEqual((e["min_profitable_quarters"], e["quarters"]), (4, 8))
         self.assertEqual(rules.ROUND4_SELECT["robustness"], "ROBUST")
 
+    def m(self, name, **over):
+        base = {"strategy": name, "trades": 65, "profit_pct": 95.0, "profit_factor": 2.1, "max_dd_pct": 29.0,
+                "calmar": 0.9, "quarters_profitable": 4, "quarters_total": 8, "worst_quarter_pct": -8.0}
+        base.update(over)
+        return base
+
+    def test_selection_needs_robust(self):
+        dev = {"MomentumRotationV3": self.m("MomentumRotationV3", calmar=0.8),
+               "MomentumRotationV3b": self.m("MomentumRotationV3b", calmar=1.0)}
+        bias = {n: True for n in dev}
+        pick, lines = rules.select_round4(dev, bias, {"MomentumRotationV3": "ROBUST", "MomentumRotationV3b": "FRAGILE"})
+        self.assertEqual(pick, "MomentumRotationV3")
+        self.assertTrue(any("V3b`: not eligible (robustness check FRAGILE (need ROBUST)" in line for line in lines))
+        pick, lines = rules.select_round4(dev, bias, {"MomentumRotationV3": "ROBUST"})
+        self.assertTrue(any("robustness check not run" in line for line in lines))
+        for m in dev.values():
+            m["max_dd_pct"] = 30.5                                           # none eligible: idea dropped
+        self.assertIsNone(rules.select_round4(dev, bias, {n: "ROBUST" for n in dev})[0])
+
+    def test_exam_uses_round4_numbers_and_labels(self):
+        bh = {"strategy": "BuyHoldV1", "max_dd_pct": 60.0, "calmar": 0.5}
+        ok = self.m("MomentumRotationV3_R3_noSOL", trades=20)          # 20 trades: enough here, not in Round 2
+        status, checks = rules.exam(ok, self.m("x"), bh, True, rules.ROUND4_EXAM, "H")
+        self.assertEqual(status, "PASS", checks)
+        self.assertTrue(all(text.startswith(f"H{i}") for i, (_, text) in enumerate(checks, 1)))
+        self.assertEqual(rules.exam(ok, self.m("x"), bh, True)[0], "FAIL")   # Round 2 numbers: 30 trades, 11 quarters
+        for over in (dict(trades=19), dict(quarters_profitable=3), dict(max_dd_pct=30.1), dict(worst_quarter_pct=-10.5),
+                     dict(calmar=0.5), dict(quarters_total=7)):
+            with self.subTest(**over):
+                self.assertEqual(rules.exam(self.m("v", **over), self.m("x"), bh, True, rules.ROUND4_EXAM, "H")[0], "FAIL")
+
     def test_preregistration_states_the_same_numbers(self):
         doc = (REPO / "docs" / "research" / "momentum-exposure-preregistration.md").read_text()
         s, e = rules.ROUND4_SELECT, rules.ROUND4_EXAM

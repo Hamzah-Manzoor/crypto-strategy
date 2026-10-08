@@ -299,8 +299,14 @@ def write_round2_selection(dev_run: dict) -> tuple[Path, list[str]]:
     return md, selected
 
 
-def write_exam(exam_run: dict, stress_run: dict | None, detail_run: dict | None) -> tuple[Path, dict]:
+def write_exam(exam_run: dict, stress_run: dict | None, detail_run: dict | None, *,
+               title: str = "Round 2 exam · holdout · 1h", stem: str = "exam_round2", exam_rules: dict = rules.EXAM,
+               prefix: str = "X", rules_ref: str = "docs/research/round2-preregistration.md (numbers in "
+               "scripts/rules.py → EXAM)", bias_names: dict[str, str] | None = None) -> tuple[Path, dict]:
+    """Exam report. bias_names maps an exam-only copy (e.g. the 4-coin variant) to the strategy whose
+    bias verdict it inherits."""
     bias = load_bias()
+    bias_names = bias_names or {}
     bh = exam_run["strategies"][rules.BASELINE]
     rows = []
     for name, m in exam_run["strategies"].items():
@@ -308,7 +314,7 @@ def write_exam(exam_run: dict, stress_run: dict | None, detail_run: dict | None)
             continue
         stress_m = stress_run["strategies"].get(name) if stress_run else None
         detail_m = detail_run["strategies"].get(name) if detail_run else None
-        status, checks = rules.exam(m, stress_m, bh, bias.get(name))
+        status, checks = rules.exam(m, stress_m, bh, bias.get(bias_names.get(name, name)), exam_rules, prefix)
         rows.append({"strategy": name, "status": status, "checks": checks, "m": m,
                      "stress": stress_m["profit_pct"] if stress_m else None,
                      "detail": detail_m["profit_pct"] if detail_m else None})
@@ -325,7 +331,7 @@ def write_exam(exam_run: dict, stress_run: dict | None, detail_run: dict | None)
         return [label, *[num(by_q.get(q), 1, sign=True) for q in quarters]]
 
     lines = [
-        "# Round 2 exam · holdout · 1h", "",
+        f"# {title}", "",
         f"- Exam run: `{exam_run['run_id']}` ({exam_run['timerange']}) · buy & hold {bh['profit_pct']:+.1f}%, "
         f"max DD {bh['max_dd_pct']:.1f}%, Calmar {bh['calmar']:.2f}",
         "- Fee stress (0.15%/side): " + (f"`{stress_run['run_id']}`" if stress_run else "not run"),
@@ -343,12 +349,12 @@ def write_exam(exam_run: dict, stress_run: dict | None, detail_run: dict | None)
         lines.append(f"**{r['strategy']} - {r['status']}**")
         lines += [f"- {'✅' if ok else '❌'} {text}" for ok, text in r["checks"]]
         lines.append("")
-    lines.append("Rules: docs/research/round2-preregistration.md (numbers in scripts/rules.py → EXAM).")
+    lines.append(f"Rules: {rules_ref}.")
     BOARDS.mkdir(parents=True, exist_ok=True)
-    md = BOARDS / "exam_round2.md"
+    md = BOARDS / f"{stem}.md"
     md.write_text("\n".join(lines) + "\n")
-    verdicts = {r["strategy"]: r["status"] for r in rows}
-    (BOARDS / "exam_round2.json").write_text(json.dumps({
+    verdicts = {row["strategy"]: row["status"] for row in rows}
+    (BOARDS / f"{stem}.json").write_text(json.dumps({
         "exam_run": exam_run["run_id"], "stress_run": stress_run["run_id"] if stress_run else None,
         "detail_run": detail_run["run_id"] if detail_run else None, "results": verdicts}, indent=1) + "\n")
     return md, verdicts
