@@ -184,3 +184,57 @@ _To be filled in at each stage, without editing anything above this line._
 
 **Next:** `lab.py round5 exam` runs **once**, on the 9 new coins over 2019-01-01 → 2023-10-01. The command refuses to run a second time.
 
+### Exam: run 2026-10-09 → **PASS** (all 7 rules)
+
+The exam ran once, after the pick was frozen and pushed (commit `cb6adfb`): `lab.py round5 exam`. Runs: `20261009-163329_exam5_1h` and fee stress `20261009-163414_exam5_1h_fee0.15pct`. Report: `results/leaderboards/exam_round5.md`.
+
+| 2019-01-01 → 2023-10-01, 9 new coins | Profit | Per year | Max DD | Calmar | Sharpe | PF | Trades | In market |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `TrendBlendV2` | +76.9% | +12.8% | **29.5%** | **0.43** | 0.79 | 2.01 | 192 | 15% |
+| Buy & hold, 1/9 in each coin | +124.2% | +18.5% | 87.7% | 0.21 | 0.62 | — | 9 | 99% |
+
+| # | Rule | Result |
+|---|---|---|
+| E1 | ≥ 30 trades | ✅ 192 |
+| E2 | profit > 0 and PF ≥ 1.2 | ✅ +76.9%, PF 2.01 |
+| E3 | profit > 0 at a 0.15% fee | ✅ +75.3% |
+| E4 | max DD ≤ 30% and below buy & hold's | ✅ 29.5% vs 87.7% |
+| E5 | Calmar > buy & hold's | ✅ 0.43 vs 0.21 |
+| E6 | up quarters ≥ down quarters, none worse than −15% | ✅ 11 up vs 8 down, worst −9.0% (2019 Q3) |
+| E7 | bias checks passed | ✅ |
+
+Quarter by quarter (profit %):
+
+| | 19Q1 | 19Q2 | 19Q3 | 19Q4 | 20Q1 | 20Q2 | 20Q3 | 20Q4 | 21Q1 | 21Q2 | 21Q3 | 21Q4 | 22Q1 | 22Q2 | 22Q3 | 22Q4 | 23Q1 | 23Q2 | 23Q3 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Buy & hold | +42.3 | +45.4 | −53.5 | −13.3 | −11.7 | +48.0 | +29.9 | +31.8 | +289.8 | +4.0 | +29.2 | −28.9 | −5.7 | −60.2 | +10.3 | −32.4 | +46.9 | −9.8 | −12.6 |
+| TrendBlendV2 | +3.9 | +14.3 | −9.0 | −1.7 | +0.4 | +3.6 | +12.8 | +5.4 | +44.9 | +12.8 | +1.0 | −6.5 | +0.9 | −5.7 | −4.1 | −6.1 | +6.8 | −3.9 | −0.9 |
+
+**Checked for bugs before accepting:**
+- **The order replay on the exam run** (`round5_position_check.py --slots 9`) found all **469 rule-driven orders matching the rules**.
+  - The one exception is 15 May 2019, when a Binance outage left no decision candle. Doing nothing is correct there.
+  - The first replay also flagged 9 orders 1–2% too small on ONT and IOTA. The cause was in **the check script**, not the strategy: those coins trade in whole units, and the script estimated their step as 0.1. Fixed; the dev replay is unchanged.
+- **Buy & hold matches real prices:** ADA +527%, TRX +375%, ETC +227%, LTC +120%, QTUM +5%, XLM +2%, NEO −1%, IOTA −57%, ONT −70%. The average is the +124% shown.
+- **Data:** each coin's daily data starts at its 2018 listing, as expected. Nothing traded before its 200-day average existed.
+
+**Honest reading:**
+- **What it did:** it kept the worst fall to 29.5% while buy & hold fell 88%, and it was twice as good per unit of risk (Calmar 0.43 vs 0.21).
+  - In 2022 it lost 15% in total while the coins fell about 75%.
+  - In the 2019 crash quarter it lost 9% against buy & hold's 54%.
+- **Returns were modest:** +12.8% a year, with only 15% of the wallet in coins on average.
+- **The gains were lumpy:**
+  - The early-2021 altcoin boom (Q1 +44.9%) did a lot of the work, and the top 3 trades made 60% of the profit. It stays profitable without them.
+  - 7 of 9 coins were profitable; ONT (−55 USDT) and IOTA (−23 USDT) lost.
+- **Margins were thin:**
+  - The worst fall, 29.5%, was just inside the 30% limit.
+  - At a 0.15% fee it reached 30.0%. E4 is judged at the normal fee.
+
+**Decision, as pre-registered:**
+- **It passes the exam.** It isn't promoted.
+- `TrendBlendV2` started as a **`watch-list` paper bot** (`trend-blend`, FreqUI http://127.0.0.1:8083) on our 5 coins at 2026-10-09 16:36 UTC.
+- **The 12-month forward test** runs from **2026-10-09 to 2027-10-09**.
+  - **The judge:** a forward backtest on our 5 coins over exactly that period, under `rules.ROUND5_FORWARD` (E1–E7 with ≥ 20 trades over 4 quarters), plus the inconclusive clause.
+  - **Report-only check at 6 months (2027-04-09):** no decision is taken then.
+  - **The paper bot** is the reality check, compared with the forward backtest as in Round 3.
+- The 9-coin 2019–23 exam now counts as **used** for trend ideas.
+

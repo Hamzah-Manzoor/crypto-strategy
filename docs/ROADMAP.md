@@ -79,7 +79,10 @@ Each phase ends with a review stop and one git commit.
   - **Path:** dev selection with the robustness gate, then one exam on 2019–2020 (4 coins, never touched before), then a forward test if it passes.
   - **2026-10-08:** dev selection done. **V3 picked** (DD 29.7%, ROBUST); V3b dropped (DD 42.2%). The exam ran once the same day: FAIL.
   - See `docs/research/momentum-exposure-preregistration.md`.
-- [ ] **Round 5: trend at four speeds with risk-based sizing (`TrendBlend`):** pre-registered 2026-10-09. Daily trend score plus volatility sizing, built on dev, then one exam on 9 never-traded coins (2019–23). See `docs/research/trend-blend-preregistration.md`.
+- [x] **Round 5: trend at four speeds with risk-based sizing (`TrendBlendV2`):** pre-registered 2026-10-09. **Exam PASS** on 9 never-traded coins (2019–23), the first strategy in this lab to pass one. See `docs/research/trend-blend-preregistration.md`.
+- [ ] **`TrendBlendV2` forward test (2026-10-09 → 2027-10-09):**
+  - **2027-04-09:** report-only check. Backtest the frozen strategy on the first 6 months of new prices and compare with the `trend-blend` paper bot.
+  - **2027-10-09:** verdict under `rules.ROUND5_FORWARD`. Promote to `promoted` only on a pass.
 - [ ] **Narrower hyperopt spaces:** several tuned stops hit the edges of the allowed range. Try fewer, more meaningful parameters (or none) rather than wider ranges.
 - [ ] **Fee-aware design for the strategies with a real gross edge** (Trend Pullback: +66% before fees). Use higher timeframes, or require a minimum expected move per trade larger than the round-trip fee.
 

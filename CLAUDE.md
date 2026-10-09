@@ -70,7 +70,8 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
   - It's protected like the holdout, and it was **used once by the Round 4 momentum exam** (failed). Treat it as *used* for the momentum family.
 - **Round 5 exam coins** (NEO, LTC, QTUM, ADA, IOTA, XLM, ONT, TRX, ETC; `rules.ROUND5_EXAM_COINS`):
   - 1h/1d data from their 2018 listings. No strategy here may trade them outside the Round 5 exam; `lab.py` refuses it.
-  - The exam period is `exam5` (2019-01 → 2023-10).
+  - The exam period is `exam5` (2019-01 → 2023-10). It was **used once by the Round 5 exam** (passed), so treat it as *used* for trend ideas.
+  - `TrendBlendV2` is in its forward test until 2027-10-09 (paper bot `trend-blend`, watch list). Don't label it `promoted` before that test passes.
 - **Data before 2023-10-01 (1h and 4h go back to 2020-08-11):** the 7 quarters 2021-12 → 2023-09 were used once, for the quarterly re-tuning test. Treat them as *used* for that idea. Any other idea testing on them needs its own pre-registration.
 - **Out-of-sample is precious:**
   - Choose candidates by a written in-sample rule first (log it in DECISIONS), then run `lab.py validate` **once**.

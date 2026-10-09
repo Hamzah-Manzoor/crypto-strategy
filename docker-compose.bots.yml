@@ -42,3 +42,23 @@ services:
     ports:
       - "127.0.0.1:8082:8080"
     command: ["trade", "--dry-run", "--config", "user_data/configs/base.json", "--config", "user_data/configs/dryrun/buy-hold.json", "--db-url", "sqlite:////freqtrade/user_data/db/buy-hold.sqlite", "--logfile", "user_data/logs/buy-hold.log"]
+  bot-trend-blend:
+    # watch-list: TrendBlendV2 - Round 5: passed the one-time exam on 9 never-traded coins (2019-23); now in its 12-month forward test. Not promoted until the forward test passes (docs/research/trend-blend-preregistration.md)
+    image: freqtradeorg/freqtrade:2026.9@sha256:989aff5636d8f0213ed44fe334c3314a194a51c0c755d16866960247aafd2eae
+    container_name: crypto-lab-bot-trend-blend
+    restart: unless-stopped
+    depends_on:
+      safety:
+        condition: service_completed_successfully
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.bot-trend-blend
+        required: false
+    environment:
+      PYTHONPATH: /freqtrade/user_data/strategies
+    volumes:
+      - ./user_data:/freqtrade/user_data
+    ports:
+      - "127.0.0.1:8083:8080"
+    command: ["trade", "--dry-run", "--config", "user_data/configs/base.json", "--config", "user_data/configs/dryrun/trend-blend.json", "--db-url", "sqlite:////freqtrade/user_data/db/trend-blend.sqlite", "--logfile", "user_data/logs/trend-blend.log"]

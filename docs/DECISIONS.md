@@ -316,3 +316,16 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - the decision hour at 4 slots, 6 hours apart;
   - acting on the daily view 1, 2 or 3 days late, via `DELAY_DAYS`.
 
+**2026-10-09: Round 5 exam passed; `TrendBlendV2` starts its forward test as a watch-list paper bot.**
+- **Exam:** 9 never-traded coins, 2019-01 → 2023-10, run once. Result: +76.9%, worst fall 29.5% (buy & hold 87.7%), Calmar 0.43 (buy & hold 0.21). All of E1–E7 passed.
+- **Checks:**
+  - The order replay matched all 469 rule-driven orders; a script bug about whole-unit coins was fixed.
+  - Buy & hold matches real per-coin returns.
+- **Caveats recorded:**
+  - The worst fall was just inside the 30% limit (30.0% at a 0.15% fee).
+  - The early-2021 altcoin boom did much of the work (top 3 trades = 60% of profit).
+- **Next:**
+  - The `trend-blend` paper bot (port 8083) started 2026-10-09 16:36 UTC.
+  - The forward test is judged by a forward backtest on 2026-10-09 → 2027-10-09 under `rules.ROUND5_FORWARD`, with a report-only check on 2027-04-09.
+  - Promotion needs that pass. The 9-coin 2019–23 data is now *used* for trend ideas.
+

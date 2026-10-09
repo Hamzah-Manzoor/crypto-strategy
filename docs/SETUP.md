@@ -134,6 +134,7 @@ Every bot is a **dry-run** Freqtrade: live Binance prices, a fake 1000 USDT wall
 |---|---|---|---|
 | `ema-trend-v2` | `EmaTrendV2` | http://127.0.0.1:8081 | **watch list**: passed Stage 1, failed Stage 2, so it's *not* promoted |
 | `buy-hold` | `BuyHoldV1` | http://127.0.0.1:8082 | baseline: buy & hold from the same start day |
+| `trend-blend` | `TrendBlendV2` | http://127.0.0.1:8083 | **watch list:** passed the Round 5 exam; in its 12-month forward test (until 2027-10-09), *not* promoted yet |
 
 ```bash
 python3 scripts/lab.py bots up        # safety check, generate configs, start, wait, show status

@@ -28,7 +28,12 @@ All 8 build phases are done. See [ROADMAP](docs/ROADMAP.md).
   5. **Round 2** tried 3 new ideas with a fresh exam on 2021–23. **Momentum rotation** (hold the strongest coins weekly) beat buy & hold on unseen data (+453% vs +398%), but its 41% drawdown failed the 30% safety rule. Nothing passed. See [Round 2](docs/research/round2-preregistration.md).
   6. **Round 3** added drawdown controls to momentum rotation. They made drawdowns *worse*, so it was dropped. See [Round 3](docs/research/momentum-drawdown-preregistration.md).
   7. **A robustness check** now pokes every strategy (other rebalance times, nearby settings, one coin left out, best trades removed). Momentum rotation survives all of it, so its edge looks real. Its ~40% drawdowns are what still keep it out. See [the plan and results](docs/research/robustness-check-plan.md).
-- **Paper trading now:** `EmaTrendV2` (watch list) and a buy & hold baseline run as dry-run bots, with dashboards at http://127.0.0.1:8081 and :8082.
+  8. **Round 4** ran momentum rotation at half size, with a fresh exam on 2019–20. It **failed narrowly**. See [Round 4](docs/research/momentum-exposure-preregistration.md).
+  9. **Round 5: `TrendBlendV2`, the first strategy to pass a one-shot exam.**
+     - **How it works:** a daily trend score from four moving averages, with positions sized by each coin's volatility.
+     - **The exam:** on 9 coins this lab had never traded (2019–23), its worst fall was 29.5% vs buy & hold's 88%, at twice the return per unit of risk.
+     - **Next:** it's in a 12-month forward test and isn't promoted yet. See [Round 5](docs/research/trend-blend-preregistration.md).
+- **Paper trading now:** `EmaTrendV2` (watch list, :8081), a buy & hold baseline (:8082) and **`TrendBlendV2` (watch list, :8083)** run as dry-run bots. Dashboards are at http://127.0.0.1:8081, :8082 and :8083.
 
 ## Quick start (macOS)
 

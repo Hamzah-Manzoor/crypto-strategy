@@ -262,7 +262,7 @@ Trend at four speeds with risk-based sizing. Rules and results: [research/trend-
 | Strategy | What it is | Status |
 |---|---|---|
 | `TrendBlendV1` | First implementation | INVALID: partial sells were sized in market value, while Freqtrade counts them in purchase cost |
-| `TrendBlendV2` | V1 with the trim sizing fixed; same rules | **exam pick:** dev +134.4%, DD 17.7%, Calmar 1.85 (buy & hold 0.76), ROBUST; exam on 9 new coins pending |
+| `TrendBlendV2` | V1 with the trim sizing fixed; same rules | **exam PASS** (9 never-traded coins, 2019–23: +76.9%, DD 29.5% vs buy & hold 87.7%, Calmar 0.43 vs 0.21). Paper bot `trend-blend` (watch list) and 12-month forward test until 2027-10-09; **not promoted yet** |
 
 ---
 

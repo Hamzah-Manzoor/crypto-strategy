@@ -76,8 +76,9 @@ def main() -> None:
                            "closes": not o["ft_is_entry"] and o is t["orders"][-1] and not t["is_open"]})
     orders.sort(key=lambda o: o["ts"])
     # The amount step per coin (Freqtrade rounds order amounts down to it).
-    step = {p: min(10.0 ** -len(f"{o['amount']:.10f}".rstrip("0").split(".")[1] or "0")
-                   for o in orders if o["pair"] == p) for p in pairs}
+    def decimals(x: float) -> int:
+        return len(f"{x:.10f}".rstrip("0").split(".")[1])        # 115.0 -> 0 (whole units)
+    step = {p: 10.0 ** -max(decimals(o["amount"]) for o in orders if o["pair"] == p) for p in pairs}
 
     cash, held, i = args.wallet, {p: 0.0 for p in pairs}, 0
     checked, mismatches, peek_diff, actions = 0, [], 0, {"buy": 0, "top_up": 0, "trim": 0, "sell_all": 0}

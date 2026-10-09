@@ -14,6 +14,13 @@
       "port": 8082,
       "status": "baseline",
       "reason": "buy & hold of the same 5 coins from the same day, so the watch-list bot has a fair comparison"
+    },
+    {
+      "name": "trend-blend",
+      "strategy": "TrendBlendV2",
+      "port": 8083,
+      "status": "watch-list",
+      "reason": "Round 5: passed the one-time exam on 9 never-traded coins (2019-23); now in its 12-month forward test. Not promoted until the forward test passes (docs/research/trend-blend-preregistration.md)"
     }
   ]
 }

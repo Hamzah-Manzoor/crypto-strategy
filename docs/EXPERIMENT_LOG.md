@@ -12,7 +12,7 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**344 entries**, 64 of them out-of-sample looks (in 14 runs).
+**348 entries**, 68 of them out-of-sample looks (in 16 runs).
 
 ## Current status per strategy version
 
@@ -25,6 +25,7 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `MomentumRotationV1b` · robustness check | **keep** | ROBUST (calibration): profitable in all 28 rebalance slots (+207% to +520%) - timing changes the size, not the sign; still fails the drawdown rules (~40%) | E0321 |
 | `MomentumRotationV3` | **keep** | Round 4 exam pick: eligible (DD 29.7% <= 30%, PF 2.17, 65 trades), ROBUST, best eligible Calmar | E0323 |
 | `MomentumRotationV3` · robustness check | **keep** | ROBUST: 28/28 timings, 8/8 settings, 5/5 coins (+73.9% without SOL), +219 USDT without best 3 trades | E0327 |
+| `TrendBlendV2` | **keep** | Round 5 exam fee stress: +75.3% (E3 passed); DD 30.0% at 0.15% fee | E0348 |
 | `TrendBlendV2` · robustness check | **keep** | ROBUST: 7/7 timings (incl. 1-3 days late), 8/8 settings, 5/5 coins, +741 USDT without the best 3 trades | E0340 |
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
@@ -53,7 +54,6 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `SqueezeBreakoutV1` | **drop** | SqueezeBreakoutV1T: passed stage 1 (REVIEW, ~1% exposure) but failed stage 2 (38% windows, efficiency n/a) | E0073 |
 | `SqueezeBreakoutV1` + quarterly re-tuning | **drop** | SqueezeBreakoutV1 re-tuned walk-forward: 38% windows, stitched -5.9% | E0238 |
 | `TrendBlendV1` | **drop** | INVALID: trim (partial sell) sizing bug - Freqtrade counts partial sells in purchase cost, V1 asked in market value (found by scripts/round5_position_check.py: 202 trim mismatches). Fixed in TrendBlendV2. | E0337 |
-| `TrendBlendV2` | **drop** | rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | E0344 |
 | `TrendPullbackV1` | **drop** | TrendPullbackV1T still loses in-sample (-4.1%); not a candidate | E0061 |
 | `TrendPullbackV2T` | **drop** | stage 1 FAIL | E0208 |
 | `TrendPullbackV2` | **drop** | TrendPullbackV2T: IS +10.2% but OOS -1.8% (stage 1 FAIL) | E0085 |
@@ -66,6 +66,10 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0348 | 2026-10-09 | backtest | `TrendBlendV2` | exam5 👁 | 1h | 0.15% | +75.3 | 30.0 | 0.78 | 0.42 | 192 | keep: Round 5 exam fee stress: +75.3% (E3 passed); DD 30.0% at 0.15% fee | round 5 exam: fee stress 0.15% | `cb6adfb` |
+| E0347 | 2026-10-09 | backtest | `BuyHoldV1` | exam5 👁 | 1h | 0.15% | +124.1 | 87.7 | 0.62 | 0.21 | 9 | baseline | round 5 exam: fee stress 0.15% | `cb6adfb` |
+| E0346 | 2026-10-09 | backtest | `TrendBlendV2` | exam5 👁 | 1h | 0.10% | +76.9 | 29.5 | 0.79 | 0.43 | 192 | keep: Round 5 EXAM PASS (all E1-E7): +76.9%, DD 29.5% vs buy & hold 87.7%, Calmar 0.43 vs 0.21; orders replayed 469/469; -> watch-list paper bot + 12-month forward test | round 5 exam | `cb6adfb` |
+| E0345 | 2026-10-09 | backtest | `BuyHoldV1` | exam5 👁 | 1h | 0.10% | +124.2 | 87.7 | 0.62 | 0.21 | 9 | baseline | round 5 exam | `cb6adfb` |
 | E0344 | 2026-10-09 | backtest | `TrendBlendV2` | custom | 1h | 0.15% | +43.0 | 17.3 | 1.85 | 2.47 | 33 | drop: rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | round 5 exam rehearsal (dev data): fee stress 0.15% | `ae158cf+dirty` |
 | E0343 | 2026-10-09 | backtest | `BuyHoldV1` | custom | 1h | 0.15% | +120.8 | 35.8 | 1.71 | 3.36 | 5 | drop: rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | round 5 exam rehearsal (dev data): fee stress 0.15% | `ae158cf+dirty` |
 | E0342 | 2026-10-09 | backtest | `TrendBlendV2` | custom | 1h | 0.10% | +43.6 | 17.1 | 1.87 | 2.53 | 33 | drop: rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | round 5 exam rehearsal (dev data) | `ae158cf+dirty` |
