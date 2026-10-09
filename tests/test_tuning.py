@@ -249,6 +249,68 @@ class Round4RulesTest(unittest.TestCase):
             self.assertIn(text, doc)
 
 
+class Round5RulesTest(unittest.TestCase):
+    def m(self, name, quarters=None, **over):
+        base = {"strategy": name, "trades": 60, "profit_pct": 80.0, "profit_factor": 1.8, "max_dd_pct": 22.0,
+                "calmar": 0.9}
+        base.update(over)
+        base["quarters"] = quarters if quarters is not None else (
+            [{"quarter": f"q{i}", "ret_pct": r, "partial": False} for i, r in enumerate([5.0] * 8 + [0.0] * 6 + [-4.0] * 5)])
+        return base
+
+    BH = {"strategy": "BuyHoldV1", "max_dd_pct": 85.0, "calmar": 0.3}
+
+    def test_exam_pass_and_each_failure(self):
+        ok = self.m("TrendBlendV1")
+        status, checks = rules.exam_round5(ok, self.m("x"), self.BH, True)
+        self.assertEqual(status, "PASS", checks)
+        self.assertTrue(all(text.startswith(f"E{i}") for i, (_, text) in enumerate(checks, 1)))
+        self.assertIn("8 quarters up vs 5 down, 6 in cash", checks[5][1])
+        fails = {"E1": dict(trades=29), "E2": dict(profit_factor=1.1), "E4": dict(max_dd_pct=30.5),
+                 "E5": dict(calmar=0.3)}
+        for rule, over in fails.items():
+            with self.subTest(rule):
+                status, checks = rules.exam_round5(self.m("v", **over), self.m("x"), self.BH, True)
+                self.assertEqual(status, "FAIL")
+                self.assertTrue(any(t.startswith(rule) for ok_, t in checks if not ok_), checks)
+        q = lambda rets: [{"quarter": f"q{i}", "ret_pct": r, "partial": False} for i, r in enumerate(rets)]
+        more_down = q([5.0] * 6 + [-1.0] * 7 + [0.0] * 6)                  # 6 up < 7 down
+        too_deep = q([5.0] * 10 + [-15.5] + [0.0] * 8)                    # one quarter below -15%
+        short = q([5.0] * 18)                                            # only 18 full quarters
+        for quarters in (more_down, too_deep, short):
+            self.assertEqual(rules.exam_round5(self.m("v", quarters=quarters), self.m("x"), self.BH, True)[0], "FAIL")
+        partial = q([5.0] * 19) + [{"quarter": "p", "ret_pct": -40.0, "partial": True}]   # partial quarters ignored
+        self.assertEqual(rules.exam_round5(self.m("v", quarters=partial), self.m("x"), self.BH, True)[0], "PASS")
+        self.assertEqual(rules.exam_round5(ok, self.m("x", profit_pct=-0.1), self.BH, True)[0], "FAIL")   # E3
+        self.assertEqual(rules.exam_round5(ok, self.m("x"), self.BH, None)[0], "FAIL")                    # E7
+
+    def test_selection(self):
+        dev = {"BuyHoldV1": {"strategy": "BuyHoldV1", "calmar": 0.76, "max_dd_pct": 65.0, "profit_pct": 230.0,
+                             "profit_factor": None, "trades": 5},
+               "TrendBlendV1": self.m("TrendBlendV1", calmar=0.70),          # below buy & hold
+               "TrendBlendV2": self.m("TrendBlendV2", calmar=1.10)}
+        bias, robust = {n: True for n in dev}, {"TrendBlendV1": "ROBUST", "TrendBlendV2": "ROBUST"}
+        pick, lines = rules.select_round5(dev, bias, robust)
+        self.assertEqual(pick, "TrendBlendV2")
+        self.assertTrue(any("V1`: not eligible (Calmar 0.70 not above buy & hold's 0.76" in line for line in lines))
+        for extra in ("TrendBlendV3", "TrendBlendV4"):
+            dev[extra] = self.m(extra)
+        with self.assertRaises(SystemExit):
+            rules.select_round5(dev, bias, robust)
+
+    def test_preregistration_states_the_same_numbers(self):
+        doc = (REPO / "docs" / "research" / "trend-blend-preregistration.md").read_text()
+        s, e = rules.ROUND5_SELECT, rules.ROUND5_EXAM
+        coins = ", ".join(c.split("/")[0] for c in rules.ROUND5_EXAM_COINS)
+        for text in (f"max drawdown **≤ {s['max_dd_pct']:g}%**", f"profit factor **≥ {s['min_profit_factor']:g}**",
+                     f"at least **{s['min_trades']}** trades", f"**{s['robustness']}** in `lab.py robustness`",
+                     "Calmar **above buy & hold's**", f"| ≥ {e['min_trades']} |", f"profit factor ≥ {e['min_profit_factor']:g}",
+                     f"max drawdown ≤ {e['max_dd_pct']:g}%", f"worse than −{abs(e['worst_quarter_pct']):g}%",
+                     f"**{coins}.**", f"at most {rules.ROUND5_MAX_VERSIONS - 1} more versions** ({rules.ROUND5_MAX_VERSIONS} in total)",
+                     "2019-01-01 → 2023-10-01"):
+            self.assertIn(text, doc)
+
+
 class RobustnessRulesTest(unittest.TestCase):
     ORIG = {"profit_pct": 100.0, "calmar": 2.0}
 

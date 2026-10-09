@@ -291,3 +291,14 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - No paper bot and no forward test from this round.
   - A new momentum idea could only be judged on future data.
 
+**2026-10-09: Round 5 pre-registered: trend at four speeds with risk-based sizing (`TrendBlend`).**
+- **Hamzah's brief:** slow trades, low risk, decent returns. He chose "balanced" (worst fall ≤ 30%, beat buy & hold risk-adjusted over a full cycle) and approach A.
+- **The strategy:** a daily trend score from the 20/50/100/200-day averages, positions sized by 30-day volatility (30% target), trading only on gaps of ¼ of a slot. Settings are textbook values with no tuning.
+- **Exam on fresh coins:** 9 coins never traded in this lab (NEO, LTC, QTUM, ADA, IOTA, XLM, ONT, TRX, ETC), picked by a fixed listing-date rule, over 2019-01 → 2023-10. `lab.py` now refuses any non-exam backtest that includes them.
+- **Rule change from this round on (not applied to past rounds):**
+  - Worst quarter ≥ −15% instead of −10%.
+  - "Profitable quarters ≥ losing quarters" (cash quarters count as neither) replaces "≥ half profitable".
+  - **Why:** with a 30% worst-fall limit, −10% made one bad quarter in 19 close to a coin flip, and a trend strategy is meant to sit in cash during bear quarters.
+- **Dev selection:** Round 4's rule plus dev Calmar above buy & hold's. At most 3 versions.
+- Details: `docs/research/trend-blend-preregistration.md`.
+

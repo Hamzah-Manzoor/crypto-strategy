@@ -252,6 +252,10 @@ def select_one(candidates: tuple[str, ...], r: dict, dev_strategies: dict[str, d
             reasons.append("bias checks not passed")
         if "robustness" in r and (robust or {}).get(name) != r["robustness"]:
             reasons.append(f"robustness check {(robust or {}).get(name) or 'not run'} (need {r['robustness']})")
+        bh = dev_strategies.get(BASELINE)
+        if r.get("beat_bh") and (bh is None or m["calmar"] <= bh["calmar"]):
+            reasons.append(f"Calmar {m['calmar']:.2f} not above buy & hold's "
+                           + ("(not in the run)" if bh is None else f"{bh['calmar']:.2f}"))
         status = "eligible" if not reasons else "not eligible (" + "; ".join(reasons) + ")"
         lines.append(f"- `{name}`: {status} - dev profit {m['profit_pct']:+.1f}%, max DD {m['max_dd_pct']:.1f}%, "
                      f"Calmar {m['calmar']:.2f}, PF {pf if pf is None else round(pf, 2)}, {m['trades']} trades")
@@ -275,6 +279,59 @@ def select_round4(dev_strategies: dict[str, dict], bias: dict[str, bool],
                   robust: dict[str, str | None]) -> tuple[str | None, list[str]]:
     """The single eligible Round 4 version (Round 3's rule + ROBUST) with the highest dev Calmar."""
     return select_one(ROUND4_CANDIDATES, ROUND4_SELECT, dev_strategies, bias, robust)
+
+
+# --------------------------------------------------------------------------- Round 5
+# Pre-registered in docs/research/trend-blend-preregistration.md (2026-10-09), before any version
+# was built. Dev selection = Round 4's rule + Calmar above buy & hold. The exam runs once on 9 coins
+# no strategy in this lab has traded, 2019-01 -> 2023-10.
+
+ROUND5_PREFIX = "TrendBlend"     # every version of the idea
+ROUND5_MAX_VERSIONS = 3
+ROUND5_SELECT = {**ROUND3_SELECT, "robustness": "ROBUST", "beat_bh": True}
+# Rule: still listed on Binance (2026-10-09), USDT daily data before 2018-06-15, not ours, not a stablecoin.
+ROUND5_EXAM_COINS = ("NEO/USDT", "LTC/USDT", "QTUM/USDT", "ADA/USDT", "IOTA/USDT", "XLM/USDT",
+                     "ONT/USDT", "TRX/USDT", "ETC/USDT")
+ROUND5_EXAM = {"min_trades": 30, "min_profit_factor": 1.2, "max_dd_pct": 30.0,
+               "quarters": 19, "worst_quarter_pct": -15.0}
+ROUND5_FORWARD = {**ROUND5_EXAM, "min_trades": 20, "quarters": 4}
+
+
+def select_round5(dev_strategies: dict[str, dict], bias: dict[str, bool],
+                  robust: dict[str, str | None]) -> tuple[str | None, list[str]]:
+    """The single eligible TrendBlend version (at most 3 tried) with the highest dev Calmar."""
+    candidates = tuple(sorted(n for n in dev_strategies if n.startswith(ROUND5_PREFIX)))
+    if len(candidates) > ROUND5_MAX_VERSIONS:
+        raise SystemExit(f"{len(candidates)} TrendBlend versions tried, the limit is {ROUND5_MAX_VERSIONS}")
+    return select_one(candidates, ROUND5_SELECT, dev_strategies, bias, robust)
+
+
+def exam_round5(m: dict, stress_m: dict | None, bh: dict, bias_ok: bool | None,
+                r: dict = ROUND5_EXAM, prefix: str = "E") -> tuple[str, list[tuple[bool, str]]]:
+    """Round 5 exam (and forward test with ROUND5_FORWARD): PASS only if every rule holds.
+    Consistency counts quarters with a gain against quarters with a loss; quarters spent fully
+    in cash (exactly 0%) count as neither."""
+    pf = m.get("profit_factor")
+    full = [q for q in m.get("quarters", []) if not q["partial"]]
+    up, down = sum(q["ret_pct"] > 0 for q in full), sum(q["ret_pct"] < 0 for q in full)
+    worst = min((q["ret_pct"] for q in full), default=None)
+    checks = [
+        (m["trades"] >= r["min_trades"], f"{prefix}1 trades {m['trades']} (>= {r['min_trades']})"),
+        (m["profit_pct"] > 0 and pf is not None and pf >= r["min_profit_factor"],
+         f"{prefix}2 profit {m['profit_pct']:+.1f}% (> 0), profit factor {pf if pf is None else round(pf, 2)} "
+         f"(>= {r['min_profit_factor']:g})"),
+        (stress_m is not None and stress_m["profit_pct"] > 0,
+         f"{prefix}3 profit at 0.15% fee " + ("not run" if stress_m is None else f"{stress_m['profit_pct']:+.1f}% (> 0)")),
+        (m["max_dd_pct"] <= r["max_dd_pct"] and m["max_dd_pct"] < bh["max_dd_pct"],
+         f"{prefix}4 max drawdown {m['max_dd_pct']:.1f}% (<= {r['max_dd_pct']:g}% and < buy & hold {bh['max_dd_pct']:.1f}%)"),
+        (m["calmar"] > bh["calmar"], f"{prefix}5 Calmar {m['calmar']:.2f} > buy & hold {bh['calmar']:.2f}"),
+        (len(full) == r["quarters"] and up >= down and worst is not None and worst >= r["worst_quarter_pct"],
+         f"{prefix}6 {up} quarters up vs {down} down, {len(full) - up - down} in cash (of {len(full)}; need "
+         f"{r['quarters']} with up >= down), worst quarter {'n/a' if worst is None else f'{worst:+.1f}%'} "
+         f"(>= {r['worst_quarter_pct']:g}%)"),
+        (bias_ok is True, f"{prefix}7 bias checks " + {True: "passed", False: "FAILED", None: "not run"}[bias_ok]),
+    ]
+    return ("PASS" if all(ok for ok, _ in checks) else "FAIL"), checks
 
 
 # --------------------------------------------------------------------------- Robustness check

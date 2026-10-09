@@ -261,6 +261,12 @@ class PeriodTest(unittest.TestCase):
         self.assertEqual(lab.touches_protected("20220101-"), ["holdout"])
         self.assertEqual(lab.touches_protected("20210101-20210102"), ["holdout"])  # one day in
 
+    def test_exam_coins_are_refused_outside_the_exam(self):
+        with self.assertRaises(SystemExit):
+            lab.backtest_run("dev", "1h", lab.STANDARD_FEE, None, ["BuyHoldV1"], "", False, pairs=["ADA/USDT"])
+        with self.assertRaises(SystemExit):
+            lab.robust_backtest(["BuyHoldV1"], "20231001-20261001", lab.ROOT / "x", "x", lab.ROOT, pairs=["LTC/USDT"])
+
     def test_resolve_period(self):
         self.assertEqual(lab.resolve_period("is"), ("is", "20231001-20251001"))
         self.assertEqual(lab.resolve_period("dev"), ("dev", "20231001-20261001"))

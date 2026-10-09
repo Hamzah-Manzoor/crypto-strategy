@@ -536,6 +536,10 @@ def backtest_run(period: str, timeframe: str, fee: float, detail: str | None, st
         die(f"period '{period}' ({timerange}) touches protected test data ({', '.join(protected)}: "
             f"{'-'.join(PROTECTED[protected[0]])}). Build and iterate on 'dev'. If this is the "
             "pre-registered exam, add --allow-holdout (every look is logged).")
+    exam_coins = sorted(set(pairs or []) & set(rules.ROUND5_EXAM_COINS))
+    if exam_coins and not allow_protected:
+        die(f"{', '.join(exam_coins)} are Round 5 exam coins (docs/research/trend-blend-preregistration.md). "
+            "Only the pre-registered exam may trade them.")
     if BASELINE not in strategies:
         strategies = [BASELINE, *strategies]  # always compare against buy & hold
 
@@ -996,6 +1000,8 @@ def cmd_exam(args: argparse.Namespace) -> None:
 def robust_backtest(strategies: list[str], timerange: str, run_dir: Path, run_id: str,
                     strategy_path: Path, pairs: list[str] | None = None) -> dict:
     """One robustness backtest (dev data, 0.1% fee) -> run summary, kept in the throwaway folder."""
+    if set(pairs or []) & set(rules.ROUND5_EXAM_COINS):
+        die("the robustness check never trades Round 5 exam coins")
     run_dir.mkdir(parents=True, exist_ok=True)
     ft_args = [
         "backtesting", *config_args(*exchange_configs(data_exchange()), "backtest.json"),

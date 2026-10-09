@@ -1,0 +1,138 @@
+# Pre-registration: Trend at four speeds with risk-based sizing (Round 5)
+
+**Written:** 2026-10-09, before anything below was built or tested. It's committed to git first, so the commit time proves the order.
+**Status:** designed with Hamzah on 2026-10-09.
+- **Hamzah's choices:**
+  - "Balanced" risk: worst fall ≤ 30%, beat buy & hold after adjusting for risk over a full cycle.
+  - Approach A, trend at four speeds.
+  - He approved the strategy rules ("I trust, just make me a good strategy").
+- **Delegated to me:** the testing plan below, which follows the lab's usual process.
+- **No extra review stop:** the exam runs once, after the pick is frozen and committed.
+
+## 1. Why this idea
+
+- **Hamzah's goal:** a slow strategy (days to months per trade), low risk, decent returns, built from the most reliable indicators.
+- **The most reliable edge in crypto is trend:** hold what's rising and step aside during long falls.
+  - Time-series momentum in crypto: Liu & Tsyvinski, *Risks and Returns of Cryptocurrency*, 2021.
+  - Moving-average rules predicting Bitcoin returns: Detzel et al., 2021.
+  - A century of trend following across markets: Hurst, Ooi & Pedersen, 2017.
+- **Most popular indicators measure that same trend.** EMA crossovers, MACD, ADX, Supertrend and Donchian all do. Stacking them adds settings to overfit, not information.
+- **This lab's own lessons:**
+  - Hourly strategies drown in noise and fees (Round 1).
+  - All-or-nothing positions whipsaw (Round 3).
+  - A fixed 50% of the wallet invested controlled risk, but lagged in a raging bull market (Round 4).
+- **The design follows from that.**
+  - **Daily decisions.**
+  - **Trend measured at four speeds,** so no single setting decides everything and positions grow and shrink gradually.
+  - **Position sizes set by each coin's recent volatility,** so wild coins get less money and calm uptrends get more.
+
+## 2. The strategy (`TrendBlendV1`, frozen now)
+
+**Once a day, on the 11:00 UTC hourly candle (trades at 12:00 UTC = 5 pm Pakistan time),** using only daily candles that have already closed, for each coin:
+
+1. **Trend score:** 1 point each for a daily close above the 20-, 50-, 100- and 200-day simple moving averages. That gives 0 to 4.
+2. **Volatility:** the standard deviation of the last 30 daily log returns × √365, i.e. how much the coin swings per year.
+3. **Weight:** score ÷ 4 × min(1, 30% ÷ volatility). For example, score 4 at 60% volatility gives a weight of 0.5.
+4. **Target position:** weight × one slot.
+   - A slot is the wallet's current value (cash plus coins at the latest price, × 0.99 for fees) divided by the number of coin slots (`max_open_trades`: 5 on dev, 9 in the exam).
+5. **Trading rules:**
+   - **Buy** a coin we don't hold when its weight is at least 0.25.
+   - **Top up or trim** a coin we hold when target and holding differ by at least 0.25 of a slot, back to the target.
+   - **Sell everything** when the score is 0.
+   - Nothing happens at any other hour.
+6. **Emergency stop:** −25% from the average buy price, as a disaster backstop only.
+
+**Fixed settings (textbook values, no tuning, no hyperopt):**
+- moving averages of 20 / 50 / 100 / 200 days (`SPEED_SCALE = 1.0`)
+- volatility over `VOL_DAYS = 30`
+- target `TARGET_VOL = 0.30`
+- trading threshold `BAND = 0.25` of a slot
+- stop −25%
+
+**No peeking:**
+- Daily values enter the hourly data only after each day closes.
+- `check-bias` checks the signals and indicators.
+- A replay script checks every order's size by hand, because Freqtrade's lookahead check doesn't look at position sizes.
+
+**What I expect (written now, to compare later):**
+- About half the wallet invested in strong uptrends; mostly cash in bear markets.
+- Worst falls of 15–30%.
+- It will trail buy & hold in strong bull years.
+
+## 3. Data
+
+| Data | Use in this round |
+|---|---|
+| **Dev:** 2023-10-01 → 2026-10-01, our 5 coins | Building, the robustness gate, and choosing **one** version |
+| **Exam: 2019-01-01 → 2023-10-01, 9 coins this lab has never traded** | The single exam, run once |
+| From the day the exam passes | Forward test (paper bot plus a forward backtest) |
+
+**The exam coins, chosen by a fixed rule, not by hand:**
+- **The rule:** every Binance USDT pair still listed on 2026-10-09 whose daily data starts before 2018-06-15 (enough history for the 200-day average by 2019-01-01), minus our 5 coins and stablecoins.
+- **The result (checked 2026-10-09):** **NEO, LTC, QTUM, ADA, IOTA, XLM, ONT, TRX, ETC.**
+- **No strategy in this lab has ever traded any of them.**
+- **Why this is a fair exam:**
+  - The strategy is built only on our 5 coins over 2023–26.
+  - It's then judged on different coins over different years.
+  - Those years are a full cycle: the 2019 rally, the COVID crash, the 2021 boom, the 2022 crash (LUNA, FTX) and the 2023 recovery.
+- **Honest caveats:**
+  1. **I know the broad history of 2019–23,** and earlier rounds tested related ideas on our own coins in those years. The defences: the settings are textbook values fixed above, and the coins are new.
+  2. **Survivorship:** coins delisted since 2018 (e.g. EOS, XMR, WAVES, ICX) can't be downloaded. Most delisted coins crashed, so leaving them out makes **buy & hold** look better. That works against this strategy, not for it.
+- **Guard:**
+  - From this commit on, `lab.py` refuses any backtest that includes an exam coin unless it's the exam.
+  - The exam years are already protected (`holdout`, `exam2019`).
+
+## 4. Choosing the one version for the exam (dev data, by rule)
+
+- **Versions allowed:** `TrendBlendV1` is frozen above. If it fails on dev, I may build **at most 2 more versions** (3 in total). Each gets a written reason in its docstring and is built on dev data only. All versions tried are reported.
+- **Eligible** if, on dev (2023-10 → 2026-10, 5 coins, 0.1% fee):
+  - max drawdown **≤ 30%**
+  - profit > 0, profit factor **≥ 1.2**, at least **30** trades
+  - Calmar **above buy & hold's** on the same run
+  - `check-bias` passed
+  - **ROBUST** in `lab.py robustness`
+- **Robustness neighbours for R2,** declared in the class before any run:
+  - `TARGET_VOL` 0.25 / 0.35
+  - `SPEED_SCALE` 0.75 / 1.25 (all four averages 25% shorter or longer)
+  - `VOL_DAYS` 20 / 45
+  - `BAND` 0.125 / 0.5
+- **R1 timing for a daily strategy:** decide at 4 different hours, 6 hours apart, and act 1, 2 or 3 days late. That's 7 variants.
+- **The pick:** the single eligible version with the highest dev Calmar. If none is eligible, the idea is dropped and no exam runs.
+
+## 5. The exam (2019-01-01 → 2023-10-01, 9 new coins, run once)
+
+**Setup:**
+- The chosen version on the 9 exam coins, with 9 slots.
+- Compared against buy & hold of the same 9 coins, 1/9 each.
+- One run at the normal 0.1% fee and one at 0.15% per side.
+
+A pass needs **all** of:
+
+| # | Rule | Threshold |
+|---|---|---|
+| E1 | Enough trades | ≥ 30 |
+| E2 | Profitable | profit > 0 **and** profit factor ≥ 1.2 |
+| E3 | Survives higher costs | profit > 0 at a 0.15% fee per side |
+| E4 | Drawdown under control | max drawdown ≤ 30% **and** smaller than buy & hold's |
+| E5 | Beats buy & hold, risk-adjusted | Calmar > buy & hold's Calmar |
+| E6 | Consistent | profitable quarters ≥ losing quarters (quarters spent fully in cash count as neither), and no quarter worse than −15% |
+| E7 | No cheating | bias checks passed |
+
+**One change from earlier rounds, made before any test:** the worst-quarter limit is −15% instead of −10%.
+- **Why:** with a 30% limit on the worst fall, a −10% quarter limit made one bad quarter in 19 close to a coin flip.
+- **"Profitable ≥ losing quarters"** replaces "≥ half profitable", because a trend strategy is *supposed* to sit in cash during bear quarters.
+- This is recorded in DECISIONS and applies from this round on. It is not applied to past rounds.
+
+## 6. What happens next (decided now)
+
+- **If the exam passes:**
+  - `TrendBlend` (on our 5 coins) starts as a `watch-list` paper bot (`trend-blend`, FreqUI port 8083).
+  - A **12-month forward test** begins, judged by a forward backtest on new prices using E1–E7. E1 is ≥ 20 trades over 4 quarters.
+  - **Inconclusive clause, as in Round 3:** if fewer than 20 trades happen because most coins spent most of the year below their averages, the test is extended by 6 months.
+  - It can only be marked **promoted** if the forward test also passes. Real money stays forbidden by the project's hard rules.
+- **If the exam fails:** the idea is dropped, and the 9-coin 2019–23 exam counts as *used* for trend ideas.
+- **Whatever happens:** results are appended below this line, without editing anything above it.
+
+## 7. Results
+
+_To be filled in at each stage, without editing anything above this line._
