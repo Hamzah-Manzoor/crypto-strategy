@@ -361,6 +361,21 @@ class RobustnessVariantsTest(unittest.TestCase):
         for src in variants.values():
             ast.parse(src)
 
+    def test_daily_timing_variants(self):
+        import robustness
+        info = {"strategy": "TrendBlendV1", "module": "trend_blend_v1", "weekly": False, "daily": True,
+                "delay_days": True, "rebalance": [11], "universe": None, "settings": {}, "skip": []}
+        out = robustness.timing_variants(info)
+        self.assertEqual(sorted(out), sorted(["TrendBlendV1_R1_h05", "TrendBlendV1_R1_h11", "TrendBlendV1_R1_h17",
+                                              "TrendBlendV1_R1_h23", "TrendBlendV1_R1_delay1",
+                                              "TrendBlendV1_R1_delay2", "TrendBlendV1_R1_delay3"]))
+        self.assertIn("REBALANCE_HOUR = 5", out["TrendBlendV1_R1_h05"])
+        self.assertIn("DELAY_DAYS = 3", out["TrendBlendV1_R1_delay3"])
+        for src in out.values():
+            ast.parse(src)
+        no_delay = robustness.timing_variants({**info, "delay_days": False})
+        self.assertEqual(len(no_delay), 4)
+
     def test_signal_delay_variants_shift_only_into_the_past(self):
         import robustness
         variants = robustness.timing_variants(self.SIGNAL)

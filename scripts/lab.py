@@ -56,6 +56,7 @@ PERIODS = {
     "dev": ("20231001", "20261001"),
     "holdout": ("20210101", "20231001"),
     "exam2019": ("20190101", "20210101"),  # Round 4 exam (4 coins: SOL listed Aug 2020)
+    "exam5": ("20190101", "20231001"),     # Round 5 exam, on 9 coins never traded here (inside the protected years)
 }
 # Data no test may touch without --allow-holdout, and tuning may never touch. Every look is logged.
 PROTECTED = {"holdout": PERIODS["holdout"], "exam2019": PERIODS["exam2019"]}
@@ -74,6 +75,8 @@ HYPEROPT_JOBS = 6  # parallel workers; 11 ran Docker's 8 GB out of memory (worke
 BIAS_TIMEFRAME = "1h"
 LOOKAHEAD_TIMERANGE = "20240101-20240703"   # ~6 months, all pairs. Ends on a Wednesday: a window ending
                                             # Monday 00:00 crashed Freqtrade 2026.9 on weekly trades closing on its last candle
+LOOKAHEAD_LONG_TIMERANGE = "20231001-20260701"  # slow strategies (< 10 trades in the window above): all of dev,
+                                                # also ending on a Wednesday
 RECURSIVE_TIMERANGE = "20240101-20250101"   # >= 5000 candles, as the Freqtrade docs recommend
 RECURSIVE_PAIR = "BTC/USDT"
 RECURSIVE_STARTUPS = ["100", "200", "400", "600", "1000"]
@@ -425,15 +428,27 @@ def run_bias_checks(strategies: list[str], skip_lookahead: bool = False, skip_re
                 continue
             say(f"Lookahead analysis: {name}")
             tmp_csv = ROOT / "user_data" / "backtest_results" / f"lookahead_{name}.csv"
-            tmp_csv.unlink(missing_ok=True)
-            result = freqtrade([
-                "lookahead-analysis", *config_args("backtest.json"), "--strategy", name,
-                *strategy_path_args(strategy_path), "-i", BIAS_TIMEFRAME, "--timerange", LOOKAHEAD_TIMERANGE,
-                "--minimum-trade-amount", "10", "--targeted-trade-amount", "30",
-                "--lookahead-analysis-exportfilename", str(tmp_csv.relative_to(ROOT)),
-            ], check=False, tee=True)
-            row = next((r for r in csv.DictReader(tmp_csv.open()) if r.get("strategy") == name), None) \
-                if tmp_csv.exists() else None
+
+            def lookahead(timerange: str):
+                tmp_csv.unlink(missing_ok=True)
+                result = freqtrade([
+                    "lookahead-analysis", *config_args("backtest.json"), "--strategy", name,
+                    *strategy_path_args(strategy_path), "-i", BIAS_TIMEFRAME, "--timerange", timerange,
+                    "--minimum-trade-amount", "10", "--targeted-trade-amount", "30",
+                    "--lookahead-analysis-exportfilename", str(tmp_csv.relative_to(ROOT)),
+                ], check=False, tee=True)
+                row = next((r for r in csv.DictReader(tmp_csv.open()) if r.get("strategy") == name), None) \
+                    if tmp_csv.exists() else None
+                return result, row
+
+            result, row = lookahead(LOOKAHEAD_TIMERANGE)
+            too_few = re.search(r"less than minimum_trade_amount|too few trades", result.stdout)
+            if too_few and (row is None or row.get("has_bias", "").strip() not in ("True", "False")):
+                say(f"{name}: fewer than 10 trades in {LOOKAHEAD_TIMERANGE} (slow strategy) - "
+                    f"re-running on {LOOKAHEAD_LONG_TIMERANGE}")
+                result, row = lookahead(LOOKAHEAD_LONG_TIMERANGE)
+                if row is not None:
+                    row["timerange"] = LOOKAHEAD_LONG_TIMERANGE
             if result.returncode != 0 or row is None:
                 failed.append(f"{name} (lookahead did not run)")
                 status[name]["lookahead"] = "fail"
@@ -448,10 +463,11 @@ def run_bias_checks(strategies: list[str], skip_lookahead: bool = False, skip_re
             report.append(
                 f"| {name} | {shown} | {row.get('total_signals', '')} | {row.get('biased_entry_signals', '')} | "
                 f"{row.get('biased_exit_signals', '')} | {row.get('biased_indicators', '') or '-'} |"
+                + (f" (slow strategy: window `{row['timerange']}`)" if row.get("timerange") else "")
             )
         if rows_out and save_lookahead_csv:
             with (ROOT / "results" / "checks" / "lookahead.csv").open("w", newline="") as fh:
-                writer = csv.DictWriter(fh, fieldnames=list(rows_out[0]))
+                writer = csv.DictWriter(fh, fieldnames=list(dict.fromkeys(k for r in rows_out for k in r)))
                 writer.writeheader()
                 writer.writerows(rows_out)
         report.append("")
@@ -1061,6 +1077,10 @@ def cmd_robustness(args: argparse.Namespace) -> None:
 
     def label(cls: str) -> str:
         tail = cls.split("_R", 1)[1][2:]
+        if tail.startswith("delay"):
+            return f"acting {tail[5:]} day(s) late"
+        if tail.startswith("h") and tail[1:].isdigit():
+            return f"{tail[1:]}:00 candle" + (" (original)" if [int(tail[1:])] == info["rebalance"] else "")
         if tail.startswith("d") and "h" in tail:
             day, hour = tail[1:].split("h")
             return f"{day_names[int(day)]} {hour}:00 candle" + (" (original)" if [int(day), int(hour)] == info["rebalance"] else "")
@@ -1184,6 +1204,68 @@ def cmd_round4(args: argparse.Namespace) -> None:
     print("\n" + md.read_text())
 
 
+def cmd_round5(args: argparse.Namespace) -> None:
+    """Round 5 (TrendBlend): pick one version on dev, then the one-time exam on 9 never-traded coins."""
+    boards = ROOT / "results" / "leaderboards"
+    saved = boards / "round5_selection.json"
+    versions = [s for s in discover_strategies() if s.startswith(rules.ROUND5_PREFIX)]
+    if len(versions) > rules.ROUND5_MAX_VERSIONS:
+        die(f"{len(versions)} TrendBlend versions exist ({', '.join(versions)}); the limit is {rules.ROUND5_MAX_VERSIONS}")
+    if args.action == "select":
+        runs = [r for r in report.all_runs() if r["period"] == "dev" and r["timeframe"] == "1h"
+                and abs((r.get("fee") or 0) - STANDARD_FEE) < 1e-9 and not r.get("timeframe_detail")
+                and any(n.startswith(rules.ROUND5_PREFIX) for n in r["strategies"])]
+        if not runs:
+            die("no dev run with a TrendBlend version: lab.py backtest --period dev --strategies <version>")
+        dev_run = max(runs, key=lambda r: r["run_id"])
+        candidates = [n for n in dev_run["strategies"] if n.startswith(rules.ROUND5_PREFIX)]
+        robust = {c: latest_robustness(c) for c in candidates}
+        pick, lines = rules.select_round5(dev_run["strategies"], report.load_bias(),
+                                          {c: (r or {}).get("overall") for c, r in robust.items()})
+        s = rules.ROUND5_SELECT
+        md = boards / "round5_selection.md"
+        md.write_text("\n".join([
+            "# Round 5 · dev selection (pre-registered rule)", "",
+            f"Dev run `{dev_run['run_id']}` ({dev_run['timerange']}, 1h, fee 0.10%). Rule: max drawdown <= "
+            f"{s['max_dd_pct']:g}%, profit > 0, profit factor >= {s['min_profit_factor']:g}, >= {s['min_trades']} "
+            f"trades, Calmar above buy & hold's, bias checks passed, robustness check {s['robustness']}; "
+            "best dev Calmar wins.", "",
+            f"Versions built ({len(versions)} of max {rules.ROUND5_MAX_VERSIONS}): "
+            + ", ".join(f"`{v}`" for v in versions) + ". Versions not in this run were dropped earlier "
+            "(see docs/research/trend-blend-preregistration.md).", "",
+            "Robustness reports: " + (", ".join(f"`{r['id']}` ({r['overall']})" for r in robust.values() if r)
+                                      or "none"), "",
+            *lines, "", f"**Exam pick:** {f'`{pick}`' if pick else 'none - the idea is dropped, no exam'}", "",
+        ]))
+        saved.write_text(json.dumps({"dev_run": dev_run["run_id"], "pick": pick, "versions": versions,
+                                     "robustness": {c: (r or {}).get("id") for c, r in robust.items()}},
+                                    indent=1) + "\n")
+        print(md.read_text())
+        return
+
+    if not saved.exists() or not json.loads(saved.read_text())["pick"]:
+        die("no frozen pick: run lab.py round5 select and commit it before the exam")
+    pick = json.loads(saved.read_text())["pick"]
+    period, stem, pairs = "exam5", "exam_round5", list(rules.ROUND5_EXAM_COINS)
+    title = "Round 5 exam · 2019-01 → 2023-10 · 9 coins never traded in this lab · 1h"
+    if args.smoke:  # rehearse the exact pipeline on our own coins and dev dates; nothing protected is touched
+        period, stem = "20240101-20250101", "exam_round5_smoke"
+        pairs = json.loads((ROOT / CONFIGS / "base.json").read_text())["exchange"]["pair_whitelist"]
+        title = "Round 5 exam REHEARSAL on dev data (our 5 coins, 2024)"
+    elif (boards / f"{stem}.json").exists():
+        die("the Round 5 exam has already run - it runs once (results/leaderboards/exam_round5.md)")
+    say(f"Round 5 {'REHEARSAL' if args.smoke else 'EXAM'}: {pick} on {', '.join(pairs)} "
+        f"({resolve_period(period)[1]}), with buy & hold of the same coins")
+    common = dict(pairs=pairs, max_open_trades=len(pairs))
+    note = "round 5 exam" + (" rehearsal (dev data)" if args.smoke else "")
+    exam_run = backtest_run(period, "1h", STANDARD_FEE, None, [pick], note, True, **common)
+    stress = backtest_run(period, "1h", STRESS_FEE, None, [pick], note + ": fee stress 0.15%", True, **common)
+    md, _ = report.write_exam(exam_run, stress, None, title=title, stem=stem, exam_rules=rules.ROUND5_EXAM,
+                              prefix="E", rules_ref="docs/research/trend-blend-preregistration.md "
+                              "(numbers in scripts/rules.py → ROUND5_EXAM)", exam_fn=rules.exam_round5)
+    print("\n" + md.read_text())
+
+
 def cmd_ft(args: argparse.Namespace) -> None:
     """Run any raw Freqtrade command in the container (safety check first)."""
     if not args.ft_args:
@@ -1288,6 +1370,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("action", choices=["select", "exam"])
     p.add_argument("--smoke", action="store_true",
                    help="exam: rehearse the whole pipeline on 2024 dev data instead (touches nothing protected)")
+    p = add("round5", cmd_round5)
+    p.add_argument("action", choices=["select", "exam"])
+    p.add_argument("--smoke", action="store_true",
+                   help="exam: rehearse the whole pipeline on our 5 coins and 2024 dev data (touches nothing protected)")
     p = add("bots", cmd_bots)
     p.add_argument("action", choices=["generate", "up", "down", "status", "logs"])
     p.add_argument("names", nargs="*", help="bot names from bots.json (default: all)")

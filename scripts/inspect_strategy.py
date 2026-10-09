@@ -31,11 +31,15 @@ def main(name: str) -> None:
         else:
             settings[key] = {"kind": "const", "default": attr, "values": values}
     weekly = hasattr(cls, "REBALANCE_WEEKDAY") and hasattr(cls, "REBALANCE_HOUR")
+    daily = not weekly and hasattr(cls, "REBALANCE_HOUR")   # decides once a day at a fixed hour
     print(json.dumps({
         "strategy": name,
         "module": module_file.stem,
         "weekly": weekly,
-        "rebalance": [cls.REBALANCE_WEEKDAY, cls.REBALANCE_HOUR] if weekly else None,
+        "daily": daily,
+        "delay_days": hasattr(cls, "DELAY_DAYS"),            # can act on an older daily view
+        "rebalance": [cls.REBALANCE_WEEKDAY, cls.REBALANCE_HOUR] if weekly else
+                     ([cls.REBALANCE_HOUR] if daily else None),
         "universe": list(getattr(cls, "UNIVERSE", []) or []) or None,
         "settings": settings,
         "skip": list(getattr(cls, "ROBUSTNESS_SKIP", None) or entry.get("skip", [])),

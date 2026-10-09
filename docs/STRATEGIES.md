@@ -250,6 +250,20 @@ Momentum rotation at lower exposure. Rules and results: [research/momentum-expos
 | `MomentumRotationV3` | 1/6 of the wallet (`EXPOSURE = 0.5` × 1/3), so about half invested | **exam FAIL** (2019–20, 4 coins): +92.3%, DD 24.4% vs buy & hold 74.9%, but Calmar 1.59 vs 1.65 and one quarter −12.2% |
 | `MomentumRotationV3b` | 1/3 × min(1, 50% ÷ the coin's 30-day volatility) | dropped at dev (DD 42.2%): positions were rarely scaled down |
 
+## Round 5 strategies (2026-10-09)
+
+Trend at four speeds with risk-based sizing. Rules and results: [research/trend-blend-preregistration.md](research/trend-blend-preregistration.md).
+
+- **Decision:** once a day at 12:00 UTC (5 pm Pakistan time).
+- **Score:** 1 point per daily close above the 20/50/100/200-day average.
+- **Weight:** score ÷ 4 × min(1, 30% ÷ 30-day volatility) slots.
+- **Trading:** buy, top up or trim only on gaps of at least ¼ of a slot; sell everything at score 0.
+
+| Strategy | What it is | Status |
+|---|---|---|
+| `TrendBlendV1` | First implementation | INVALID: partial sells were sized in market value, while Freqtrade counts them in purchase cost |
+| `TrendBlendV2` | V1 with the trim sizing fixed; same rules | **exam pick:** dev +134.4%, DD 17.7%, Calmar 1.85 (buy & hold 0.76), ROBUST; exam on 9 new coins pending |
+
 ---
 
 ## Bias checks (Phase 4, `lab.py check-bias`)

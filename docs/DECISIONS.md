@@ -302,3 +302,17 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - **Dev selection:** Round 4's rule plus dev Calmar above buy & hold's. At most 3 versions.
 - Details: `docs/research/trend-blend-preregistration.md`.
 
+**2026-10-09: Round 5 build: V1's trim bug fixed as `TrendBlendV2`; tooling for slow strategies.**
+- **The bug:**
+  - The order replay (`scripts/round5_position_check.py`) found that V1's partial sells didn't follow its rules: 202 mismatches.
+  - Freqtrade counts a partial sell in purchase cost, while V1 asked in market value. Winners were over-trimmed, or not trimmed at all once the request exceeded the position (SOL in late 2023).
+- **The fix:** made as a new version, `TrendBlendV2` (version 2 of max 3; same rules and settings), because V1 already had a logged result (E0337, now marked INVALID).
+  - Replaying V2's dev orders, 310 of 313 match the rules exactly. The other 3 sit within 0.3% of the ¼-slot threshold, where the replay's wallet value (about 1 USDT off) tips them.
+- **Bias checks:**
+  - The 6-month lookahead window had only 8 usable trades for this slow strategy.
+  - `check-bias` now re-runs on the whole dev window (2023-10-01 → 2026-07-01, ending on a Wednesday) when the short window has too few trades.
+- **Slot count:** the strategy counts slots as `max_open_trades`, or one per coin when trades are unlimited, as in Freqtrade's bias checker.
+- **Robustness R1 for daily strategies:**
+  - the decision hour at 4 slots, 6 hours apart;
+  - acting on the daily view 1, 2 or 3 days late, via `DELAY_DAYS`.
+

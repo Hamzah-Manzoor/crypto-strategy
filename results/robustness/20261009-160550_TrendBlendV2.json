@@ -1,0 +1,234 @@
+{
+ "id": "20261009-160550_TrendBlendV2",
+ "strategy": "TrendBlendV2",
+ "timerange": "20231001-20261001",
+ "info": {
+  "strategy": "TrendBlendV2",
+  "module": "trend_blend_v2",
+  "weekly": false,
+  "daily": true,
+  "delay_days": true,
+  "rebalance": [
+   11
+  ],
+  "universe": null,
+  "settings": {
+   "TARGET_VOL": {
+    "kind": "const",
+    "default": 0.3,
+    "values": [
+     0.25,
+     0.35
+    ]
+   },
+   "SPEED_SCALE": {
+    "kind": "const",
+    "default": 1.0,
+    "values": [
+     0.75,
+     1.25
+    ]
+   },
+   "VOL_DAYS": {
+    "kind": "const",
+    "default": 30,
+    "values": [
+     20,
+     45
+    ]
+   },
+   "BAND": {
+    "kind": "const",
+    "default": 0.25,
+    "values": [
+     0.125,
+     0.5
+    ]
+   }
+  },
+  "skip": []
+ },
+ "overall": "ROBUST",
+ "original": {
+  "profit_pct": 134.3868,
+  "max_dd_pct": 17.682,
+  "calmar": 1.855,
+  "trades": 92,
+  "profit_abs_total": 1343.8683,
+  "best_trades_profit_abs": [
+   231.91129474000002,
+   202.08577655,
+   168.6698478
+  ]
+ },
+ "checks": {
+  "R1": {
+   "verdict": "PASS",
+   "detail": "7 of 7 variants profitable (need >= 80%); median Calmar 1.79 = 96% of the original's 1.85 (need >= 50%)"
+  },
+  "R2": {
+   "verdict": "PASS",
+   "detail": "8 of 8 variants profitable (need >= 80%); median Calmar 1.72 = 93% of the original's 1.85 (need >= 50%)"
+  },
+  "R3": {
+   "verdict": "PASS",
+   "detail": "5 of 5 variants profitable (need all); median Calmar 1.64 = 89% of the original's 1.85 (need >= 50%)"
+  },
+  "R4": {
+   "verdict": "PASS",
+   "detail": "profit +1344 USDT; without the best 3 trades (+603 USDT, 45% of it): +741 USDT (need > 0)"
+  }
+ },
+ "variants": {
+  "R1": [
+   {
+    "label": "05:00 candle",
+    "profit_pct": 154.7825,
+    "max_dd_pct": 15.4104,
+    "calmar": 2.3713,
+    "trades": 92
+   },
+   {
+    "label": "11:00 candle (original)",
+    "profit_pct": 134.3868,
+    "max_dd_pct": 17.682,
+    "calmar": 1.855,
+    "trades": 92
+   },
+   {
+    "label": "17:00 candle",
+    "profit_pct": 130.1288,
+    "max_dd_pct": 17.901,
+    "calmar": 1.7872,
+    "trades": 92
+   },
+   {
+    "label": "23:00 candle",
+    "profit_pct": 148.2517,
+    "max_dd_pct": 15.3965,
+    "calmar": 2.297,
+    "trades": 92
+   },
+   {
+    "label": "acting 1 day(s) late",
+    "profit_pct": 115.8904,
+    "max_dd_pct": 18.0586,
+    "calmar": 1.6177,
+    "trades": 92
+   },
+   {
+    "label": "acting 2 day(s) late",
+    "profit_pct": 94.2164,
+    "max_dd_pct": 20.3482,
+    "calmar": 1.2159,
+    "trades": 94
+   },
+   {
+    "label": "acting 3 day(s) late",
+    "profit_pct": 90.4988,
+    "max_dd_pct": 18.6167,
+    "calmar": 1.286,
+    "trades": 95
+   }
+  ],
+  "R2": [
+   {
+    "label": "TARGET_VOL = 0.25",
+    "profit_pct": 101.8179,
+    "max_dd_pct": 14.7563,
+    "calmar": 1.7854,
+    "trades": 80
+   },
+   {
+    "label": "TARGET_VOL = 0.35",
+    "profit_pct": 139.3231,
+    "max_dd_pct": 20.9821,
+    "calmar": 1.6073,
+    "trades": 101
+   },
+   {
+    "label": "SPEED_SCALE = 0.75",
+    "profit_pct": 134.2521,
+    "max_dd_pct": 18.1536,
+    "calmar": 1.8054,
+    "trades": 98
+   },
+   {
+    "label": "SPEED_SCALE = 1.25",
+    "profit_pct": 107.9214,
+    "max_dd_pct": 18.1361,
+    "calmar": 1.5221,
+    "trades": 77
+   },
+   {
+    "label": "VOL_DAYS = 20",
+    "profit_pct": 124.6282,
+    "max_dd_pct": 18.6416,
+    "calmar": 1.6593,
+    "trades": 96
+   },
+   {
+    "label": "VOL_DAYS = 45",
+    "profit_pct": 127.2341,
+    "max_dd_pct": 17.7315,
+    "calmar": 1.7729,
+    "trades": 86
+   },
+   {
+    "label": "BAND = 0.125",
+    "profit_pct": 115.9115,
+    "max_dd_pct": 19.4221,
+    "calmar": 1.5044,
+    "trades": 136
+   },
+   {
+    "label": "BAND = 0.5",
+    "profit_pct": 135.8344,
+    "max_dd_pct": 17.0574,
+    "calmar": 1.9389,
+    "trades": 42
+   }
+  ],
+  "R3": [
+   {
+    "label": "without BTC",
+    "profit_pct": 88.4808,
+    "max_dd_pct": 14.3825,
+    "calmar": 1.634,
+    "trades": 76
+   },
+   {
+    "label": "without ETH",
+    "profit_pct": 100.3322,
+    "max_dd_pct": 16.3354,
+    "calmar": 1.5938,
+    "trades": 80
+   },
+   {
+    "label": "without SOL",
+    "profit_pct": 87.1868,
+    "max_dd_pct": 14.1151,
+    "calmar": 1.6449,
+    "trades": 75
+   },
+   {
+    "label": "without BNB",
+    "profit_pct": 91.8611,
+    "max_dd_pct": 13.8618,
+    "calmar": 1.7483,
+    "trades": 69
+   },
+   {
+    "label": "without XRP",
+    "profit_pct": 107.8043,
+    "max_dd_pct": 13.8327,
+    "calmar": 1.994,
+    "trades": 68
+   }
+  ]
+ },
+ "bias": {
+  "checked": 15,
+  "failed": []
+ }
+}

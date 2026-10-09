@@ -1,0 +1,3 @@
+rank,strategy,profit_pct,cagr_pct,max_dd_pct,sharpe,sortino,calmar,profit_factor,win_rate_pct,trades,avg_hold_hours,exposure_pct,beats_bh,flags,timeframe,timerange,days,market_change_pct,code_sha
+1,TrendBlendV1,96.9413,25.3207,19.0368,1.3136,2.0621,1.3301,3.6776,25.0,92,955.3667,30.0309,yes,profit factor 3.7 > 3,1h,20231001-20261001,1096.0,234.1618,29fec5aa8bba
+2,BuyHoldV1,231.3705,49.0321,64.9056,0.9408,1.3967,0.7554,,100.0,5,26303.0,99.6347,baseline,,1h,20231001-20261001,1096.0,234.1618,b2e985c30b60

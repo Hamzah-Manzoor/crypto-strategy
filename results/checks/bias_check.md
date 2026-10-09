@@ -1,6 +1,6 @@
 # Bias checks
 
-Freqtrade 2026.9, timeframe 1h. Strategies: MomentumRotationV3, MomentumRotationV3b.
+Freqtrade 2026.9, timeframe 1h. Strategies: TrendBlendV2.
 
 ## Lookahead analysis - does any signal use future candles?
 
@@ -8,29 +8,21 @@ Timerange `20240101-20240703`, all 5 pairs, one strategy per run (with `--strate
 
 | Strategy | Has bias | Signals checked | Biased entries | Biased exits | Biased indicators |
 |---|---|---:|---:|---:|---|
-| MomentumRotationV3 | no | 20 | 0 | 0 | - |
-| MomentumRotationV3b | no | 20 | 0 | 0 | - |
+| TrendBlendV2 | no | 30 | 0 | 0 | - | (slow strategy: window `20231001-20260701`)
 
 ## Recursive analysis - is `startup_candle_count` enough?
 
 BTC/USDT, timerange `20240101-20250101`. Each column shows how far an indicator's last value is off when only that many warm-up candles are available, compared with using all history. Pass = worst error at the strategy's own startup count <= 0.05%.
 
-### MomentumRotationV3 (startup_candle_count = 210)
+### TrendBlendV2 (startup_candle_count = 260)
 
-| Indicators | 100 | 200 | 210 (from strategy) | 400 | 600 | 1000 |
+| Indicators | 100 | 200 | 260 (from strategy) | 400 | 600 | 1000 |
 |---|---|---|---|---|---|---|
-| btc_ok_1d | nan% | - | - | - | - | - |
+| score_1d | nan% | - | - | - | - | - |
+| vol_1d | -0.000% | - | - | - | - | - |
+| weight_1d | nan% | - | - | - | - | - |
 
-Worst indicator error at 210 startup candles: **0.000%** (limit 0.05%) → **PASS**
-
-### MomentumRotationV3b (startup_candle_count = 210)
-
-| Indicators | 100 | 200 | 210 (from strategy) | 400 | 600 | 1000 |
-|---|---|---|---|---|---|---|
-| btc_ok_1d | nan% | - | - | - | - | - |
-| mom_vol_1d | 0.000% | 0.000% | 0.000% | 0.000% | -0.000% | 0.000% |
-
-Worst indicator error at 210 startup candles: **0.000%** (limit 0.05%) → **PASS**
+Worst indicator error at 260 startup candles: **0.000%** (limit 0.05%) → **PASS**
 
 ## Result
 

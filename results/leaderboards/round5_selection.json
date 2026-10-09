@@ -1,0 +1,11 @@
+{
+ "dev_run": "20261009-160432_dev_1h",
+ "pick": "TrendBlendV2",
+ "versions": [
+  "TrendBlendV1",
+  "TrendBlendV2"
+ ],
+ "robustness": {
+  "TrendBlendV2": "20261009-160550_TrendBlendV2"
+ }
+}

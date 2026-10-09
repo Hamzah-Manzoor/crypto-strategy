@@ -1,3 +1,2 @@
-filename,strategy,has_bias,total_signals,biased_entry_signals,biased_exit_signals,biased_indicators
-momentum_rotation_v3.py,MomentumRotationV3,False,20,0,0,
-momentum_rotation_v3b.py,MomentumRotationV3b,False,20,0,0,
+filename,strategy,has_bias,total_signals,biased_entry_signals,biased_exit_signals,biased_indicators,timerange
+trend_blend_v2.py,TrendBlendV2,False,30,0,0,,20231001-20260701

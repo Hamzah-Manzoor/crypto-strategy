@@ -35,6 +35,12 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 - **Shared strategy code:**
   - Import it with `from labkit.base import LabBaseStrategy` and `from labkit.indicators import ...`.
   - This also works inside hyperopt's parallel worker processes, because `docker-compose.yml` sets `PYTHONPATH=/freqtrade/user_data/strategies`. Don't remove that line.
+- **Partial sells in `adjust_trade_position` are counted in purchase cost, not market value.**
+  - Freqtrade sells `|returned stake| × trade.amount / trade.stake_amount`.
+  - To sell X USDT at today's price, return `-X / (trade.amount × rate) × trade.stake_amount`.
+  - TrendBlendV1 got this wrong: winners were over-trimmed, or not trimmed at all. See `TrendBlendV2`.
+- **Strategies that size positions themselves** (custom stake, top-ups, trims) need an order replay check (e.g. `scripts/round5_position_check.py`), because Freqtrade's lookahead check only looks at signals.
+- **Slow strategies:** `check-bias` re-runs lookahead analysis on the whole dev window when the 6-month window has fewer than 10 usable trades.
 - **TA-Lib 0.8 is strict about types.** Pass floats where TA-Lib expects floats (`nbdev=1.0`, not `1`).
 - **Lookahead analysis runs one strategy per call.** With `--strategy-list`, Freqtrade 2026.9 analyses the first strategy's trades for every strategy. `lab.py check-bias` already handles this.
 - **Market loading is spot-only** (`ccxt_config.options.fetchMarkets.types = ["spot"]` in `base.json`), so runs never depend on Binance's futures API.
@@ -62,6 +68,9 @@ Crypto Strategy Lab: a Freqtrade-based lab for **testing many crypto spot tradin
 - **Round 4 exam period `exam2019` (2019-01 → 2021-01):**
   - 1h and 1d data exist only for BTC, ETH, BNB and XRP (from 2018-05). SOL listed in Aug 2020.
   - It's protected like the holdout, and it was **used once by the Round 4 momentum exam** (failed). Treat it as *used* for the momentum family.
+- **Round 5 exam coins** (NEO, LTC, QTUM, ADA, IOTA, XLM, ONT, TRX, ETC; `rules.ROUND5_EXAM_COINS`):
+  - 1h/1d data from their 2018 listings. No strategy here may trade them outside the Round 5 exam; `lab.py` refuses it.
+  - The exam period is `exam5` (2019-01 → 2023-10).
 - **Data before 2023-10-01 (1h and 4h go back to 2020-08-11):** the 7 quarters 2021-12 → 2023-09 were used once, for the quarterly re-tuning test. Treat them as *used* for that idea. Any other idea testing on them needs its own pre-registration.
 - **Out-of-sample is precious:**
   - Choose candidates by a written in-sample rule first (log it in DECISIONS), then run `lab.py validate` **once**.

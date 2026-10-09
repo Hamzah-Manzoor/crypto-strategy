@@ -302,7 +302,8 @@ def write_round2_selection(dev_run: dict) -> tuple[Path, list[str]]:
 def write_exam(exam_run: dict, stress_run: dict | None, detail_run: dict | None, *,
                title: str = "Round 2 exam · holdout · 1h", stem: str = "exam_round2", exam_rules: dict = rules.EXAM,
                prefix: str = "X", rules_ref: str = "docs/research/round2-preregistration.md (numbers in "
-               "scripts/rules.py → EXAM)", bias_names: dict[str, str] | None = None) -> tuple[Path, dict]:
+               "scripts/rules.py → EXAM)", bias_names: dict[str, str] | None = None,
+               exam_fn=rules.exam) -> tuple[Path, dict]:
     """Exam report. bias_names maps an exam-only copy (e.g. the 4-coin variant) to the strategy whose
     bias verdict it inherits."""
     bias = load_bias()
@@ -314,7 +315,7 @@ def write_exam(exam_run: dict, stress_run: dict | None, detail_run: dict | None,
             continue
         stress_m = stress_run["strategies"].get(name) if stress_run else None
         detail_m = detail_run["strategies"].get(name) if detail_run else None
-        status, checks = rules.exam(m, stress_m, bh, bias.get(bias_names.get(name, name)), exam_rules, prefix)
+        status, checks = exam_fn(m, stress_m, bh, bias.get(bias_names.get(name, name)), exam_rules, prefix)
         rows.append({"strategy": name, "status": status, "checks": checks, "m": m,
                      "stress": stress_m["profit_pct"] if stress_m else None,
                      "detail": detail_m["profit_pct"] if detail_m else None})

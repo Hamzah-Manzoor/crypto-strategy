@@ -3,6 +3,8 @@
 Plan and rules: docs/research/robustness-check-plan.md, numbers in rules.ROBUSTNESS.
 lab.py robustness <Strategy> uses these to:
   R1 timing    - weekly strategies: every rebalance slot `timing_step_hours` apart (28 slots);
+                 daily strategies: every decision hour `timing_step_hours` apart (4 slots), plus
+                 acting on the daily view 1, 2, 3 days late (if the strategy has DELAY_DAYS);
                  signal strategies: act on entry/exit signals 1, 2, 3 candles late
   R2 settings  - each declared setting moved to each neighbour value, one at a time
   R3 coins     - leave one coin out (5 runs)
@@ -45,6 +47,17 @@ def timing_variants(info: dict) -> dict[str, str]:
             cls = f"{name}_R1_d{day}h{hour:02d}"
             out[cls] = _class(name, module, cls, f"R1 timing: rebalance on weekday {day} at {hour:02d}:00 UTC.",
                               [f"REBALANCE_WEEKDAY, REBALANCE_HOUR = {day}, {hour}"])
+    elif info.get("daily"):
+        step, hour0 = rules.ROBUSTNESS["timing_step_hours"], info["rebalance"][0]
+        for hour in sorted({(hour0 + i * step) % 24 for i in range(24 // step)}):
+            cls = f"{name}_R1_h{hour:02d}"
+            out[cls] = _class(name, module, cls, f"R1 timing: decide on the {hour:02d}:00 UTC candle.",
+                              [f"REBALANCE_HOUR = {hour}"])
+        if info.get("delay_days"):
+            for k in rules.ROBUSTNESS["signal_delays"]:
+                cls = f"{name}_R1_delay{k}"
+                out[cls] = _class(name, module, cls, f"R1 timing: act on the daily view from {k} day(s) ago.",
+                                  [f"DELAY_DAYS = {k}"])
     else:
         for k in rules.ROBUSTNESS["signal_delays"]:
             cls = f"{name}_R1_late{k}"

@@ -110,6 +110,12 @@ Picks a **bull**, a **bear** and a **sideways** 90-day window **inside each spli
 - **Command:** `python3 scripts/lab.py download --start 20180501 --timeframes 1h 1d --pairs BTC/USDT ETH/USDT BNB/USDT XRP/USDT`.
 - **2019–2020 is protected test data** (`exam2019`): don't backtest on it outside the pre-registered exam.
 
+**Round 5 exam coins (added 2026-10-09):**
+- **What:** 1h and 1d for NEO, LTC, QTUM, ADA, IOTA, XLM, ONT, TRX and ETC, from their Binance listings in 2017–2018. They were chosen by a fixed rule in `docs/research/trend-blend-preregistration.md`.
+- **Coverage:** 99.88%, longest gap 10h. Report: `results/checks/data_check_20180613_1h-1d_NEO-LTC-QTUM-ADA-IOTA-XLM-ONT-TRX-ETC.md`.
+- **Command:** `python3 scripts/lab.py download --start 20180401 --timeframes 1h 1d --pairs NEO/USDT LTC/USDT QTUM/USDT ADA/USDT IOTA/USDT XLM/USDT ONT/USDT TRX/USDT ETC/USDT`.
+- **Exam-only:** `lab.py` refuses any other backtest that includes these coins.
+
 - **All 5 pairs passed:** 100% coverage, no duplicates, no impossible candles and no zero-volume filler candles. Binance's candles needed no repairs.
 - **Data size:** 63 MB.
 - **Full report:** `results/checks/data_check.md`.

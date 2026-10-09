@@ -12,13 +12,12 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**335 entries**, 64 of them out-of-sample looks (in 14 runs).
+**344 entries**, 64 of them out-of-sample looks (in 14 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
-| `BuyHoldV1` | **keep** | Round 4 exam baseline, fee stress | E0334 |
 | `BuyHoldV1` · robustness check | **keep** | ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | E0318 |
 | `EmaTrendV2` · robustness check | **keep** | ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | E0319 |
 | `MomentumRotationV1bMonday` | **keep** | Round 4 reference: full-size V1b at the Monday 12:00 UTC slot | E0325 |
@@ -26,9 +25,11 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `MomentumRotationV1b` · robustness check | **keep** | ROBUST (calibration): profitable in all 28 rebalance slots (+207% to +520%) - timing changes the size, not the sign; still fails the drawdown rules (~40%) | E0321 |
 | `MomentumRotationV3` | **keep** | Round 4 exam pick: eligible (DD 29.7% <= 30%, PF 2.17, 65 trades), ROBUST, best eligible Calmar | E0323 |
 | `MomentumRotationV3` · robustness check | **keep** | ROBUST: 28/28 timings, 8/8 settings, 5/5 coins (+73.9% without SOL), +219 USDT without best 3 trades | E0327 |
+| `TrendBlendV2` · robustness check | **keep** | ROBUST: 7/7 timings (incl. 1-3 days late), 8/8 settings, 5/5 coins, +741 USDT without the best 3 trades | E0340 |
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
+| `BuyHoldV1` | **drop** | rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | E0343 |
 | `DonchianBreakoutV1` | **drop** | DonchianBreakoutV1T IS +19.0% but PF 1.08 < 1.1; not a candidate | E0069 |
 | `DonchianBreakoutV2T` | **drop** | stage 1 FAIL | E0206 |
 | `DonchianBreakoutV2` | **drop** | DonchianBreakoutV2 untuned: IS +52% but OOS -7.6% (stage 1 FAIL) | E0212 |
@@ -51,6 +52,8 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `SqueezeBreakoutV1T` | **drop** | SqueezeBreakoutV1T: stage 1 REVIEW, stage 2 FAIL; +1.2% a year is too small to matter | E0214 |
 | `SqueezeBreakoutV1` | **drop** | SqueezeBreakoutV1T: passed stage 1 (REVIEW, ~1% exposure) but failed stage 2 (38% windows, efficiency n/a) | E0073 |
 | `SqueezeBreakoutV1` + quarterly re-tuning | **drop** | SqueezeBreakoutV1 re-tuned walk-forward: 38% windows, stitched -5.9% | E0238 |
+| `TrendBlendV1` | **drop** | INVALID: trim (partial sell) sizing bug - Freqtrade counts partial sells in purchase cost, V1 asked in market value (found by scripts/round5_position_check.py: 202 trim mismatches). Fixed in TrendBlendV2. | E0337 |
+| `TrendBlendV2` | **drop** | rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | E0344 |
 | `TrendPullbackV1` | **drop** | TrendPullbackV1T still loses in-sample (-4.1%); not a candidate | E0061 |
 | `TrendPullbackV2T` | **drop** | stage 1 FAIL | E0208 |
 | `TrendPullbackV2` | **drop** | TrendPullbackV2T: IS +10.2% but OOS -1.8% (stage 1 FAIL) | E0085 |
@@ -63,6 +66,15 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0344 | 2026-10-09 | backtest | `TrendBlendV2` | custom | 1h | 0.15% | +43.0 | 17.3 | 1.85 | 2.47 | 33 | drop: rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | round 5 exam rehearsal (dev data): fee stress 0.15% | `ae158cf+dirty` |
+| E0343 | 2026-10-09 | backtest | `BuyHoldV1` | custom | 1h | 0.15% | +120.8 | 35.8 | 1.71 | 3.36 | 5 | drop: rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | round 5 exam rehearsal (dev data): fee stress 0.15% | `ae158cf+dirty` |
+| E0342 | 2026-10-09 | backtest | `TrendBlendV2` | custom | 1h | 0.10% | +43.6 | 17.1 | 1.87 | 2.53 | 33 | drop: rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | round 5 exam rehearsal (dev data) | `ae158cf+dirty` |
+| E0341 | 2026-10-09 | backtest | `BuyHoldV1` | custom | 1h | 0.10% | +121.0 | 35.8 | 1.71 | 3.37 | 5 | drop: rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | round 5 exam rehearsal (dev data) | `ae158cf+dirty` |
+| E0340 | 2026-10-09 | robustness | `TrendBlendV2` | dev | 1h | 0.10% | +134.4 | 17.7 | n/a | 1.85 | 92 | keep: ROBUST: 7/7 timings (incl. 1-3 days late), 8/8 settings, 5/5 coins, +741 USDT without the best 3 trades | robustness ROBUST: R1 PASS, R2 PASS, R3 PASS, R4 PASS | `ae158cf+dirty` |
+| E0339 | 2026-10-09 | backtest | `TrendBlendV2` | dev | 1h | 0.10% | +134.4 | 17.7 | 1.64 | 1.85 | 92 | keep: Round 5 exam pick: dev +134.4%, DD 17.7%, Calmar 1.85 vs buy & hold 0.76, ROBUST; orders replayed against the rules | round 5 dev: TrendBlendV2 (V1 with the trim sizing bug fixed) | `ae158cf+dirty` |
+| E0338 | 2026-10-09 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | round 5 dev: TrendBlendV2 (V1 with the trim sizing bug fixed) | `ae158cf+dirty` |
+| E0337 | 2026-10-09 | backtest | `TrendBlendV1` | dev | 1h | 0.10% | +96.9 | 19.0 | 1.31 | 1.33 | 92 | drop: INVALID: trim (partial sell) sizing bug - Freqtrade counts partial sells in purchase cost, V1 asked in market value (found by scripts/round5_position_check.py: 202 trim mismatches). Fixed in TrendBlendV2. | round 5 dev: TrendBlendV1 | `ae158cf+dirty` |
+| E0336 | 2026-10-09 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | keep: Round 5 dev baseline (buy & hold) | round 5 dev: TrendBlendV1 | `ae158cf+dirty` |
 | E0335 | 2026-10-08 | backtest | `MomentumRotationV3_R3_noSOL` | exam2019 👁 | 1h | 0.15% | +91.2 | 24.5 | 1.28 | 1.56 | 37 | drop: Round 4 exam fee stress: +91.2% (H3 passed); exam failed on H5/H6 | round 4 exam: fee stress 0.15% | `c4a888c` |
 | E0334 | 2026-10-08 | backtest | `BuyHoldV1` | exam2019 👁 | 1h | 0.15% | +400.4 | 74.9 | 1.49 | 1.65 | 4 | keep: Round 4 exam baseline, fee stress | round 4 exam: fee stress 0.15% | `c4a888c` |
 | E0333 | 2026-10-08 | backtest | `MomentumRotationV3_R3_noSOL` | exam2019 👁 | 1h | 0.10% | +92.3 | 24.4 | 1.29 | 1.59 | 37 | drop: Round 4 EXAM FAIL: H5 Calmar 1.59 vs buy & hold 1.65; H6 worst quarter -12.2% (2019Q3) < -10%. DD 24.4% vs 74.9% passed | round 4 exam | `c4a888c` |

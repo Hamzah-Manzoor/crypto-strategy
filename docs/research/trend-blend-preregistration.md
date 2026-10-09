@@ -136,3 +136,51 @@ A pass needs **all** of:
 ## 7. Results
 
 _To be filled in at each stage, without editing anything above this line._
+
+### Build and dev selection: 2026-10-09 → **pick: `TrendBlendV2`** (frozen before the exam)
+
+**V1 had a coding bug, found before any selection. It's fixed in V2, with no rule change.**
+- **How it was found:** the order replay (`scripts/round5_position_check.py`) checks every daily decision against the written rules.
+  - V1's buys, top-ups and full sells all matched.
+  - Its **partial sells (trims) didn't:** 202 mismatches.
+- **The cause:** Freqtrade counts a partial sell in *purchase cost*, while V1 asked in *market value*.
+  - A position in profit was trimmed too much.
+  - A big winner couldn't be trimmed at all once the request exceeded the whole position. SOL in late 2023 was refused day after day.
+- **The fix:** V1 already had a logged result, so the fix is a new version, `TrendBlendV2`. That's version 2 of the 3 allowed. V1's dev run (E0337: +96.9%, DD 19.0%) is marked INVALID.
+- **V2's replay:**
+  - 310 of 313 orders match the rules exactly.
+  - The other 3 sit within 0.3% of the ¼-slot threshold, where the replay's wallet value (about 1 USDT off) tips them.
+  - The rebuilt wallet ends within 1.3 USDT of the backtest.
+  - Had the strategy peeked at the unfinished day, 196 buy/sell decisions would have been different, so the check can tell.
+
+**Dev run** `20261009-160432_dev_1h` (2023-10-01 → 2026-10-01, 5 coins, 0.1% fee). Selection: `results/leaderboards/round5_selection.md`.
+
+| | Profit | CAGR | Max DD | Sharpe | Calmar | PF | Trades | Avg hold | In market |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `TrendBlendV2` | +134.4% | +32.8% | **17.7%** | 1.64 | **1.85** | 4.26 | 92 | 40 days | 30% |
+| Buy & hold | +231.4% | +49.0% | 64.9% | 0.94 | 0.76 | — | 5 | — | 100% |
+
+- **Every eligibility rule passed:**
+  - DD ≤ 30%, PF ≥ 1.2, ≥ 30 trades;
+  - Calmar above buy & hold's;
+  - `check-bias` passed (slow strategy, so the whole-dev lookahead window was used: 30 signals, none biased);
+  - **ROBUST.**
+- **Why the profit factor is so high (4.26, above the "suspicious" level of 3):** it's the shape trend following should have.
+  - **Losses:** 68 small ones, averaging −6 USDT, the worst −20.
+  - **Wins:** 24 long ones, averaging +73 USDT, held 5–9 months through real trends (e.g. XRP Nov 2024 → Apr 2025, SOL and BTC in the 2023–24 bull market).
+  - **Spread:** every coin contributed 219–357 USDT. The top 3 trades made 45% of the profit.
+
+**Robustness check: ROBUST** (`results/robustness/20261009-160550_TrendBlendV2.md`). **All 20 variants were profitable, with max DD between 13.8% and 21.0%.**
+- **R1 timing:**
+  - Decided at 05:00, 11:00, 17:00 or 23:00 UTC: Calmar 1.79–2.37.
+  - Acting 1, 2 or 3 days late: still +90% to +116%. The median of the 7 variants is 96% of the original's Calmar.
+- **R2 settings:**
+  - All 8 neighbours profitable, median 93%.
+  - A 25% volatility target gave DD 14.8% and +102%; a 35% target gave DD 21.0% and +139%.
+- **R3 coins:** profitable without any one coin (+87% to +108%), median 89%.
+- **R4:** still +741 USDT without the 3 best trades.
+
+**Exam rehearsal** (`lab.py round5 exam --smoke`, on our 5 coins in 2024; experiments E0341–E0344, marked as a pipeline test, not a result): the whole exam pipeline ran end to end.
+
+**Next:** `lab.py round5 exam` runs **once**, on the 9 new coins over 2019-01-01 → 2023-10-01. The command refuses to run a second time.
+

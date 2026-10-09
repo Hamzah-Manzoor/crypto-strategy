@@ -1,0 +1,8 @@
+{
+ "exam_run": "20261009-163212_custom_1h",
+ "stress_run": "20261009-163224_custom_1h_fee0.15pct",
+ "detail_run": null,
+ "results": {
+  "TrendBlendV2": "FAIL"
+ }
+}

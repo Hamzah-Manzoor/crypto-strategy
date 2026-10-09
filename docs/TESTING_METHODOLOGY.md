@@ -31,6 +31,7 @@ The rules below were written on **2026-10-06, before any out-of-sample result wa
 | **dev** | 2023-10-01 → 2026-10-01 | Building and choosing (= the old IS + OOS; the OOS year was retired after 9 looks) |
 | **holdout** (protected) | 2021-01-01 → 2023-10-01 | Round 2 exam. Spent for the strategies examined on it. |
 | **exam2019** (protected) | 2019-01-01 → 2021-01-01 | Round 4 exam. Only BTC, ETH, BNB and XRP existed then; SOL listed in Aug 2020. |
+| **exam5** (inside the protected years) | 2019-01-01 → 2023-10-01 | Round 5 exam, on 9 coins never traded in this lab (NEO, LTC, QTUM, ADA, IOTA, XLM, ONT, TRX, ETC). `lab.py` refuses those coins outside the exam. |
 
 - **Protected periods:** any backtest touching them needs `--allow-holdout` and is logged as a look. Hyperopt refuses them.
 
