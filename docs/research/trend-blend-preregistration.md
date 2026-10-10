@@ -238,3 +238,24 @@ Quarter by quarter (profit %):
   - **The paper bot** is the reality check, compared with the forward backtest as in Round 3.
 - The 9-coin 2019–23 exam now counts as **used** for trend ideas.
 
+### Paper bot change: catch-up after a sleeping laptop (2026-10-10)
+
+**The problem:**
+- Hamzah's laptop is usually asleep at 5 pm Pakistan time (12:00 UTC), so the paper bot would skip that day's decision.
+- On 2026-10-10 a brief background wake (macOS "DarkWake" at 5:08–5:11 pm) happened to let it trade at 12:10 UTC, but that was luck.
+
+**The change:** the bot now runs **`TrendBlendV2Live`**, a copy that only changes *when* the bot may act.
+- It makes each day's decision the first time it's awake between 12:00 and 22:59 UTC (5 pm – 4 am Pakistan time).
+- It uses the same closed daily candle as V2.
+- Each coin is reviewed once per day, with no decision on stale prices straight after waking, and no same-day re-buy after an emergency stop.
+
+**What is *not* changed:** the strategy being judged is still **`TrendBlendV2`**, and the forward test's verdict is still a forward backtest of V2, which doesn't depend on the laptop.
+
+**Evidence that the copy makes V2's decisions:**
+- **Laptop never asleep** (backtest, dev 2023–26): **identical to V2, order for order** (318 orders, same final balance). Experiments E0349–E0351.
+- **Laptop asleep 12:00–15:59 UTC every day for 3 years** (simulated): **identical to V2 deciding at 16:00 UTC, order for order** (315 orders, same final balance). It acted at the first awake hour, as intended.
+- **Other checks:** `check-bias` passed; container unit tests cover the decision window.
+- **On the live bot:** switched at 19:41 UTC on 2026-10-10. The 4 open positions were kept, each was marked as reviewed for the day, and no extra orders were made.
+
+**Effect on the paper-bot reality check:** if the laptop is awake at some point between 5 pm and 4 am, the bot acts that day, only later and at that hour's prices. A day is only skipped if the laptop sleeps through the whole window.
+

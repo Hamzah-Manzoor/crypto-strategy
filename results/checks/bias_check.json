@@ -155,6 +155,11 @@
    "ok": true,
    "recursive": "pass"
   },
+  "TrendBlendV2Live": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
   "TrendPullbackV1": {
    "lookahead": "pass",
    "ok": true,
@@ -186,5 +191,5 @@
    "recursive": "pass"
   }
  },
- "updated": "2026-10-09 16:04"
+ "updated": "2026-10-10 19:41"
 }

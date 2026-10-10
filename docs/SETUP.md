@@ -134,7 +134,7 @@ Every bot is a **dry-run** Freqtrade: live Binance prices, a fake 1000 USDT wall
 |---|---|---|---|
 | `ema-trend-v2` | `EmaTrendV2` | http://127.0.0.1:8081 | **watch list**: passed Stage 1, failed Stage 2, so it's *not* promoted |
 | `buy-hold` | `BuyHoldV1` | http://127.0.0.1:8082 | baseline: buy & hold from the same start day |
-| `trend-blend` | `TrendBlendV2` | http://127.0.0.1:8083 | **watch list:** passed the Round 5 exam; in its 12-month forward test (until 2027-10-09), *not* promoted yet |
+| `trend-blend` | `TrendBlendV2Live` | http://127.0.0.1:8083 | **watch list:** `TrendBlendV2` passed the Round 5 exam and is in its 12-month forward test (until 2027-10-09), *not* promoted yet. The bot runs its catch-up copy: it decides at 5 pm Pakistan time, or the first time the laptop is awake before 4 am. |
 
 ```bash
 python3 scripts/lab.py bots up        # safety check, generate configs, start, wait, show status
@@ -148,6 +148,10 @@ python3 scripts/lab.py bots down      # stop and remove the containers (database
   - Paper trades survive restarts.
   - To restart a bot from a fresh wallet: `bots down <bot>`, delete its `.sqlite*` files, then `bots up <bot>`.
 - **After a Mac restart:** bots come back with Docker Desktop (`restart: unless-stopped`). They reuse the container exactly as it was created, including its `--dry-run` flag. Any config change only takes effect through `bots up`, which runs the safety check again.
+
+**Changing a bot:** edit `user_data/configs/bots.json`, then run `python3 scripts/lab.py bots up <name>`.
+- The bot's strategy lives in a generated config file that Docker can't see changing, so `bots up` recreates any bot whose generated config changed.
+- Open trades are kept in the bot's database.
 
 ### FreqUI (the web dashboard)
 

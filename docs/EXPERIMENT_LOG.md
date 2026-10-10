@@ -12,12 +12,13 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**348 entries**, 68 of them out-of-sample looks (in 16 runs).
+**351 entries**, 68 of them out-of-sample looks (in 16 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
+| `BuyHoldV1` | **keep** | baseline of the TrendBlendV2Live equivalence check | E0349 |
 | `BuyHoldV1` · robustness check | **keep** | ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | E0318 |
 | `EmaTrendV2` · robustness check | **keep** | ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | E0319 |
 | `MomentumRotationV1bMonday` | **keep** | Round 4 reference: full-size V1b at the Monday 12:00 UTC slot | E0325 |
@@ -25,12 +26,12 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `MomentumRotationV1b` · robustness check | **keep** | ROBUST (calibration): profitable in all 28 rebalance slots (+207% to +520%) - timing changes the size, not the sign; still fails the drawdown rules (~40%) | E0321 |
 | `MomentumRotationV3` | **keep** | Round 4 exam pick: eligible (DD 29.7% <= 30%, PF 2.17, 65 trades), ROBUST, best eligible Calmar | E0323 |
 | `MomentumRotationV3` · robustness check | **keep** | ROBUST: 28/28 timings, 8/8 settings, 5/5 coins (+73.9% without SOL), +219 USDT without best 3 trades | E0327 |
-| `TrendBlendV2` | **keep** | Round 5 exam fee stress: +75.3% (E3 passed); DD 30.0% at 0.15% fee | E0348 |
+| `TrendBlendV2Live` | **keep** | TrendBlendV2Live (paper-bot catch-up copy) = TrendBlendV2 order for order (318 orders, same final balance) | E0351 |
+| `TrendBlendV2` | **keep** | equivalence check: TrendBlendV2 reference (same as E0339) | E0350 |
 | `TrendBlendV2` · robustness check | **keep** | ROBUST: 7/7 timings (incl. 1-3 days late), 8/8 settings, 5/5 coins, +741 USDT without the best 3 trades | E0340 |
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
-| `BuyHoldV1` | **drop** | rehearsal of the Round 5 exam command on 2024 dev data (our coins) - pipeline test, not a result | E0343 |
 | `DonchianBreakoutV1` | **drop** | DonchianBreakoutV1T IS +19.0% but PF 1.08 < 1.1; not a candidate | E0069 |
 | `DonchianBreakoutV2T` | **drop** | stage 1 FAIL | E0206 |
 | `DonchianBreakoutV2` | **drop** | DonchianBreakoutV2 untuned: IS +52% but OOS -7.6% (stage 1 FAIL) | E0212 |
@@ -66,6 +67,9 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0351 | 2026-10-10 | backtest | `TrendBlendV2Live` | dev | 1h | 0.10% | +134.4 | 17.7 | 1.64 | 1.85 | 92 | keep: TrendBlendV2Live (paper-bot catch-up copy) = TrendBlendV2 order for order (318 orders, same final balance) | TrendBlendV2Live equivalence check: must equal TrendBlendV2 when never asleep | `591a537+dirty` |
+| E0350 | 2026-10-10 | backtest | `TrendBlendV2` | dev | 1h | 0.10% | +134.4 | 17.7 | 1.64 | 1.85 | 92 | keep: equivalence check: TrendBlendV2 reference (same as E0339) | TrendBlendV2Live equivalence check: must equal TrendBlendV2 when never asleep | `591a537+dirty` |
+| E0349 | 2026-10-10 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | keep: baseline of the TrendBlendV2Live equivalence check | TrendBlendV2Live equivalence check: must equal TrendBlendV2 when never asleep | `591a537+dirty` |
 | E0348 | 2026-10-09 | backtest | `TrendBlendV2` | exam5 👁 | 1h | 0.15% | +75.3 | 30.0 | 0.78 | 0.42 | 192 | keep: Round 5 exam fee stress: +75.3% (E3 passed); DD 30.0% at 0.15% fee | round 5 exam: fee stress 0.15% | `cb6adfb` |
 | E0347 | 2026-10-09 | backtest | `BuyHoldV1` | exam5 👁 | 1h | 0.15% | +124.1 | 87.7 | 0.62 | 0.21 | 9 | baseline | round 5 exam: fee stress 0.15% | `cb6adfb` |
 | E0346 | 2026-10-09 | backtest | `TrendBlendV2` | exam5 👁 | 1h | 0.10% | +76.9 | 29.5 | 0.79 | 0.43 | 192 | keep: Round 5 EXAM PASS (all E1-E7): +76.9%, DD 29.5% vs buy & hold 87.7%, Calmar 0.43 vs 0.21; orders replayed 469/469; -> watch-list paper bot + 12-month forward test | round 5 exam | `cb6adfb` |

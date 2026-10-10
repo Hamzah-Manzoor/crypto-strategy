@@ -263,6 +263,7 @@ Trend at four speeds with risk-based sizing. Rules and results: [research/trend-
 |---|---|---|
 | `TrendBlendV1` | First implementation | INVALID: partial sells were sized in market value, while Freqtrade counts them in purchase cost |
 | `TrendBlendV2` | V1 with the trim sizing fixed; same rules | **exam PASS** (9 never-traded coins, 2019–23: +76.9%, DD 29.5% vs buy & hold 87.7%, Calmar 0.43 vs 0.21). Paper bot `trend-blend` (watch list) and 12-month forward test until 2027-10-09; **not promoted yet** |
+| `TrendBlendV2Live` | Paper-bot copy of V2: decides the first time the laptop is awake between 5 pm and 4 am Pakistan time, instead of skipping the day | runs the `trend-blend` paper bot; makes V2's orders exactly in backtests (awake, and asleep-then-catch-up). Not a separate strategy |
 
 ---
 

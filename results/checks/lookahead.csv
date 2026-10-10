@@ -1,2 +1,2 @@
 filename,strategy,has_bias,total_signals,biased_entry_signals,biased_exit_signals,biased_indicators,timerange
-trend_blend_v2.py,TrendBlendV2,False,30,0,0,,20231001-20260701
+trend_blend_v2_live.py,TrendBlendV2Live,False,30,0,0,,20231001-20260701

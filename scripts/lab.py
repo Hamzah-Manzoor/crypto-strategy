@@ -951,11 +951,23 @@ def cmd_bots(args: argparse.Namespace) -> None:
             print(f"wrote {path.relative_to(ROOT)}")
         safety_gate()
     elif args.action == "up":
+        # A bot's strategy and settings live in its mounted dryrun/<name>.json, which docker compose
+        # can't see: a bot whose file changed must be recreated, or it keeps running the old one.
+        def config_text(b):
+            path = bots.DRYRUN_DIR / f"{b['name']}.json"
+            return path.read_text() if path.exists() else None
+        before = {b["name"]: config_text(b) for b in selected}
         bots.write_all(registry)
+        changed = [f"bot-{b['name']}" for b in selected
+                   if before[b["name"]] is not None and before[b["name"]] != config_text(b)]
         safety_gate()
         ui_login()
         say(f"Starting {len(services)} dry-run bot(s): {', '.join(services)}")
         run([*bots_compose(), "up", "-d", *services])
+        if changed:
+            say(f"Settings changed for {', '.join(changed)}: recreating so the new settings load "
+                "(open trades are kept in each bot's database)")
+            run([*bots_compose(), "up", "-d", "--force-recreate", *changed])
         say("Waiting for the bots' APIs (first start downloads ~600 candles per pair)")
         deadline = time.time() + args.wait
         pending = list(selected)
@@ -1208,7 +1220,8 @@ def cmd_round5(args: argparse.Namespace) -> None:
     """Round 5 (TrendBlend): pick one version on dev, then the one-time exam on 9 never-traded coins."""
     boards = ROOT / "results" / "leaderboards"
     saved = boards / "round5_selection.json"
-    versions = [s for s in discover_strategies() if s.startswith(rules.ROUND5_PREFIX)]
+    # "...Live" copies only change when a paper bot may act (catch-up after sleep); not strategy versions.
+    versions = [s for s in discover_strategies() if s.startswith(rules.ROUND5_PREFIX) and not s.endswith("Live")]
     if len(versions) > rules.ROUND5_MAX_VERSIONS:
         die(f"{len(versions)} TrendBlend versions exist ({', '.join(versions)}); the limit is {rules.ROUND5_MAX_VERSIONS}")
     if args.action == "select":
@@ -1218,9 +1231,10 @@ def cmd_round5(args: argparse.Namespace) -> None:
         if not runs:
             die("no dev run with a TrendBlend version: lab.py backtest --period dev --strategies <version>")
         dev_run = max(runs, key=lambda r: r["run_id"])
-        candidates = [n for n in dev_run["strategies"] if n.startswith(rules.ROUND5_PREFIX)]
+        dev = {n: m for n, m in dev_run["strategies"].items() if not n.endswith("Live")}   # paper-bot copies
+        candidates = [n for n in dev if n.startswith(rules.ROUND5_PREFIX)]
         robust = {c: latest_robustness(c) for c in candidates}
-        pick, lines = rules.select_round5(dev_run["strategies"], report.load_bias(),
+        pick, lines = rules.select_round5(dev, report.load_bias(),
                                           {c: (r or {}).get("overall") for c, r in robust.items()})
         s = rules.ROUND5_SELECT
         md = boards / "round5_selection.md"

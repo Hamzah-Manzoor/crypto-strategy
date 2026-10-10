@@ -329,3 +329,14 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - The forward test is judged by a forward backtest on 2026-10-09 → 2027-10-09 under `rules.ROUND5_FORWARD`, with a report-only check on 2027-04-09.
   - Promotion needs that pass. The 9-coin 2019–23 data is now *used* for trend ideas.
 
+**2026-10-10: The `trend-blend` paper bot runs `TrendBlendV2Live`, which catches up on missed decisions.**
+- **Why:** Hamzah's laptop sleeps at 5 pm Pakistan time, so V2 would skip most days on the paper bot.
+- **What the copy does:** it decides the first time it's awake between 12:00 and 22:59 UTC, with the same daily candle, once per coin per day.
+- **Evidence:**
+  - Identical to V2 order for order when never asleep (318 orders).
+  - Identical to V2-at-16:00 when asleep 12:00–15:59 UTC daily (315 orders).
+  - Bias checks passed; window unit tests added.
+- **What it changes:** the judged strategy and forward-test verdict stay `TrendBlendV2`.
+- **"...Live" copies don't count as strategy versions,** and Round 5 selection ignores them.
+- **Tooling:** `lab.py bots up` now recreates a bot whose generated config changed. Before, a strategy change in `bots.json` left the old strategy running until a manual down/up.
+

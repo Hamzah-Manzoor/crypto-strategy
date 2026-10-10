@@ -17,10 +17,10 @@
     },
     {
       "name": "trend-blend",
-      "strategy": "TrendBlendV2",
+      "strategy": "TrendBlendV2Live",
       "port": 8083,
       "status": "watch-list",
-      "reason": "Round 5: passed the one-time exam on 9 never-traded coins (2019-23); now in its 12-month forward test. Not promoted until the forward test passes (docs/research/trend-blend-preregistration.md)"
+      "reason": "Round 5: TrendBlendV2 passed the one-time exam on 9 never-traded coins (2019-23); now in its 12-month forward test (judged by a forward backtest of TrendBlendV2). The bot runs TrendBlendV2Live: identical decisions, but it catches up on a missed 5 pm decision when the laptop wakes (until 4 am). Not promoted."
     }
   ]
 }

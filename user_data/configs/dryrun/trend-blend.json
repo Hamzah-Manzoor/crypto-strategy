@@ -1,6 +1,6 @@
 {
   "bot_name": "lab-trend-blend",
-  "strategy": "TrendBlendV2",
+  "strategy": "TrendBlendV2Live",
   "dry_run": true,
   "dry_run_wallet": 1000,
   "initial_state": "running",
