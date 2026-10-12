@@ -80,6 +80,7 @@ Each phase ends with a review stop and one git commit.
   - **2026-10-08:** dev selection done. **V3 picked** (DD 29.7%, ROBUST); V3b dropped (DD 42.2%). The exam ran once the same day: FAIL.
   - See `docs/research/momentum-exposure-preregistration.md`.
 - [x] **Round 5: trend at four speeds with risk-based sizing (`TrendBlendV2`):** pre-registered 2026-10-09. **Exam PASS** on 9 never-traded coins (2019–23), the first strategy in this lab to pass one. See `docs/research/trend-blend-preregistration.md`.
+- [ ] **Round 6: Auction Market Theory (`AuctionValue`):** pre-registered 2026-10-12. Weekly volume-profile value areas: buy failed drops below value and accepted rises above it, and hold cash while value falls. Built on dev, then one exam on the 2021–23 holdout. See `docs/research/auction-value-preregistration.md`.
 - [ ] **`TrendBlendV2` forward test (2026-10-09 → 2027-10-09):**
   - **2027-04-09:** report-only check. Backtest the frozen strategy on the first 6 months of new prices and compare with the `trend-blend` paper bot.
   - **2027-10-09:** verdict under `rules.ROUND5_FORWARD`. Promote to `promoted` only on a pass.

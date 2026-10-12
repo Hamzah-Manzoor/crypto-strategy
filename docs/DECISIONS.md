@@ -340,3 +340,16 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - **"...Live" copies don't count as strategy versions,** and Round 5 selection ignores them.
 - **Tooling:** `lab.py bots up` now recreates a bot whose generated config changed. Before, a strategy change in `bots.json` left the old strategy running until a manual down/up.
 
+
+**2026-10-12: Round 6 pre-registered: Auction Market Theory, "trade where value is going" (`AuctionValue`).**
+- **Hamzah's brief:** a good strategy built on Auction Market Theory. He chose approach C ("full AMT") and approved the rules and testing plan. The Round 5 goals carry over: slow trades, low risk, worst fall ≤ 30%, beat buy & hold risk-adjusted.
+- **The strategy:**
+  - **Weekly value:** a volume profile of the last 7 daily sessions (built from hourly candles), giving the 70% value area and the point of control.
+  - **Market state:** rising, falling or sideways, from how the value area moved against the week before.
+  - **Buys:** a failed drop below value that closes back inside (sideways or rising), or 2 closes above value (rising).
+  - **Sells:** structural stops and target, plus cash when value falls.
+  - **Settings:** textbook values with no tuning. One full slot per trade, with no top-ups or partial sells.
+- **Exam:** the protected holdout (2021-01 → 2023-10, our 5 coins), run once. A new idea family may use it once. Volume-profile levels are a new family; the holdout has only judged a trend filter and momentum rotation.
+- **Rules:** Round 5's dev selection and exam rules, over the holdout's 11 quarters (`rules.ROUND6_*`). At most 3 versions.
+- **Robustness R1 for this strategy:** sessions at 4 boundaries 6 h apart, and acting 1–3 *hours* late (`DELAY_HOURS`) instead of days, because each setup is about the day's own session.
+- Details: `docs/research/auction-value-preregistration.md`.

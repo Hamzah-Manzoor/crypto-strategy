@@ -311,6 +311,55 @@ class Round5RulesTest(unittest.TestCase):
             self.assertIn(text, doc)
 
 
+class Round6RulesTest(unittest.TestCase):
+    m = Round5RulesTest.m
+    BH = {"strategy": "BuyHoldV1", "max_dd_pct": 92.1, "calmar": 0.86}
+
+    def q(self, rets):
+        return [{"quarter": f"q{i}", "ret_pct": r, "partial": False} for i, r in enumerate(rets)]
+
+    def test_exam_uses_the_holdout_quarters(self):
+        ok = self.m("AuctionValueV1", calmar=1.2, quarters=self.q([4.0] * 5 + [0.0] * 2 + [-3.0] * 4))
+        status, checks = rules.exam_round6(ok, self.m("x"), self.BH, True)
+        self.assertEqual(status, "PASS", checks)
+        self.assertIn("5 quarters up vs 4 down, 2 in cash (of 11", checks[5][1])
+        nineteen = self.m("v", calmar=1.2)                                   # Round 5's 19 quarters: wrong length
+        self.assertEqual(rules.exam_round6(nineteen, self.m("x"), self.BH, True)[0], "FAIL")
+        self.assertEqual(rules.exam_round6(self.m("v", calmar=0.86, quarters=ok["quarters"]),
+                                           self.m("x"), self.BH, True)[0], "FAIL")      # E5: must beat 0.86
+        self.assertEqual(rules.ROUND6_FORWARD["min_trades"], 20)
+        self.assertEqual(rules.ROUND6_FORWARD["quarters"], 4)
+
+    def test_selection(self):
+        dev = {"BuyHoldV1": {"strategy": "BuyHoldV1", "calmar": 0.76, "max_dd_pct": 65.0, "profit_pct": 230.0,
+                             "profit_factor": None, "trades": 5},
+               "AuctionValueV1": self.m("AuctionValueV1", calmar=1.0),
+               "TrendBlendV2": self.m("TrendBlendV2", calmar=2.0)}            # another round: never a candidate
+        bias = {n: True for n in dev}
+        pick, lines = rules.select_round6(dev, bias, {"AuctionValueV1": "FRAGILE"})
+        self.assertIsNone(pick)
+        self.assertTrue(any("robustness check FRAGILE" in line for line in lines), lines)
+        pick, _ = rules.select_round6(dev, bias, {"AuctionValueV1": "ROBUST"})
+        self.assertEqual(pick, "AuctionValueV1")
+        for extra in ("AuctionValueV2", "AuctionValueV3", "AuctionValueV4"):
+            dev[extra] = self.m(extra)
+        with self.assertRaises(SystemExit):
+            rules.select_round6(dev, bias, {})
+
+    def test_preregistration_states_the_same_numbers(self):
+        doc = (REPO / "docs" / "research" / "auction-value-preregistration.md").read_text()
+        s, e = rules.ROUND6_SELECT, rules.ROUND6_EXAM
+        for text in (f"max drawdown **≤ {s['max_dd_pct']:g}%**", f"profit factor **≥ {s['min_profit_factor']:g}**",
+                     f"at least **{s['min_trades']}** trades", f"**{s['robustness']}** in `lab.py robustness`",
+                     "Calmar **above buy & hold's**", f"| ≥ {e['min_trades']} |", f"profit factor ≥ {e['min_profit_factor']:g}",
+                     f"max drawdown ≤ {e['max_dd_pct']:g}%", f"worse than −{abs(e['worst_quarter_pct']):g}%",
+                     f"over the {e['quarters']} quarters", f"≥ {rules.ROUND6_FORWARD['min_trades']} trades over "
+                     f"{rules.ROUND6_FORWARD['quarters']} quarters",
+                     f"at most {rules.ROUND6_MAX_VERSIONS - 1} more versions** ({rules.ROUND6_MAX_VERSIONS} in total)",
+                     "2021-01-01 → 2023-10-01", "`AuctionValueV1`"):
+            self.assertIn(text, doc)
+
+
 class RobustnessRulesTest(unittest.TestCase):
     ORIG = {"profit_pct": 100.0, "calmar": 2.0}
 

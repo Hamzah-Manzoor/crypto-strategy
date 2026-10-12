@@ -334,6 +334,33 @@ def exam_round5(m: dict, stress_m: dict | None, bh: dict, bias_ok: bool | None,
     return ("PASS" if all(ok for ok, _ in checks) else "FAIL"), checks
 
 
+# --------------------------------------------------------------------------- Round 6
+# Pre-registered in docs/research/auction-value-preregistration.md (2026-10-12), before any version
+# was built. Dev selection = Round 5's rule. The exam runs once on the protected holdout
+# (2021-01 -> 2023-10, our 5 coins) with Round 5's exam rules over its 11 quarters.
+
+ROUND6_PREFIX = "AuctionValue"   # every version of the idea
+ROUND6_MAX_VERSIONS = 3
+ROUND6_SELECT = ROUND5_SELECT
+ROUND6_EXAM = {**ROUND5_EXAM, "quarters": 11}
+ROUND6_FORWARD = {**ROUND6_EXAM, "min_trades": 20, "quarters": 4}
+
+
+def select_round6(dev_strategies: dict[str, dict], bias: dict[str, bool],
+                  robust: dict[str, str | None]) -> tuple[str | None, list[str]]:
+    """The single eligible AuctionValue version (at most 3 tried) with the highest dev Calmar."""
+    candidates = tuple(sorted(n for n in dev_strategies if n.startswith(ROUND6_PREFIX)))
+    if len(candidates) > ROUND6_MAX_VERSIONS:
+        raise SystemExit(f"{len(candidates)} AuctionValue versions tried, the limit is {ROUND6_MAX_VERSIONS}")
+    return select_one(candidates, ROUND6_SELECT, dev_strategies, bias, robust)
+
+
+def exam_round6(m: dict, stress_m: dict | None, bh: dict, bias_ok: bool | None,
+                r: dict = ROUND6_EXAM, prefix: str = "E") -> tuple[str, list[tuple[bool, str]]]:
+    """Round 6 exam (and forward test with ROUND6_FORWARD): Round 5's rules on the holdout's 11 quarters."""
+    return exam_round5(m, stress_m, bh, bias_ok, r, prefix)
+
+
 # --------------------------------------------------------------------------- Robustness check
 # Plan: docs/research/robustness-check-plan.md (approved 2026-10-07, before any run).
 # Runs on dev data only. A test keeps docs/TESTING_METHODOLOGY.md in sync with these numbers.
