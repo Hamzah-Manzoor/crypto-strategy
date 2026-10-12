@@ -209,3 +209,45 @@ A pass needs **all** of:
 ## 7. Results
 
 _To be filled in at each stage, without editing anything above this line._
+
+### Build and dev selection: 2026-10-12 → **pick: `AuctionValueV2`** (frozen before the exam)
+
+**V1 followed its rules exactly, but wasn't eligible.**
+- **Order replay** (`scripts/round6_trade_check.py`, which rebuilds every trade from candle files by clock time): all **437 of 437** trades match on entry time, setup, exit time, exit reason and exit price.
+  - A first run showed 5 exit-price differences. All were stops hit in the hour the trade opened.
+  - Freqtrade fills those at the stop price. The replay had wrongly assumed the "worst case" fill Freqtrade uses only for trailing stops, so the replay was fixed, not the strategy.
+- **Dev result (E0353):** +30.6%, max DD **32.6%**, profit factor **1.14**, Calmar **0.29** (buy & hold 0.76), 437 trades.
+- **Why, by setup and market state:**
+
+  | Setup | State | Trades | Winners | Profit |
+  |---|---|---:|---:|---:|
+  | accepted rise | rising | 157 | 36% | +558 USDT |
+  | failed drop | sideways | 94 | 51% | +125 USDT |
+  | failed drop | rising | 186 | 26% | **−377 USDT** |
+
+**V2 (version 2 of 3): failed drops only in sideways markets.**
+- **AMT says** buying at the edge of value is a trade for a balanced market; when value is moving, you go with the move. V1 deviated from that by also buying failed drops while value was rising.
+- **The honest note:** this change was *suggested by the dev breakdown*, and the textbook agrees with it. So it's partly fitted to dev data. The robustness gate and the one-time holdout exam are what check it.
+- **Nothing else changed:** same setups, exits, sizing and settings.
+
+**Dev results** (run `20261012-174213_dev_1h`, 2023-10 → 2026-10, 5 coins, 0.1% fee):
+
+| Version | Profit | Max DD | Calmar | Profit factor | Trades | In market | Eligible |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `AuctionValueV1` | +30.6% | 32.6% | 0.29 | 1.14 | 437 | 21% | no (DD, PF, Calmar) |
+| **`AuctionValueV2`** | **+67.5%** | **22.0%** | **0.85** | **1.47** | **257** | **16%** | **yes** |
+| buy & hold | +231.4% | 64.9% | 0.76 | n/a | 5 | 100% | baseline |
+
+**V2's checks:**
+- **Order replay:** all 257 of 257 trades match exactly.
+  - Accepted rises: 157 trades, 36% winners, **+548 USDT**, median hold 4 days.
+  - Failed drops: 100 trades, 49% winners, **+127 USDT**, median hold 1 day.
+- **Bias checks:** passed (30 signals, no lookahead; recursive error 0.000% at 576 warm-up candles). Every robustness variant also passed.
+- **5-minute fills (information, E0358):** the same 257 trades and the same profit. 72 exits move to a different minute within their hour, at the same price.
+- **Robustness: ROBUST** (`results/robustness/20261012-174407_AuctionValueV2.md`).
+  - **R1:** 7 of 7 timing variants profitable; median Calmar 73% of the original's. Sessions ending with the 05:00 or 23:00 UTC candle earn about half as much (Calmar 0.48 / 0.44).
+  - **R2:** 7 of 8 settings variants profitable. The exception: **a 5-session week loses 1.1%** (DD 32.7%).
+  - **R3:** 5 of 5 leave-one-coin-out runs profitable.
+  - **R4:** **the 3 best trades are 86% of the profit** (XRP Nov 2024 +90%, ETH Feb–Mar 2024 +70%, XRP Jul 2025 +38%, all accepted rises). Without them it's +97 USDT, so it passes, but most of the money comes from a few trend rides.
+
+**Selection by the rule** (`results/leaderboards/round6_selection.md`): **`AuctionValueV2`**, the only eligible version. V1 is reported, not eligible. The exam runs once on the holdout.

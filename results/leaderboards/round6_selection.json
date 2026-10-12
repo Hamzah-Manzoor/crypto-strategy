@@ -1,0 +1,12 @@
+{
+ "dev_run": "20261012-174213_dev_1h",
+ "pick": "AuctionValueV2",
+ "versions": [
+  "AuctionValueV1",
+  "AuctionValueV2"
+ ],
+ "robustness": {
+  "AuctionValueV1": null,
+  "AuctionValueV2": "20261012-174407_AuctionValueV2"
+ }
+}

@@ -1089,6 +1089,8 @@ def cmd_robustness(args: argparse.Namespace) -> None:
 
     def label(cls: str) -> str:
         tail = cls.split("_R", 1)[1][2:]
+        if tail.startswith("delay") and tail.endswith("h"):
+            return f"acting {tail[5:-1]} hour(s) late"
         if tail.startswith("delay"):
             return f"acting {tail[5:]} day(s) late"
         if tail.startswith("h") and tail[1:].isdigit():
@@ -1280,6 +1282,69 @@ def cmd_round5(args: argparse.Namespace) -> None:
     print("\n" + md.read_text())
 
 
+def cmd_round6(args: argparse.Namespace) -> None:
+    """Round 6 (AuctionValue): pick one version on dev, then the one-time exam on the 2021-23 holdout."""
+    boards = ROOT / "results" / "leaderboards"
+    saved = boards / "round6_selection.json"
+    # "...Live" copies only change when a paper bot may act (catch-up after sleep); not strategy versions.
+    versions = [s for s in discover_strategies() if s.startswith(rules.ROUND6_PREFIX) and not s.endswith("Live")]
+    if len(versions) > rules.ROUND6_MAX_VERSIONS:
+        die(f"{len(versions)} AuctionValue versions exist ({', '.join(versions)}); the limit is {rules.ROUND6_MAX_VERSIONS}")
+    if args.action == "select":
+        runs = [r for r in report.all_runs() if r["period"] == "dev" and r["timeframe"] == "1h"
+                and abs((r.get("fee") or 0) - STANDARD_FEE) < 1e-9 and not r.get("timeframe_detail")
+                and any(n.startswith(rules.ROUND6_PREFIX) for n in r["strategies"])]
+        if not runs:
+            die("no dev run with an AuctionValue version: lab.py backtest --period dev --strategies <version>")
+        dev_run = max(runs, key=lambda r: r["run_id"])
+        dev = {n: m for n, m in dev_run["strategies"].items() if not n.endswith("Live")}   # paper-bot copies
+        candidates = [n for n in dev if n.startswith(rules.ROUND6_PREFIX)]
+        robust = {c: latest_robustness(c) for c in candidates}
+        pick, lines = rules.select_round6(dev, report.load_bias(),
+                                          {c: (r or {}).get("overall") for c, r in robust.items()})
+        s = rules.ROUND6_SELECT
+        md = boards / "round6_selection.md"
+        md.write_text("\n".join([
+            "# Round 6 · dev selection (pre-registered rule)", "",
+            f"Dev run `{dev_run['run_id']}` ({dev_run['timerange']}, 1h, fee 0.10%). Rule: max drawdown <= "
+            f"{s['max_dd_pct']:g}%, profit > 0, profit factor >= {s['min_profit_factor']:g}, >= {s['min_trades']} "
+            f"trades, Calmar above buy & hold's, bias checks passed, robustness check {s['robustness']}; "
+            "best dev Calmar wins.", "",
+            f"Versions built ({len(versions)} of max {rules.ROUND6_MAX_VERSIONS}): "
+            + ", ".join(f"`{v}`" for v in versions) + ". Versions not in this run were dropped earlier "
+            "(see docs/research/auction-value-preregistration.md).", "",
+            "Robustness reports: " + (", ".join(f"`{r['id']}` ({r['overall']})" for r in robust.values() if r)
+                                      or "none"), "",
+            *lines, "", f"**Exam pick:** {f'`{pick}`' if pick else 'none - the idea is dropped, no exam'}", "",
+        ]))
+        saved.write_text(json.dumps({"dev_run": dev_run["run_id"], "pick": pick, "versions": versions,
+                                     "robustness": {c: (r or {}).get("id") for c, r in robust.items()}},
+                                    indent=1) + "\n")
+        print(md.read_text())
+        return
+
+    if not saved.exists() or not json.loads(saved.read_text())["pick"]:
+        die("no frozen pick: run lab.py round6 select and commit it before the exam")
+    pick = json.loads(saved.read_text())["pick"]
+    period, stem = "holdout", "exam_round6"
+    title = "Round 6 exam · protected holdout 2021-01 → 2023-10 · our 5 coins · 1h"
+    if args.smoke:  # rehearse the exact pipeline on dev dates; nothing protected is touched
+        period, stem = "20240101-20250101", "exam_round6_smoke"
+        title = "Round 6 exam REHEARSAL on dev data (our 5 coins, 2024)"
+    elif (boards / f"{stem}.json").exists():
+        die("the Round 6 exam has already run - it runs once (results/leaderboards/exam_round6.md)")
+    say(f"Round 6 {'REHEARSAL' if args.smoke else 'EXAM'}: {pick} on our 5 coins "
+        f"({resolve_period(period)[1]}), with buy & hold of the same coins")
+    note = "round 6 exam" + (" rehearsal (dev data)" if args.smoke else "")
+    exam_run = backtest_run(period, "1h", STANDARD_FEE, None, [pick], note, True)
+    stress = backtest_run(period, "1h", STRESS_FEE, None, [pick], note + ": fee stress 0.15%", True)
+    detail = backtest_run(period, "1h", STANDARD_FEE, "5m", [pick], note + ": 5m intra-candle fills (information)", True)
+    md, _ = report.write_exam(exam_run, stress, detail, title=title, stem=stem, exam_rules=rules.ROUND6_EXAM,
+                              prefix="E", rules_ref="docs/research/auction-value-preregistration.md "
+                              "(numbers in scripts/rules.py → ROUND6_EXAM)", exam_fn=rules.exam_round6)
+    print("\n" + md.read_text())
+
+
 def cmd_ft(args: argparse.Namespace) -> None:
     """Run any raw Freqtrade command in the container (safety check first)."""
     if not args.ft_args:
@@ -1385,6 +1450,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--smoke", action="store_true",
                    help="exam: rehearse the whole pipeline on 2024 dev data instead (touches nothing protected)")
     p = add("round5", cmd_round5)
+    p.add_argument("action", choices=["select", "exam"])
+    p.add_argument("--smoke", action="store_true",
+                   help="exam: rehearse the whole pipeline on our 5 coins and 2024 dev data (touches nothing protected)")
+    p = add("round6", cmd_round6)
     p.add_argument("action", choices=["select", "exam"])
     p.add_argument("--smoke", action="store_true",
                    help="exam: rehearse the whole pipeline on our 5 coins and 2024 dev data (touches nothing protected)")

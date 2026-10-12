@@ -265,6 +265,25 @@ Trend at four speeds with risk-based sizing. Rules and results: [research/trend-
 | `TrendBlendV2` | V1 with the trim sizing fixed; same rules | **exam PASS** (9 never-traded coins, 2019–23: +76.9%, DD 29.5% vs buy & hold 87.7%, Calmar 0.43 vs 0.21). Paper bot `trend-blend` (watch list) and 12-month forward test until 2027-10-09; **not promoted yet** |
 | `TrendBlendV2Live` | Paper-bot copy of V2: decides the first time the laptop is awake between 5 pm and 4 am Pakistan time, instead of skipping the day | runs the `trend-blend` paper bot; makes V2's orders exactly in backtests (awake, and asleep-then-catch-up). Not a separate strategy |
 
+## Round 6 strategies (2026-10-12)
+
+Auction Market Theory, "trade where value is going". Rules and results: [research/auction-value-preregistration.md](research/auction-value-preregistration.md).
+
+- **Session:** 24 hours ending 12:00 UTC (5 pm Pakistan time), decided when it closes.
+- **Weekly value:**
+  - a volume profile of the 7 sessions before today, built from hourly candles, with each candle's volume spread over its own range;
+  - the point of control (busiest price) and the 70% value area (value low / value high).
+- **State:** rising or falling when both value edges moved up or down against the week before; otherwise sideways.
+- **Buys:**
+  - **failed drop:** today traded below value low but closed back inside. Target is value high, stop is today's low.
+  - **accepted rise:** two closes above value high while value is rising. Stop is value low; sell on a close below the point of control.
+- **Sells:** everything goes to cash when value is falling. One full slot per trade.
+
+| Strategy | What it is | Status |
+|---|---|---|
+| `AuctionValueV1` | First version: failed drops in sideways **or rising** markets | not eligible on dev (DD 32.6%, profit factor 1.14, Calmar 0.29 vs buy & hold 0.76); failed drops in rising markets lost 377 USDT |
+| `AuctionValueV2` | V1 with failed drops only in **sideways** markets (the textbook's balance trade) | **exam pick** (dev +67.5%, DD 22.0%, Calmar 0.85 vs 0.76, ROBUST); exam on the 2021–23 holdout pending |
+
 ---
 
 ## Bias checks (Phase 4, `lab.py check-bias`)

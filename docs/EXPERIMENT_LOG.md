@@ -12,12 +12,14 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**351 entries**, 68 of them out-of-sample looks (in 16 runs).
+**359 entries**, 68 of them out-of-sample looks (in 16 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
+| `AuctionValueV2` | **keep** | Information: 5m intra-candle fills give the same trades and profit (72 exits move within their hour, same prices). | E0358 |
+| `AuctionValueV2` · robustness check | **keep** | Robustness ROBUST: R1 7/7 (median Calmar 73%), R2 7/8 (PROFILE_SESSIONS=5 loses 1.1%), R3 5/5, R4 +97 USDT without the best 3 trades. | E0359 |
 | `BuyHoldV1` | **keep** | baseline of the TrendBlendV2Live equivalence check | E0349 |
 | `BuyHoldV1` · robustness check | **keep** | ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | E0318 |
 | `EmaTrendV2` · robustness check | **keep** | ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | E0319 |
@@ -32,6 +34,7 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
+| `AuctionValueV1` | **drop** | Same result as E0353, re-run beside V2 for the selection report. Not eligible: DD 32.6%, PF 1.14, Calmar 0.29 < B&H 0.76. | E0355 |
 | `DonchianBreakoutV1` | **drop** | DonchianBreakoutV1T IS +19.0% but PF 1.08 < 1.1; not a candidate | E0069 |
 | `DonchianBreakoutV2T` | **drop** | stage 1 FAIL | E0206 |
 | `DonchianBreakoutV2` | **drop** | DonchianBreakoutV2 untuned: IS +52% but OOS -7.6% (stage 1 FAIL) | E0212 |
@@ -67,6 +70,14 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0359 | 2026-10-12 | robustness | `AuctionValueV2` | dev | 1h | 0.10% | +67.5 | 22.0 | n/a | 0.85 | 257 | keep: Robustness ROBUST: R1 7/7 (median Calmar 73%), R2 7/8 (PROFILE_SESSIONS=5 loses 1.1%), R3 5/5, R4 +97 USDT without the best 3 trades. | robustness ROBUST: R1 PASS, R2 PASS, R3 PASS, R4 PASS | `cf6ec76+dirty` |
+| E0358 | 2026-10-12 | backtest | `AuctionValueV2` | dev | 1h+5m | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | keep: Information: 5m intra-candle fills give the same trades and profit (72 exits move within their hour, same prices). | Round 6: AuctionValueV2 dev with 5m intra-candle fills (information) | `cf6ec76+dirty` |
+| E0357 | 2026-10-12 | backtest | `BuyHoldV1` | dev | 1h+5m | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 6: AuctionValueV2 dev with 5m intra-candle fills (information) | `cf6ec76+dirty` |
+| E0356 | 2026-10-12 | backtest | `AuctionValueV2` | dev | 1h | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | keep: Round 6 exam pick by the pre-registered dev rule: DD 22.0%, PF 1.47, 257 trades, Calmar 0.85 > B&H 0.76, bias passed, ROBUST. Order replay 257/257 exact. Top 3 trades = 86% of profit (R4 still > 0). | Round 6: V1 and V2 (failed drops only in sideways markets) on dev | `cf6ec76+dirty` |
+| E0355 | 2026-10-12 | backtest | `AuctionValueV1` | dev | 1h | 0.10% | +30.6 | 32.6 | 0.58 | 0.29 | 437 | drop: Same result as E0353, re-run beside V2 for the selection report. Not eligible: DD 32.6%, PF 1.14, Calmar 0.29 < B&H 0.76. | Round 6: V1 and V2 (failed drops only in sideways markets) on dev | `cf6ec76+dirty` |
+| E0354 | 2026-10-12 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 6: V1 and V2 (failed drops only in sideways markets) on dev | `cf6ec76+dirty` |
+| E0353 | 2026-10-12 | backtest | `AuctionValueV1` | dev | 1h | 0.10% | +30.6 | 32.6 | 0.58 | 0.29 | 437 | tweak: Order replay: all 437 trades follow the written rules. Not eligible on dev (DD 32.6% > 30, PF 1.14, Calmar 0.29 < B&H 0.76). Failed drops in rising markets lost (186 trades, -377 USDT) vs +125 in sideways ones; AMT says responsive buying is for balance -> AuctionValueV2. | Round 6: AuctionValueV1 dev run (pre-registered rules) | `cf6ec76+dirty` |
+| E0352 | 2026-10-12 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 6: AuctionValueV1 dev run (pre-registered rules) | `cf6ec76+dirty` |
 | E0351 | 2026-10-10 | backtest | `TrendBlendV2Live` | dev | 1h | 0.10% | +134.4 | 17.7 | 1.64 | 1.85 | 92 | keep: TrendBlendV2Live (paper-bot catch-up copy) = TrendBlendV2 order for order (318 orders, same final balance) | TrendBlendV2Live equivalence check: must equal TrendBlendV2 when never asleep | `591a537+dirty` |
 | E0350 | 2026-10-10 | backtest | `TrendBlendV2` | dev | 1h | 0.10% | +134.4 | 17.7 | 1.64 | 1.85 | 92 | keep: equivalence check: TrendBlendV2 reference (same as E0339) | TrendBlendV2Live equivalence check: must equal TrendBlendV2 when never asleep | `591a537+dirty` |
 | E0349 | 2026-10-10 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | keep: baseline of the TrendBlendV2Live equivalence check | TrendBlendV2Live equivalence check: must equal TrendBlendV2 when never asleep | `591a537+dirty` |

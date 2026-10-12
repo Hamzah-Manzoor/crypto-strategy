@@ -424,6 +424,16 @@ class RobustnessVariantsTest(unittest.TestCase):
             ast.parse(src)
         no_delay = robustness.timing_variants({**info, "delay_days": False})
         self.assertEqual(len(no_delay), 4)
+        # Round 6: a daily decision about the day's own session is delayed by hours, not days.
+        hours = robustness.timing_variants({**info, "strategy": "AuctionValueV1", "module": "auction_value_v1",
+                                            "delay_days": False, "delay_hours": True})
+        self.assertEqual(sorted(hours), sorted(["AuctionValueV1_R1_h05", "AuctionValueV1_R1_h11",
+                                                "AuctionValueV1_R1_h17", "AuctionValueV1_R1_h23",
+                                                "AuctionValueV1_R1_delay1h", "AuctionValueV1_R1_delay2h",
+                                                "AuctionValueV1_R1_delay3h"]))
+        self.assertIn("DELAY_HOURS = 2", hours["AuctionValueV1_R1_delay2h"])
+        for src in hours.values():
+            ast.parse(src)
 
     def test_signal_delay_variants_shift_only_into_the_past(self):
         import robustness

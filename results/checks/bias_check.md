@@ -1,6 +1,6 @@
 # Bias checks
 
-Freqtrade 2026.9, timeframe 1h. Strategies: TrendBlendV2Live.
+Freqtrade 2026.9, timeframe 1h. Strategies: AuctionValueV1, AuctionValueV2.
 
 ## Lookahead analysis - does any signal use future candles?
 
@@ -8,21 +8,34 @@ Timerange `20240101-20240703`, all 5 pairs, one strategy per run (with `--strate
 
 | Strategy | Has bias | Signals checked | Biased entries | Biased exits | Biased indicators |
 |---|---|---:|---:|---:|---|
-| TrendBlendV2Live | no | 30 | 0 | 0 | - | (slow strategy: window `20231001-20260701`)
+| AuctionValueV1 | no | 30 | 0 | 0 | - |
+| AuctionValueV2 | no | 30 | 0 | 0 | - |
 
 ## Recursive analysis - is `startup_candle_count` enough?
 
 BTC/USDT, timerange `20240101-20250101`. Each column shows how far an indicator's last value is off when only that many warm-up candles are available, compared with using all history. Pass = worst error at the strategy's own startup count <= 0.05%.
 
-### TrendBlendV2Live (startup_candle_count = 260)
+### AuctionValueV1 (startup_candle_count = 576)
 
-| Indicators | 100 | 200 | 260 (from strategy) | 400 | 600 | 1000 |
+| Indicators | 100 | 200 | 400 | 576 (from strategy) | 600 | 1000 |
 |---|---|---|---|---|---|---|
-| score_1d | nan% | - | - | - | - | - |
-| vol_1d | -0.000% | - | - | - | - | - |
-| weight_1d | nan% | - | - | - | - | - |
+| av_val | nan% | nan% | - | - | - | - |
+| av_poc | nan% | nan% | - | - | - | - |
+| av_vah | nan% | nan% | - | - | - | - |
+| av_state | nan% | nan% | - | - | - | - |
 
-Worst indicator error at 260 startup candles: **0.000%** (limit 0.05%) → **PASS**
+Worst indicator error at 576 startup candles: **0.000%** (limit 0.05%) → **PASS**
+
+### AuctionValueV2 (startup_candle_count = 576)
+
+| Indicators | 100 | 200 | 400 | 576 (from strategy) | 600 | 1000 |
+|---|---|---|---|---|---|---|
+| av_val | nan% | nan% | - | - | - | - |
+| av_poc | nan% | nan% | - | - | - | - |
+| av_vah | nan% | nan% | - | - | - | - |
+| av_state | nan% | nan% | - | - | - | - |
+
+Worst indicator error at 576 startup candles: **0.000%** (limit 0.05%) → **PASS**
 
 ## Result
 

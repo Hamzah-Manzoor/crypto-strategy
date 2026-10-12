@@ -38,6 +38,7 @@ def main(name: str) -> None:
         "weekly": weekly,
         "daily": daily,
         "delay_days": hasattr(cls, "DELAY_DAYS"),            # can act on an older daily view
+        "delay_hours": hasattr(cls, "DELAY_HOURS"),          # can act on a daily decision hours late
         "rebalance": [cls.REBALANCE_WEEKDAY, cls.REBALANCE_HOUR] if weekly else
                      ([cls.REBALANCE_HOUR] if daily else None),
         "universe": list(getattr(cls, "UNIVERSE", []) or []) or None,

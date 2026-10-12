@@ -353,3 +353,18 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
 - **Rules:** Round 5's dev selection and exam rules, over the holdout's 11 quarters (`rules.ROUND6_*`). At most 3 versions.
 - **Robustness R1 for this strategy:** sessions at 4 boundaries 6 h apart, and acting 1–3 *hours* late (`DELAY_HOURS`) instead of days, because each setup is about the day's own session.
 - Details: `docs/research/auction-value-preregistration.md`.
+
+**2026-10-12: Round 6 dev selection: `AuctionValueV2` frozen as the exam pick.**
+- **V1 matched its written rules exactly** (order replay 437/437) **but wasn't eligible:** DD 32.6%, profit factor 1.14, Calmar 0.29 vs buy & hold 0.76.
+  - Failed drops bought while value was *rising* lost (186 trades, −377 USDT). In sideways markets they earned money (94 trades, +125 USDT).
+- **V2 (version 2 of 3):** failed drops only in sideways markets, as the AMT textbook prescribes (responsive buying belongs to balance).
+  - **Recorded honestly:** this change was suggested by the dev breakdown, so it's partly fitted. The holdout exam checks it.
+- **V2 on dev:** +67.5%, DD 22.0%, Calmar 0.85 (buy & hold 0.76), profit factor 1.47, 257 trades, 16% invested on average.
+  - **Checks:** order replay 257/257; bias checks passed; 5-minute fills give the same result.
+  - **ROBUST:** R1 7/7, R2 7/8 (a 5-session week loses 1.1%), R3 5/5, R4 +97 USDT without the 3 best trades.
+- **Caveat:** the 3 best trades (accepted rises in XRP and ETH rallies) made 86% of dev profit.
+- **Tooling:**
+  - `lab.py round6 select|exam [--smoke]`;
+  - robustness R1 "acting 1–3 hours late" for strategies with `DELAY_HOURS`;
+  - `scripts/round6_trade_check.py`;
+  - `labkit/auction.py` (volume profile and value area, tested against a slow cell-by-cell version).

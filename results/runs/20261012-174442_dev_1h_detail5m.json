@@ -1,0 +1,214 @@
+{
+ "run_id": "20261012-174442_dev_1h_detail5m",
+ "period": "dev",
+ "timerange": "20231001-20261001",
+ "timeframe": "1h",
+ "timeframe_detail": "5m",
+ "fee": 0.001,
+ "notes": "Round 6: AuctionValueV2 dev with 5m intra-candle fills (information)",
+ "zip": "user_data/backtest_results/20261012-174442_dev_1h_detail5m/backtest-result-2026-10-12_17-47-12.zip",
+ "strategies": {
+  "BuyHoldV1": {
+   "strategy": "BuyHoldV1",
+   "timeframe": "1h",
+   "timeframe_detail": "5m",
+   "timerange": "20231001-20261001",
+   "start": "2023-10-01 00:00:00",
+   "end": "2026-10-01 00:00:00",
+   "days": 1096.0,
+   "trades": 5,
+   "win_rate_pct": 100.0,
+   "profit_factor": null,
+   "avg_hold_hours": 26303.0,
+   "market_change_pct": 234.1618,
+   "final_balance": 3313.7054,
+   "stoploss": -0.99,
+   "minimal_roi": {
+    "0": 1000.0
+   },
+   "trailing_stop": false,
+   "code_sha": "b2e985c30b60",
+   "ft_trade_max_dd_pct": 0.0,
+   "ft_wallet_max_dd_pct": 64.9056,
+   "profit_pct": 231.3705,
+   "cagr_pct": 49.0321,
+   "max_dd_pct": 64.9056,
+   "sharpe": 0.9408,
+   "sortino": 1.3967,
+   "calmar": 0.7554,
+   "exposure_pct": 99.6347,
+   "profit_abs_total": 2313.7054,
+   "best_trades_profit_abs": [
+    897.1104051,
+    509.7881439,
+    414.30549277
+   ],
+   "quarters": [
+    {
+     "quarter": "2023Q4",
+     "ret_pct": 104.3251,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q1",
+     "ret_pct": 77.2261,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q2",
+     "ret_pct": -18.0949,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q3",
+     "ret_pct": 0.4618,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q4",
+     "ret_pct": 44.6047,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q1",
+     "ret_pct": -22.1955,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q2",
+     "ret_pct": 19.4153,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q3",
+     "ret_pct": 31.9294,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q4",
+     "ret_pct": -30.5574,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q1",
+     "ret_pct": -28.9063,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q2",
+     "ret_pct": -15.2987,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q3",
+     "ret_pct": 50.2666,
+     "partial": false
+    }
+   ],
+   "quarters_total": 12,
+   "quarters_profitable": 7,
+   "worst_quarter_pct": -30.5574
+  },
+  "AuctionValueV2": {
+   "strategy": "AuctionValueV2",
+   "timeframe": "1h",
+   "timeframe_detail": "5m",
+   "timerange": "20231001-20261001",
+   "start": "2023-10-01 00:00:00",
+   "end": "2026-10-01 00:00:00",
+   "days": 1096.0,
+   "trades": 257,
+   "win_rate_pct": 41.2451,
+   "profit_factor": 1.4712,
+   "avg_hold_hours": 80.8333,
+   "market_change_pct": 234.1618,
+   "final_balance": 1674.7106,
+   "stoploss": -0.3,
+   "minimal_roi": {
+    "0": 100.0
+   },
+   "trailing_stop": false,
+   "code_sha": "ea89a84b03e6",
+   "ft_trade_max_dd_pct": 17.1574,
+   "ft_wallet_max_dd_pct": 22.0006,
+   "profit_pct": 67.4711,
+   "cagr_pct": 18.7349,
+   "max_dd_pct": 22.0006,
+   "sharpe": 1.1115,
+   "sortino": 1.8585,
+   "calmar": 0.8516,
+   "exposure_pct": 16.1476,
+   "profit_abs_total": 674.7106,
+   "best_trades_profit_abs": [
+    278.452467,
+    165.73581289,
+    133.63263597
+   ],
+   "quarters": [
+    {
+     "quarter": "2023Q4",
+     "ret_pct": 23.449,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q1",
+     "ret_pct": 22.7055,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q2",
+     "ret_pct": -5.5541,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q3",
+     "ret_pct": 3.9063,
+     "partial": false
+    },
+    {
+     "quarter": "2024Q4",
+     "ret_pct": 26.3027,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q1",
+     "ret_pct": -5.8567,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q2",
+     "ret_pct": 0.8556,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q3",
+     "ret_pct": 5.7456,
+     "partial": false
+    },
+    {
+     "quarter": "2025Q4",
+     "ret_pct": -0.2061,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q1",
+     "ret_pct": -6.4529,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q2",
+     "ret_pct": -2.3369,
+     "partial": false
+    },
+    {
+     "quarter": "2026Q3",
+     "ret_pct": -2.5175,
+     "partial": false
+    }
+   ],
+   "quarters_total": 12,
+   "quarters_profitable": 6,
+   "worst_quarter_pct": -6.4529
+  }
+ }
+}
