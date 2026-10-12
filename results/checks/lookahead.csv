@@ -1,3 +1,2 @@
 filename,strategy,has_bias,total_signals,biased_entry_signals,biased_exit_signals,biased_indicators
-auction_value_v1.py,AuctionValueV1,False,30,0,0,
-auction_value_v2.py,AuctionValueV2,False,30,0,0,
+auction_value_v2_live.py,AuctionValueV2Live,False,30,0,0,

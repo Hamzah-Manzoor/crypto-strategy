@@ -282,7 +282,8 @@ Auction Market Theory, "trade where value is going". Rules and results: [researc
 | Strategy | What it is | Status |
 |---|---|---|
 | `AuctionValueV1` | First version: failed drops in sideways **or rising** markets | not eligible on dev (DD 32.6%, profit factor 1.14, Calmar 0.29 vs buy & hold 0.76); failed drops in rising markets lost 377 USDT |
-| `AuctionValueV2` | V1 with failed drops only in **sideways** markets (the textbook's balance trade) | **exam pick** (dev +67.5%, DD 22.0%, Calmar 0.85 vs 0.76, ROBUST); exam on the 2021–23 holdout pending |
+| `AuctionValueV2` | V1 with failed drops only in **sideways** markets (the textbook's balance trade) | **exam PASS** (2021–23 holdout: +193.6%, DD 21.8% vs buy & hold 92.1%, Calmar 2.20 vs 0.86; 74% of profit from 3 trend rides in 2021, failed drops −795 USDT). Paper bot `auction-value` (watch list) and 12-month forward test until 2027-10-12; **not promoted yet** |
+| `AuctionValueV2Live` | Paper-bot copy of V2: acts on a missed 5 pm decision the first time the laptop is awake before 4:59 am Pakistan time, unless V2's trade would already be over | runs the `auction-value` paper bot; makes V2's trades exactly when never asleep (257/257 on dev). Not a separate strategy |
 
 ---
 

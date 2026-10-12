@@ -1,0 +1,4 @@
+rank,strategy,profit_pct,cagr_pct,max_dd_pct,sharpe,sortino,calmar,profit_factor,win_rate_pct,trades,avg_hold_hours,exposure_pct,beats_bh,flags,timeframe,timerange,days,market_change_pct,code_sha
+1,AuctionValueV2,67.4709,18.7349,22.0007,1.1115,1.8584,0.8516,1.4712,41.2451,257,80.7,16.1482,yes,,1h,20231001-20261001,1096.0,234.1618,ea89a84b03e6
+2,AuctionValueV2Live,67.4709,18.7349,22.0007,1.1115,1.8584,0.8516,1.4712,41.2451,257,80.7,16.1482,yes,,1h,20231001-20261001,1096.0,234.1618,a4e1947b7b0d
+3,BuyHoldV1,231.3705,49.0321,64.9056,0.9408,1.3967,0.7554,,100.0,5,26303.0,99.6347,baseline,,1h,20231001-20261001,1096.0,234.1618,b2e985c30b60

@@ -368,3 +368,28 @@ Short log of key decisions and why. Newest at the bottom. Format: **date: decisi
   - robustness R1 "acting 1–3 hours late" for strategies with `DELAY_HOURS`;
   - `scripts/round6_trade_check.py`;
   - `labkit/auction.py` (volume profile and value area, tested against a slow cell-by-cell version).
+
+**2026-10-12: Round 6 exam passed; `AuctionValueV2` starts its forward test as a watch-list paper bot.**
+- **Exam:** the 2021–23 holdout, our 5 coins, run once. All of E1–E7 passed:
+  - +193.6% (buy & hold +397.6%);
+  - worst fall 21.8% (buy & hold 92.1%);
+  - Calmar 2.20 (buy & hold 0.86);
+  - profit factor 1.62, 237 trades;
+  - +180.3% at a 0.15% fee;
+  - 6 up / 5 down quarters, worst −11.7%.
+- **Checked because it looked too good:**
+  - The order replay matches all 237 trades.
+  - 5-minute fills give the same profit.
+  - Buy & hold matches the Round 2 run on the same data.
+- **Caveats recorded:**
+  - **Concentration:** the 3 best trades (SOL and XRP in the 2021 boom) are 74% of the profit.
+  - **Accepted rises earned everything:** +2,731 USDT. **Failed drops lost 795 USDT**, even with V2's sideways-only rule.
+  - Removing failed drops would be a new version that needs fresh data. It's logged as an idea in ROADMAP and not done here.
+- **Paper bot `auction-value` (port 8084)** runs `AuctionValueV2Live`.
+  - A missed 5 pm decision is acted on when the laptop wakes (until 4:59 am Pakistan time), unless V2's trade would already be over.
+  - **Evidence:**
+    - Identical to V2 when never asleep (257/257 trades on dev).
+    - Simulated asleep 5–9 pm daily: every buy and daily sell happened at the first awake hour. 237 trades match V2 acting then; the other 20 were correctly skipped because price had already hit the stop or target.
+    - Bias checks passed.
+- **Forward test:** judged by a forward backtest of `AuctionValueV2` on 2026-10-12 → 2027-10-12 under `rules.ROUND6_FORWARD`, with a report-only check on 2027-04-12 that reports both setups separately.
+- **The holdout is now *used* for AMT / volume-profile ideas.**

@@ -1,0 +1,8 @@
+{
+ "exam_run": "20261012-175537_holdout_1h",
+ "stress_run": "20261012-175554_holdout_1h_fee0.15pct",
+ "detail_run": "20261012-175610_holdout_1h_detail5m",
+ "results": {
+  "AuctionValueV2": "PASS"
+ }
+}

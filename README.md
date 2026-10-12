@@ -33,7 +33,11 @@ All 8 build phases are done. See [ROADMAP](docs/ROADMAP.md).
      - **How it works:** a daily trend score from four moving averages, with positions sized by each coin's volatility.
      - **The exam:** on 9 coins this lab had never traded (2019–23), its worst fall was 29.5% vs buy & hold's 88%, at twice the return per unit of risk.
      - **Next:** it's in a 12-month forward test and isn't promoted yet. See [Round 5](docs/research/trend-blend-preregistration.md).
-- **Paper trading now:** `EmaTrendV2` (watch list, :8081), a buy & hold baseline (:8082) and **`TrendBlendV2` (watch list, :8083)** run as dry-run bots. Dashboards are at http://127.0.0.1:8081, :8082 and :8083.
+  10. **Round 6: `AuctionValueV2`, Auction Market Theory, passed its one-shot exam too.**
+      - **How it works:** a weekly volume profile marks where the market found "value". It buys a rise that is accepted above value (2 closes) while value is moving up, or a failed drop below value in a sideways market, and holds cash while value moves down.
+      - **The exam:** on the 2021–23 holdout, +194% with a worst fall of 21.8% vs buy & hold's 92%. Most of that came from a few trend rides in the 2021 boom, and the failed-drop half lost money.
+      - **Next:** a 12-month forward test, not promoted yet. See [Round 6](docs/research/auction-value-preregistration.md).
+- **Paper trading now:** `EmaTrendV2` (watch list, :8081), a buy & hold baseline (:8082), **`TrendBlendV2` (watch list, :8083)** and **`AuctionValueV2` (watch list, :8084)** run as dry-run bots. Dashboards are at http://127.0.0.1:8081 to :8084.
 
 ## Quick start (macOS)
 

@@ -12,13 +12,13 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**359 entries**, 68 of them out-of-sample looks (in 16 runs).
+**374 entries**, 74 of them out-of-sample looks (in 19 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
-| `AuctionValueV2` | **keep** | Information: 5m intra-candle fills give the same trades and profit (72 exits move within their hour, same prices). | E0358 |
+| `AuctionValueV2` | **keep** | Exam with 5m intra-candle fills (information): +193.6%, same as hourly. | E0371 |
 | `AuctionValueV2` · robustness check | **keep** | Robustness ROBUST: R1 7/7 (median Calmar 73%), R2 7/8 (PROFILE_SESSIONS=5 loses 1.1%), R3 5/5, R4 +97 USDT without the best 3 trades. | E0359 |
 | `BuyHoldV1` | **keep** | baseline of the TrendBlendV2Live equivalence check | E0349 |
 | `BuyHoldV1` · robustness check | **keep** | ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | E0318 |
@@ -70,6 +70,21 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
+| E0374 | 2026-10-12 | backtest | `AuctionValueV2Live` | dev | 1h | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | pending | Round 6: paper-bot copy V2Live vs V2 (must be identical when never asleep) | `c07afb0+dirty` |
+| E0373 | 2026-10-12 | backtest | `AuctionValueV2` | dev | 1h | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | pending | Round 6: paper-bot copy V2Live vs V2 (must be identical when never asleep) | `c07afb0+dirty` |
+| E0372 | 2026-10-12 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 6: paper-bot copy V2Live vs V2 (must be identical when never asleep) | `c07afb0+dirty` |
+| E0371 | 2026-10-12 | backtest | `AuctionValueV2` | holdout 👁 | 1h+5m | 0.10% | +193.6 | 21.8 | 1.46 | 2.20 | 237 | keep: Exam with 5m intra-candle fills (information): +193.6%, same as hourly. | round 6 exam: 5m intra-candle fills (information) | `c07afb0` |
+| E0370 | 2026-10-12 | backtest | `BuyHoldV1` | holdout 👁 | 1h+5m | 0.10% | +397.6 | 92.1 | 1.07 | 0.86 | 5 | baseline | round 6 exam: 5m intra-candle fills (information) | `c07afb0` |
+| E0369 | 2026-10-12 | backtest | `AuctionValueV2` | holdout 👁 | 1h | 0.15% | +180.3 | 23.4 | 1.40 | 1.95 | 237 | keep: Exam fee stress 0.15%/side: +180.3% (E3 pass). | round 6 exam: fee stress 0.15% | `c07afb0` |
+| E0368 | 2026-10-12 | backtest | `BuyHoldV1` | holdout 👁 | 1h | 0.15% | +397.3 | 92.1 | 1.07 | 0.86 | 5 | baseline | round 6 exam: fee stress 0.15% | `c07afb0` |
+| E0367 | 2026-10-12 | backtest | `AuctionValueV2` | holdout 👁 | 1h | 0.10% | +193.6 | 21.8 | 1.46 | 2.20 | 237 | keep: Round 6 exam PASS (E1-E7): +193.6%, PF 1.62, 237 trades, DD 21.8% vs B&H 92.1%, Calmar 2.20 vs 0.86, 6 up/5 down quarters, worst -11.7%. Replay 237/237. Caveats: best 3 trades (2021 SOL/XRP rallies) = 74% of profit; failed drops lost 795 USDT, accepted rises made 2731. | round 6 exam | `c07afb0` |
+| E0366 | 2026-10-12 | backtest | `BuyHoldV1` | holdout 👁 | 1h | 0.10% | +397.6 | 92.1 | 1.07 | 0.86 | 5 | baseline | round 6 exam | `c07afb0` |
+| E0365 | 2026-10-12 | backtest | `AuctionValueV2` | custom | 1h+5m | 0.10% | +52.3 | 13.3 | 2.17 | 3.91 | 88 | drop: Exam pipeline rehearsal on 2024 dev data (not a result; the 4-quarter FAIL is expected - the exam needs 11). | round 6 exam rehearsal (dev data): 5m intra-candle fills (information) | `c07afb0` |
+| E0364 | 2026-10-12 | backtest | `BuyHoldV1` | custom | 1h+5m | 0.10% | +121.0 | 35.8 | 1.71 | 3.37 | 5 | baseline | round 6 exam rehearsal (dev data): 5m intra-candle fills (information) | `c07afb0` |
+| E0363 | 2026-10-12 | backtest | `AuctionValueV2` | custom | 1h | 0.15% | +49.7 | 13.7 | 2.08 | 3.63 | 88 | drop: Exam pipeline rehearsal on 2024 dev data (not a result; the 4-quarter FAIL is expected - the exam needs 11). | round 6 exam rehearsal (dev data): fee stress 0.15% | `c07afb0` |
+| E0362 | 2026-10-12 | backtest | `BuyHoldV1` | custom | 1h | 0.15% | +120.8 | 35.8 | 1.71 | 3.36 | 5 | baseline | round 6 exam rehearsal (dev data): fee stress 0.15% | `c07afb0` |
+| E0361 | 2026-10-12 | backtest | `AuctionValueV2` | custom | 1h | 0.10% | +52.3 | 13.3 | 2.17 | 3.91 | 88 | drop: Exam pipeline rehearsal on 2024 dev data (not a result; the 4-quarter FAIL is expected - the exam needs 11). | round 6 exam rehearsal (dev data) | `c07afb0` |
+| E0360 | 2026-10-12 | backtest | `BuyHoldV1` | custom | 1h | 0.10% | +121.0 | 35.8 | 1.71 | 3.37 | 5 | baseline | round 6 exam rehearsal (dev data) | `c07afb0` |
 | E0359 | 2026-10-12 | robustness | `AuctionValueV2` | dev | 1h | 0.10% | +67.5 | 22.0 | n/a | 0.85 | 257 | keep: Robustness ROBUST: R1 7/7 (median Calmar 73%), R2 7/8 (PROFILE_SESSIONS=5 loses 1.1%), R3 5/5, R4 +97 USDT without the best 3 trades. | robustness ROBUST: R1 PASS, R2 PASS, R3 PASS, R4 PASS | `cf6ec76+dirty` |
 | E0358 | 2026-10-12 | backtest | `AuctionValueV2` | dev | 1h+5m | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | keep: Information: 5m intra-candle fills give the same trades and profit (72 exits move within their hour, same prices). | Round 6: AuctionValueV2 dev with 5m intra-candle fills (information) | `cf6ec76+dirty` |
 | E0357 | 2026-10-12 | backtest | `BuyHoldV1` | dev | 1h+5m | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 6: AuctionValueV2 dev with 5m intra-candle fills (information) | `cf6ec76+dirty` |

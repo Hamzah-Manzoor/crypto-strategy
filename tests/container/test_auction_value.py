@@ -176,6 +176,30 @@ class DailyViewTest(unittest.TestCase):
         late.DELAY_HOURS = 3
         self.assertTrue(late._value_view(df)["av_enter"].shift(-3).fillna("").eq(v2["av_enter"].fillna("")).all())
 
+    def test_live_copy_carries_each_decision_through_the_evening(self):
+        from datetime import datetime, timezone
+        from auction_value_v2 import AuctionValueV2
+        from auction_value_v2_live import CARRIED, AuctionValueV2Live
+        df = hourly(400, seed=3)
+        v2 = AuctionValueV2.__new__(AuctionValueV2)._value_view(df)
+        live = AuctionValueV2Live.__new__(AuctionValueV2Live)._value_view(df)
+        hours = df["date"].dt.hour
+        for i in v2.index[v2["av_enter"].notna()][:20]:
+            day = range(i, i + 12)                                            # 11:00 ... 22:00 UTC
+            self.assertTrue((hours.loc[list(day)] == list(range(11, 23))).all())
+            for col in CARRIED:
+                want = v2.at[i, col]
+                same = live.loc[list(day), col].map(lambda x: (pd.isna(x) and pd.isna(want)) or x == want)
+                self.assertTrue(same.all(), (i, col))
+            self.assertFalse(live.at[i + 12, "av_decision"])                  # 23:00: window over
+            self.assertTrue(pd.isna(live.at[i + 12, "av_enter"]))
+        outside = (hours < 11) | (hours > 22)
+        pd.testing.assert_frame_equal(live[outside], v2[outside])            # nothing else changes
+        start = lambda h: AuctionValueV2Live._window_start(
+            AuctionValueV2Live, datetime(2026, 10, 12, h, 30, tzinfo=timezone.utc))
+        self.assertEqual([start(h) is not None for h in (0, 5, 11, 12, 17, 23)], [False] * 3 + [True] * 3)
+        self.assertEqual(start(23).hour, 12)
+
     def test_longer_profiles(self):
         df = hourly(60)
         v = self.view(df, PROFILE_SESSIONS=10)

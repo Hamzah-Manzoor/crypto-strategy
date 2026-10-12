@@ -20,6 +20,11 @@
    "ok": true,
    "recursive": "pass"
   },
+  "AuctionValueV2Live": {
+   "lookahead": "pass",
+   "ok": true,
+   "recursive": "pass"
+  },
   "BuyHoldV1": {
    "lookahead": "skipped",
    "ok": true,
@@ -201,5 +206,5 @@
    "recursive": "pass"
   }
  },
- "updated": "2026-10-12 17:43"
+ "updated": "2026-10-12 18:13"
 }

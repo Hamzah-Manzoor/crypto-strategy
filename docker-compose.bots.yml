@@ -62,3 +62,23 @@ services:
     ports:
       - "127.0.0.1:8083:8080"
     command: ["trade", "--dry-run", "--config", "user_data/configs/base.json", "--config", "user_data/configs/dryrun/trend-blend.json", "--db-url", "sqlite:////freqtrade/user_data/db/trend-blend.sqlite", "--logfile", "user_data/logs/trend-blend.log"]
+  bot-auction-value:
+    # watch-list: AuctionValueV2Live - Round 6: AuctionValueV2 (Auction Market Theory, weekly value areas) passed the one-time exam on the 2021-23 holdout; now in its 12-month forward test (judged by a forward backtest of AuctionValueV2). The bot runs AuctionValueV2Live: identical trades, but it acts on a missed 5 pm decision when the laptop wakes (until 4:59 am). Not promoted.
+    image: freqtradeorg/freqtrade:2026.9@sha256:989aff5636d8f0213ed44fe334c3314a194a51c0c755d16866960247aafd2eae
+    container_name: crypto-lab-bot-auction-value
+    restart: unless-stopped
+    depends_on:
+      safety:
+        condition: service_completed_successfully
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.bot-auction-value
+        required: false
+    environment:
+      PYTHONPATH: /freqtrade/user_data/strategies
+    volumes:
+      - ./user_data:/freqtrade/user_data
+    ports:
+      - "127.0.0.1:8084:8080"
+    command: ["trade", "--dry-run", "--config", "user_data/configs/base.json", "--config", "user_data/configs/dryrun/auction-value.json", "--db-url", "sqlite:////freqtrade/user_data/db/auction-value.sqlite", "--logfile", "user_data/logs/auction-value.log"]

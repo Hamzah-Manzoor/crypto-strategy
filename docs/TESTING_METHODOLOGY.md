@@ -29,7 +29,7 @@ The rules below were written on **2026-10-06, before any out-of-sample result wa
 | Period | Dates | Used for |
 |---|---|---|
 | **dev** | 2023-10-01 → 2026-10-01 | Building and choosing (= the old IS + OOS; the OOS year was retired after 9 looks) |
-| **holdout** (protected) | 2021-01-01 → 2023-10-01 | Round 2 exam. Spent for the strategies examined on it. |
+| **holdout** (protected) | 2021-01-01 → 2023-10-01 | Round 2 exam, then the Round 6 exam (Auction Market Theory, passed). Spent for the idea families examined on it. |
 | **exam2019** (protected) | 2019-01-01 → 2021-01-01 | Round 4 exam. Only BTC, ETH, BNB and XRP existed then; SOL listed in Aug 2020. |
 | **exam5** (inside the protected years) | 2019-01-01 → 2023-10-01 | Round 5 exam, on 9 coins never traded in this lab (NEO, LTC, QTUM, ADA, IOTA, XLM, ONT, TRX, ETC). `lab.py` refuses those coins outside the exam. |
 
@@ -198,6 +198,7 @@ It runs on **dev data only** (`lab.py robustness <Strategy>`). From the next res
 | R3 Leave one coin out | 5 runs, each without one coin | all 5 profitable **and** median Calmar ≥ 50% of the original's |
 | R4 Concentration | Remove the 3 best trades from the original's trade list | profit still > 0 |
 
+- **Daily strategies** (one decision a day at a fixed hour) get R1 as: the decision hour at 4 slots 6 hours apart, plus acting 1, 2, 3 *days* late (`DELAY_DAYS`, Round 5) or 1, 2, 3 *hours* late (`DELAY_HOURS`, Round 6, for decisions about the day's own session).
 - **Verdict:** ROBUST only if every applicable check passes, otherwise FRAGILE.
 - **Skipped:** checks that can't apply (e.g. no settings to vary).
 - **N/A:** the original isn't profitable.

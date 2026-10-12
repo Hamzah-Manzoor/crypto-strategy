@@ -251,3 +251,52 @@ _To be filled in at each stage, without editing anything above this line._
   - **R4:** **the 3 best trades are 86% of the profit** (XRP Nov 2024 +90%, ETH Feb–Mar 2024 +70%, XRP Jul 2025 +38%, all accepted rises). Without them it's +97 USDT, so it passes, but most of the money comes from a few trend rides.
 
 **Selection by the rule** (`results/leaderboards/round6_selection.md`): **`AuctionValueV2`**, the only eligible version. V1 is reported, not eligible. The exam runs once on the holdout.
+
+### Exam: 2026-10-12 → **PASS** (run once)
+
+`AuctionValueV2` on BTC, ETH, SOL, BNB and XRP, 2021-01-01 → 2023-10-01, 5 slots (`results/leaderboards/exam_round6.md`):
+
+| Rule | Result |
+|---|---|
+| E1 trades | 237 (≥ 30) ✅ |
+| E2 profit, profit factor | +193.6%, 1.62 ✅ |
+| E3 at 0.15% fee | +180.3% ✅ |
+| E4 max drawdown | 21.8% (≤ 30% and < buy & hold's 92.1%) ✅ |
+| E5 Calmar | 2.20 > buy & hold's 0.86 ✅ |
+| E6 quarters | 6 up vs 5 down (0 in cash), worst −11.7% (≥ −15%) ✅ |
+| E7 bias checks | passed ✅ |
+
+- **Information runs:**
+  - 5-minute intra-candle fills: +193.6%, the same as hourly.
+  - Buy & hold (+397.6%, DD 92.1%) matches the Round 2 exam run on the same period.
+- **Quarter by quarter (%):**
+  - 2021: +46.7, +49.9, +35.2, −5.2
+  - 2022: +11.3, −11.7, −2.7, −3.0
+  - 2023: +18.1, −8.7, +4.1
+  - Buy & hold over the same quarters: +452, +38, +190, +21, −24, −70, +10, −50, +68, −13, +2.
+
+**Too good to trust without a check, so it was checked:**
+- **Order replay:** all **237 of 237** exam trades match the written rules exactly.
+- **Where the profit came from:** it isn't a bug, it's concentration.
+
+  | | Trades | Winners | Profit |
+  |---|---:|---:|---:|
+  | accepted rises | 127 | 41% | **+2,731 USDT** |
+  | failed drops | 110 | 26% | **−795 USDT** |
+
+  - **The 3 best trades make 74% of the profit,** all accepted rises in the 2021 bull run: SOL Aug–Sep 2021 +93%, XRP Apr 2021 +156%, SOL Jul–Aug 2021 +106%. Without them: +510 USDT (+51%).
+  - **By coin:** SOL +1,086, XRP +636, BNB +313, BTC −3, ETH −96 USDT.
+  - **By year:** 2021 +1,819, 2022 −198, 2023 +315 USDT.
+
+**What this means, recorded before the forward test:**
+1. **The pass stands.** The rules were fixed in advance and all 7 held. Nothing is re-tested on the holdout.
+2. **The money comes from the "accepted rise" half,** which is AMT's version of trend following. It rode the 2021 altcoin boom and mostly sat in cash through 2022.
+3. **The "failed drop" half lost money on unseen data**, even restricted to sideways markets as in V2. On dev it earned +127 USDT; here −795.
+   - Removing it would be a new version that needs its own fresh test, so it isn't done here.
+   - The forward test reports both halves separately.
+4. **Like `TrendBlendV2`, this is mostly a trend strategy.** Expect it to lag buy & hold in bull years and to depend on a few big runs.
+
+**Next (as pre-registered):**
+- Watch-list paper bot `auction-value` (port 8084) running `AuctionValueV2Live`.
+- 12-month forward test from 2026-10-12, judged on 2027-10-12 by a forward backtest of `AuctionValueV2` under `rules.ROUND6_FORWARD`, with a report-only check on 2027-04-12.
+- The holdout now counts as *used* for volume-profile / AMT ideas.

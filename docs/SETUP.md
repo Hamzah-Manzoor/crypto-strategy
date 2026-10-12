@@ -135,6 +135,7 @@ Every bot is a **dry-run** Freqtrade: live Binance prices, a fake 1000 USDT wall
 | `ema-trend-v2` | `EmaTrendV2` | http://127.0.0.1:8081 | **watch list**: passed Stage 1, failed Stage 2, so it's *not* promoted |
 | `buy-hold` | `BuyHoldV1` | http://127.0.0.1:8082 | baseline: buy & hold from the same start day |
 | `trend-blend` | `TrendBlendV2Live` | http://127.0.0.1:8083 | **watch list:** `TrendBlendV2` passed the Round 5 exam and is in its 12-month forward test (until 2027-10-09), *not* promoted yet. The bot runs its catch-up copy: it decides at 5 pm Pakistan time, or the first time the laptop is awake before 4 am. |
+| `auction-value` | `AuctionValueV2Live` | http://127.0.0.1:8084 | **watch list:** `AuctionValueV2` (Auction Market Theory) passed the Round 6 exam and is in its 12-month forward test (until 2027-10-12), *not* promoted yet. Same catch-up as `trend-blend`: a missed 5 pm decision is acted on when the laptop wakes, before 4:59 am. |
 
 ```bash
 python3 scripts/lab.py bots up        # safety check, generate configs, start, wait, show status

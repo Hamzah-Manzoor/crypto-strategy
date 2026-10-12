@@ -1,0 +1,8 @@
+{
+ "exam_run": "20261012-175414_custom_1h",
+ "stress_run": "20261012-175425_custom_1h_fee0.15pct",
+ "detail_run": "20261012-175435_custom_1h_detail5m",
+ "results": {
+  "AuctionValueV2": "FAIL"
+ }
+}
