@@ -67,7 +67,8 @@ Each phase ends with a review stop and one git commit.
 ## Next steps (suggested, not scheduled)
 
 **Watch what's running**
-- [ ] Check the paper bots every week or two (`lab.py bots status`). After about 2–3 months, compare `EmaTrendV2`'s live paper results with its backtest over the same dates (`lab.py backtest --period <start>-<end> --allow-oos`).
+- [ ] Check the paper bots every week or two (`lab.py bots status`). After about 2–3 months, compare `EmaTrendV2`'s live paper results with its backtest over the same dates (`lab.py backtest --period <start>-<end>`).
+  - **2026-11-05:** first paper-vs-backtest check of all bots (RESULTS.md, E0375–E0382): every order the bots were awake for matches. Run `lab.py download --timeframes 1d` first: plain `download` does not top up daily candles for the 5 coins yet.
 
 **Follow the leads the data gave us**
 - [x] **EmaTrendV2 with quarterly re-tuning:** pre-registered and tested on 7 never-used quarters (2021-12 → 2023-09) on 2026-10-07. **Failed** (2 of 7 quarters profitable, −12.3%), so it's dropped. See `docs/research/`.

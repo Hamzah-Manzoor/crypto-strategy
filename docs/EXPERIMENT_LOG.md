@@ -12,16 +12,18 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 - **Git** = commit the code was at (`+dirty` = uncommitted strategy/config/script changes).
 - Risk numbers (Max DD, Sharpe, Calmar) are mark-to-market, from the wallet value at every candle.
 
-**374 entries**, 74 of them out-of-sample looks (in 19 runs).
+**382 entries**, 74 of them out-of-sample looks (in 19 runs).
 
 ## Current status per strategy version
 
 | Strategy | Decision | Why | From |
 |---|---|---|---|
-| `AuctionValueV2` | **keep** | Exam with 5m intra-candle fills (information): +193.6%, same as hourly. | E0371 |
+| `AuctionValueV2Live` | **keep** | catch-up equality check: identical to AuctionValueV2 (E0373) | E0374 |
+| `AuctionValueV2` | **keep** | paper-vs-backtest check (bot auction-value): the 2 trades the bot was awake for match; it missed XRP 10-12 (stopped out before the bot started, guard skipped it) and BNB 11-01 (laptop asleep) | E0380 |
 | `AuctionValueV2` · robustness check | **keep** | Robustness ROBUST: R1 7/7 (median Calmar 73%), R2 7/8 (PROFILE_SESSIONS=5 loses 1.1%), R3 5/5, R4 +97 USDT without the best 3 trades. | E0359 |
 | `BuyHoldV1` | **keep** | baseline of the TrendBlendV2Live equivalence check | E0349 |
 | `BuyHoldV1` · robustness check | **keep** | ROBUST (calibration reference): R1/R2 do not apply; leave-one-coin-out and lucky-trades checks pass | E0318 |
+| `EmaTrendV2` | **keep** | paper-vs-backtest check (bot ema-trend-v2): all 4 paper orders match, within 8 min and 0.6% in price | E0376 |
 | `EmaTrendV2` · robustness check | **keep** | ROBUST (calibration): small edge but stable - profitable with signals 1-3h late, nearby EMAs, any 4 of 5 coins, and without its 3 best trades | E0319 |
 | `MomentumRotationV1bMonday` | **keep** | Round 4 reference: full-size V1b at the Monday 12:00 UTC slot | E0325 |
 | `MomentumRotationV1b` | **keep** | Round 4 reference: V1b as examined in Round 2 | E0326 |
@@ -29,9 +31,8 @@ python3 scripts/lab.py exp decide <ID> keep|tweak|drop "why"
 | `MomentumRotationV3` | **keep** | Round 4 exam pick: eligible (DD 29.7% <= 30%, PF 2.17, 65 trades), ROBUST, best eligible Calmar | E0323 |
 | `MomentumRotationV3` · robustness check | **keep** | ROBUST: 28/28 timings, 8/8 settings, 5/5 coins (+73.9% without SOL), +219 USDT without best 3 trades | E0327 |
 | `TrendBlendV2Live` | **keep** | TrendBlendV2Live (paper-bot catch-up copy) = TrendBlendV2 order for order (318 orders, same final balance) | E0351 |
-| `TrendBlendV2` | **keep** | equivalence check: TrendBlendV2 reference (same as E0339) | E0350 |
+| `TrendBlendV2` | **keep** | paper-vs-backtest check (bot trend-blend): all 10 paper orders match, within 37 min and 0.25% in price | E0382 |
 | `TrendBlendV2` · robustness check | **keep** | ROBUST: 7/7 timings (incl. 1-3 days late), 8/8 settings, 5/5 coins, +741 USDT without the best 3 trades | E0340 |
-| `EmaTrendV2` | **tweak** | EmaTrendV2 fixed walk-forward: 38% windows profitable (rule 60%), efficiency 0.88 - lumpy trend-follower returns | E0237 |
 | `AdxSupertrendV1T` | **drop** | stage 1 FAIL | E0210 |
 | `AdxSupertrendV1` | **drop** | AdxSupertrendV1T: OOS PF 1.09 and only 28% of IS Sharpe kept (stage 1 FAIL) | E0077 |
 | `AuctionValueV1` | **drop** | Same result as E0353, re-run beside V2 for the selection report. Not eligible: DD 32.6%, PF 1.14, Calmar 0.29 < B&H 0.76. | E0355 |
@@ -70,8 +71,16 @@ Rows from comparison runs stay `pending` unless that row needed its own decision
 
 | ID | Date | Kind | Strategy | Period | TF | Fee | Profit % | Max DD % | Sharpe | Calmar | Trades | Decision | Notes | Git |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|
-| E0374 | 2026-10-12 | backtest | `AuctionValueV2Live` | dev | 1h | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | pending | Round 6: paper-bot copy V2Live vs V2 (must be identical when never asleep) | `c07afb0+dirty` |
-| E0373 | 2026-10-12 | backtest | `AuctionValueV2` | dev | 1h | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | pending | Round 6: paper-bot copy V2Live vs V2 (must be identical when never asleep) | `c07afb0+dirty` |
+| E0382 | 2026-11-05 | backtest | `TrendBlendV2` | custom | 1h | 0.10% | -2.9 | 5.1 | -3.00 | -6.62 | 5 | keep: paper-vs-backtest check (bot trend-blend): all 10 paper orders match, within 37 min and 0.25% in price | paper-vs-backtest check, re-run with daily candles topped up (E0378 used daily data that stopped on 6-7 Oct) | `d8b4347` |
+| E0381 | 2026-11-05 | backtest | `BuyHoldV1` | custom | 1h | 0.10% | -5.6 | 12.5 | -2.44 | -4.47 | 5 | baseline | paper-vs-backtest check, re-run with daily candles topped up (E0378 used daily data that stopped on 6-7 Oct) | `d8b4347` |
+| E0380 | 2026-11-05 | backtest | `AuctionValueV2` | custom | 1h | 0.10% | -1.4 | 1.4 | -7.62 | -13.79 | 4 | keep: paper-vs-backtest check (bot auction-value): the 2 trades the bot was awake for match; it missed XRP 10-12 (stopped out before the bot started, guard skipped it) and BNB 11-01 (laptop asleep) | paper-vs-backtest check: same dates as the paper bot (forward period; checks the bot does what the backtest does, not a verdict) | `d8b4347` |
+| E0379 | 2026-11-05 | backtest | `BuyHoldV1` | custom | 1h | 0.10% | -7.1 | 12.5 | -1.61 | -5.43 | 5 | baseline | paper-vs-backtest check: same dates as the paper bot (forward period; checks the bot does what the backtest does, not a verdict) | `d8b4347` |
+| E0378 | 2026-11-05 | backtest | `TrendBlendV2` | custom | 1h | 0.10% | -2.5 | 5.6 | -2.48 | -5.41 | 4 | drop: INVALID: daily candles for ETH/SOL/BNB/XRP stopped on 6-7 Oct (download only topped up BTC daily); re-run as E0382 | paper-vs-backtest check: same dates as the paper bot (forward period; checks the bot does what the backtest does, not a verdict) | `d8b4347` |
+| E0377 | 2026-11-05 | backtest | `BuyHoldV1` | custom | 1h | 0.10% | -5.6 | 12.5 | -2.44 | -4.47 | 5 | baseline | paper-vs-backtest check: same dates as the paper bot (forward period; checks the bot does what the backtest does, not a verdict) | `d8b4347` |
+| E0376 | 2026-11-05 | backtest | `EmaTrendV2` | custom | 1h | 0.10% | -1.6 | 2.3 | -2.99 | -7.78 | 2 | keep: paper-vs-backtest check (bot ema-trend-v2): all 4 paper orders match, within 8 min and 0.6% in price | paper-vs-backtest check: same dates as the paper bot (forward period; checks the bot does what the backtest does, not a verdict) | `d8b4347` |
+| E0375 | 2026-11-05 | backtest | `BuyHoldV1` | custom | 1h | 0.10% | -12.1 | 16.9 | -3.91 | -4.67 | 5 | baseline | paper-vs-backtest check: same dates as the paper bot (forward period; checks the bot does what the backtest does, not a verdict) | `d8b4347` |
+| E0374 | 2026-10-12 | backtest | `AuctionValueV2Live` | dev | 1h | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | keep: catch-up equality check: identical to AuctionValueV2 (E0373) | Round 6: paper-bot copy V2Live vs V2 (must be identical when never asleep) | `c07afb0+dirty` |
+| E0373 | 2026-10-12 | backtest | `AuctionValueV2` | dev | 1h | 0.10% | +67.5 | 22.0 | 1.11 | 0.85 | 257 | keep: catch-up equality check: AuctionValueV2Live gives the same 257 dev trades as V2 | Round 6: paper-bot copy V2Live vs V2 (must be identical when never asleep) | `c07afb0+dirty` |
 | E0372 | 2026-10-12 | backtest | `BuyHoldV1` | dev | 1h | 0.10% | +231.4 | 64.9 | 0.94 | 0.76 | 5 | baseline | Round 6: paper-bot copy V2Live vs V2 (must be identical when never asleep) | `c07afb0+dirty` |
 | E0371 | 2026-10-12 | backtest | `AuctionValueV2` | holdout 👁 | 1h+5m | 0.10% | +193.6 | 21.8 | 1.46 | 2.20 | 237 | keep: Exam with 5m intra-candle fills (information): +193.6%, same as hourly. | round 6 exam: 5m intra-candle fills (information) | `c07afb0` |
 | E0370 | 2026-10-12 | backtest | `BuyHoldV1` | holdout 👁 | 1h+5m | 0.10% | +397.6 | 92.1 | 1.07 | 0.86 | 5 | baseline | round 6 exam: 5m intra-candle fills (information) | `c07afb0` |

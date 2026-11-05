@@ -1,0 +1,103 @@
+{
+ "run_id": "20261105-074657_custom_1h",
+ "period": "custom",
+ "timerange": "20261006-20261105",
+ "timeframe": "1h",
+ "timeframe_detail": null,
+ "fee": 0.001,
+ "notes": "paper-vs-backtest check: same dates as the paper bot (forward period; checks the bot does what the backtest does, not a verdict)",
+ "zip": "user_data/backtest_results/20261105-074657_custom_1h/backtest-result-2026-11-05_07-47-01.zip",
+ "strategies": {
+  "BuyHoldV1": {
+   "strategy": "BuyHoldV1",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20261006-20261105",
+   "start": "2026-10-06 00:00:00",
+   "end": "2026-11-05 00:00:00",
+   "days": 30.0,
+   "trades": 5,
+   "win_rate_pct": 0.0,
+   "profit_factor": 0.0,
+   "avg_hold_hours": 719.0,
+   "market_change_pct": -12.0547,
+   "final_balance": 879.4244,
+   "stoploss": -0.99,
+   "minimal_roi": {
+    "0": 1000.0
+   },
+   "trailing_stop": false,
+   "code_sha": "b2e985c30b60",
+   "ft_trade_max_dd_pct": 12.0576,
+   "ft_wallet_max_dd_pct": 16.9398,
+   "profit_pct": -12.0576,
+   "cagr_pct": -79.0549,
+   "max_dd_pct": 16.9398,
+   "sharpe": -3.91,
+   "sortino": -4.4745,
+   "calmar": -4.6668,
+   "exposure_pct": 98.5889,
+   "profit_abs_total": -120.5756,
+   "best_trades_profit_abs": [
+    -12.79813385,
+    -16.89626329,
+    -21.76669404
+   ],
+   "quarters": [
+    {
+     "quarter": "2026Q4",
+     "ret_pct": -11.8717,
+     "partial": true
+    }
+   ],
+   "quarters_total": 0,
+   "quarters_profitable": 0,
+   "worst_quarter_pct": null
+  },
+  "EmaTrendV2": {
+   "strategy": "EmaTrendV2",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20261006-20261105",
+   "start": "2026-10-06 00:00:00",
+   "end": "2026-11-05 00:00:00",
+   "days": 30.0,
+   "trades": 2,
+   "win_rate_pct": 0.0,
+   "profit_factor": 0.0,
+   "avg_hold_hours": 116.0,
+   "market_change_pct": -12.0547,
+   "final_balance": 984.2289,
+   "stoploss": -0.1,
+   "minimal_roi": {
+    "0": 0.5
+   },
+   "trailing_stop": true,
+   "code_sha": "bbd251f1928e",
+   "ft_trade_max_dd_pct": 1.5771,
+   "ft_wallet_max_dd_pct": 2.2598,
+   "profit_pct": -1.5771,
+   "cagr_pct": -17.5857,
+   "max_dd_pct": 2.2598,
+   "sharpe": -2.9905,
+   "sortino": -3.11,
+   "calmar": -7.7819,
+   "exposure_pct": 6.3497,
+   "profit_abs_total": -15.7711,
+   "best_trades_profit_abs": [
+    -7.69831007,
+    -8.07283224
+   ],
+   "quarters": [
+    {
+     "quarter": "2026Q4",
+     "ret_pct": -1.5771,
+     "partial": true
+    }
+   ],
+   "quarters_total": 0,
+   "quarters_profitable": 0,
+   "worst_quarter_pct": null
+  }
+ }
+}

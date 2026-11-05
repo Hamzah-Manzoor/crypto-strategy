@@ -1,0 +1,104 @@
+{
+ "run_id": "20261105-074712_custom_1h",
+ "period": "custom",
+ "timerange": "20261012-20261105",
+ "timeframe": "1h",
+ "timeframe_detail": null,
+ "fee": 0.001,
+ "notes": "paper-vs-backtest check: same dates as the paper bot (forward period; checks the bot does what the backtest does, not a verdict)",
+ "zip": "user_data/backtest_results/20261105-074712_custom_1h/backtest-result-2026-11-05_07-47-16.zip",
+ "strategies": {
+  "BuyHoldV1": {
+   "strategy": "BuyHoldV1",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20261012-20261105",
+   "start": "2026-10-12 00:00:00",
+   "end": "2026-11-05 00:00:00",
+   "days": 24.0,
+   "trades": 5,
+   "win_rate_pct": 0.0,
+   "profit_factor": 0.0,
+   "avg_hold_hours": 575.0,
+   "market_change_pct": -7.084,
+   "final_balance": 928.5598,
+   "stoploss": -0.99,
+   "minimal_roi": {
+    "0": 1000.0
+   },
+   "trailing_stop": false,
+   "code_sha": "b2e985c30b60",
+   "ft_trade_max_dd_pct": 7.144,
+   "ft_wallet_max_dd_pct": 12.4536,
+   "profit_pct": -7.144,
+   "cagr_pct": -67.6077,
+   "max_dd_pct": 12.4536,
+   "sharpe": -1.6103,
+   "sortino": -2.0109,
+   "calmar": -5.4288,
+   "exposure_pct": 98.6034,
+   "profit_abs_total": -71.4402,
+   "best_trades_profit_abs": [
+    -8.51432417,
+    -9.21025892,
+    -9.85632892
+   ],
+   "quarters": [
+    {
+     "quarter": "2026Q4",
+     "ret_pct": -6.9533,
+     "partial": true
+    }
+   ],
+   "quarters_total": 0,
+   "quarters_profitable": 0,
+   "worst_quarter_pct": null
+  },
+  "AuctionValueV2": {
+   "strategy": "AuctionValueV2",
+   "timeframe": "1h",
+   "timeframe_detail": null,
+   "timerange": "20261012-20261105",
+   "start": "2026-10-12 00:00:00",
+   "end": "2026-11-05 00:00:00",
+   "days": 24.0,
+   "trades": 4,
+   "win_rate_pct": 0.0,
+   "profit_factor": 0.0,
+   "avg_hold_hours": 11.75,
+   "market_change_pct": -7.084,
+   "final_balance": 986.0257,
+   "stoploss": -0.3,
+   "minimal_roi": {
+    "0": 100.0
+   },
+   "trailing_stop": false,
+   "code_sha": "ea89a84b03e6",
+   "ft_trade_max_dd_pct": 1.3974,
+   "ft_wallet_max_dd_pct": 1.3974,
+   "profit_pct": -1.3974,
+   "cagr_pct": -19.2671,
+   "max_dd_pct": 1.3974,
+   "sharpe": -7.6192,
+   "sortino": -7.2079,
+   "calmar": -13.7876,
+   "exposure_pct": 1.6042,
+   "profit_abs_total": -13.9743,
+   "best_trades_profit_abs": [
+    -1.1592246,
+    -3.39110254,
+    -3.5498344
+   ],
+   "quarters": [
+    {
+     "quarter": "2026Q4",
+     "ret_pct": -1.3974,
+     "partial": true
+    }
+   ],
+   "quarters_total": 0,
+   "quarters_profitable": 0,
+   "worst_quarter_pct": null
+  }
+ }
+}
